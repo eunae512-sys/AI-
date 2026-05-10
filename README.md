@@ -40,13 +40,12 @@
 ├── research/                 # 도메인 리서치 (stack/features/architecture/pitfalls/summary)
 └── STATE.md                  # 프로젝트 상태
 
-mockups/                      # 5-페이지 UI 목업 (Tailwind + Pretendard, standalone HTML)
-├── index.html
-├── 01-login.html
-├── 02-clients.html
-├── 03-brand-detail.html
-├── 04-campaign-new.html
-└── 05-content-result.html
+index.html                    # 5-페이지 UI 목업 갤러리 (루트)
+01-login.html                 # 로그인
+02-clients.html               # 클라이언트 목록
+03-brand-detail.html          # 브랜드 상세
+04-campaign-new.html          # 캠페인 생성
+05-content-result.html        # 생성 결과
 
 CLAUDE.md                     # Claude Code 작업 가이드
 ```
@@ -64,8 +63,10 @@ CLAUDE.md                     # Claude Code 작업 가이드
 
 ## UI 목업 미리보기
 
+배포: 루트 URL (Vercel `./`)에서 갤러리(`index.html`)가 바로 열립니다. 로컬에서는:
+
 ```bash
-open mockups/index.html
+open index.html
 ```
 
 Notion + Stripe + Linear 톤의 미니멀한 관리자 대시보드 5종.
