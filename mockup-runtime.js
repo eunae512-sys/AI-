@@ -48,6 +48,7 @@
     '콘텐츠':        '05-content-result.html',
     '검토 큐':       '07-review-queue.html',
     '카드뉴스 이미지': '06-cardnews-image.html',
+    '릴스 스튜디오':  '08-reels-studio.html',
     'AI 이미지':     '06-cardnews-image.html', // 옛 라벨 호환
     // 멤버 / AI 비용 / 워크스페이스 등 설정 섹션은 의도적으로 제외 → fallback에서 mock 토스트
   };
