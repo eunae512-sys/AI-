@@ -25,13 +25,24 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  // ~/.codex/auth.json 존재 사전 확인
+  // ~/.codex/auth.json 존재 사전 확인 — 없으면 데모 이미지 fallback (Vercel 등)
   const authPath = path.join(os.homedir(), '.codex', 'auth.json');
   if (!fs.existsSync(authPath)) {
-    res.status(400).json({
-      ok: false,
-      code: 'NO_CODEX_AUTH',
-      error: 'Codex 로그인 상태를 찾을 수 없습니다 (~/.codex/auth.json 없음). Codex CLI 설치 후 로그인 필요: https://github.com/openai/codex',
+    const demo = pickDemoImage(prompt);
+    res.json({
+      ok: true,
+      image: demo.url,
+      meta: {
+        source: 'demo-fallback',
+        demoMode: true,
+        provider: 'demo',
+        model: 'demo',
+        size,
+        latencyMs: 0,
+        costUsd: 0,
+        costKrw: 0,
+        notice: 'Codex CLI 미설정 환경 — 큐레이션된 데모 이미지로 대체 (Vercel 서버에서는 Codex 사용 불가)',
+      },
     });
     return;
   }
@@ -111,3 +122,32 @@ module.exports = async function handler(req, res) {
     res.status(status).json({ ok: false, code, error: userError, raw: message.slice(0, 200) });
   }
 };
+
+// 데모 이미지 fallback (Codex auth 미설정 시 — Vercel 등)
+const DEMO_IMAGES = [
+  { url: 'https://images.pexels.com/photos/37433365/pexels-photo-37433365.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
+    keywords: ['vegetable', 'spring', '봄나물', '시금치', 'fresh', 'ingredient'] },
+  { url: 'https://images.pexels.com/photos/35177681/pexels-photo-35177681.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
+    keywords: ['market', 'traditional', '시장', 'hand', '도매'] },
+  { url: 'https://images.pexels.com/photos/34179560/pexels-photo-34179560.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
+    keywords: ['interior', 'restaurant', '한옥', 'hanok', 'traditional', '실내'] },
+  { url: 'https://images.pexels.com/photos/23355655/pexels-photo-23355655.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
+    keywords: ['banquet', 'table', '한 상', '코스', 'feast', 'dish', '음식'] },
+  { url: 'https://images.pexels.com/photos/35177507/pexels-photo-35177507.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
+    keywords: ['ceramic', 'dish', '도자기', 'plate', 'bowl', '그릇'] },
+  { url: 'https://images.pexels.com/photos/27969063/pexels-photo-27969063.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
+    keywords: ['lantern', 'entrance', '간판', '입구', '등', 'sign', 'evening'] },
+];
+
+function pickDemoImage(query) {
+  const q = String(query || '').toLowerCase();
+  let best = null, bestScore = 0;
+  for (const img of DEMO_IMAGES) {
+    const score = img.keywords.reduce((acc, k) => acc + (q.includes(k.toLowerCase()) ? 1 : 0), 0);
+    if (score > bestScore) { best = img; bestScore = score; }
+  }
+  if (best) return best;
+  let hash = 0;
+  for (let i = 0; i < q.length; i++) hash = ((hash << 5) - hash + q.charCodeAt(i)) | 0;
+  return DEMO_IMAGES[Math.abs(hash) % DEMO_IMAGES.length];
+}

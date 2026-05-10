@@ -8,15 +8,6 @@ module.exports = async function handler(req, res) {
   }
 
   const apiKey = process.env.PEXELS_API_KEY || '';
-  if (!apiKey || apiKey.trim() === '' || apiKey === 'YOUR_PEXELS_KEY') {
-    res.status(500).json({
-      ok: false,
-      code: 'NO_PEXELS_KEY',
-      error: '.env 의 PEXELS_API_KEY 가 설정되어 있지 않습니다. https://www.pexels.com/api/ 에서 무료 발급 후 .env 에 추가하세요.',
-    });
-    return;
-  }
-
   const {
     query = '',
     orientation = 'portrait', // portrait | landscape | square
@@ -24,6 +15,29 @@ module.exports = async function handler(req, res) {
     perPage = 15,
     pickIndex = -1,           // -1 이면 랜덤
   } = req.body || {};
+
+  // 키 없으면 데모 이미지 fallback (Vercel 등 env 미설정 환경)
+  if (!apiKey || apiKey.trim() === '' || apiKey === 'YOUR_PEXELS_KEY') {
+    const demo = pickDemoImage(String(query || ''));
+    res.json({
+      ok: true,
+      image: demo.url,
+      meta: {
+        source: 'demo-fallback',
+        demoMode: true,
+        photographer: demo.photographer,
+        photographerUrl: demo.photographerUrl,
+        pexelsUrl: demo.pexelsUrl,
+        alt: demo.alt,
+        latencyMs: 0,
+        costUsd: 0,
+        costKrw: 0,
+        query: String(query || ''),
+        notice: 'PEXELS_API_KEY 미설정 — 큐레이션된 데모 이미지로 대체',
+      },
+    });
+    return;
+  }
 
   const cleanedQuery = String(query || '').trim();
   if (cleanedQuery.length < 2) {
@@ -82,3 +96,47 @@ module.exports = async function handler(req, res) {
     res.status(500).json({ ok: false, error: message });
   }
 };
+
+// 6개 카드뉴스 슬라이드용 큐레이션 데모 이미지 (Pexels CDN 직접 URL — 무인증 접근 가능)
+const DEMO_IMAGES = [
+  { url: 'https://images.pexels.com/photos/37433365/pexels-photo-37433365.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
+    keywords: ['vegetable', 'spring', '봄나물', '시금치', 'fresh', 'ingredient'],
+    photographer: 'Pexels Contributor', photographerUrl: 'https://www.pexels.com/',
+    pexelsUrl: 'https://www.pexels.com/photo/37433365/', alt: '신선한 봄나물' },
+  { url: 'https://images.pexels.com/photos/35177681/pexels-photo-35177681.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
+    keywords: ['market', 'traditional', '시장', 'hand', '도매'],
+    photographer: 'Pexels Contributor', photographerUrl: 'https://www.pexels.com/',
+    pexelsUrl: 'https://www.pexels.com/photo/35177681/', alt: '전통시장' },
+  { url: 'https://images.pexels.com/photos/34179560/pexels-photo-34179560.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
+    keywords: ['interior', 'restaurant', '한옥', 'hanok', 'traditional', '실내'],
+    photographer: 'Pexels Contributor', photographerUrl: 'https://www.pexels.com/',
+    pexelsUrl: 'https://www.pexels.com/photo/34179560/', alt: '한식당 내부' },
+  { url: 'https://images.pexels.com/photos/23355655/pexels-photo-23355655.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
+    keywords: ['banquet', 'table', '한 상', '코스', 'feast', 'dish', '음식'],
+    photographer: 'Pexels Contributor', photographerUrl: 'https://www.pexels.com/',
+    pexelsUrl: 'https://www.pexels.com/photo/23355655/', alt: '한정식 한 상' },
+  { url: 'https://images.pexels.com/photos/35177507/pexels-photo-35177507.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
+    keywords: ['ceramic', 'dish', '도자기', 'plate', 'bowl', '그릇'],
+    photographer: 'Pexels Contributor', photographerUrl: 'https://www.pexels.com/',
+    pexelsUrl: 'https://www.pexels.com/photo/35177507/', alt: '도자기 그릇' },
+  { url: 'https://images.pexels.com/photos/27969063/pexels-photo-27969063.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
+    keywords: ['lantern', 'entrance', '간판', '입구', '등', 'sign', 'evening'],
+    photographer: 'Pexels Contributor', photographerUrl: 'https://www.pexels.com/',
+    pexelsUrl: 'https://www.pexels.com/photo/27969063/', alt: '식당 입구 등불' },
+];
+
+function pickDemoImage(query) {
+  const q = String(query || '').toLowerCase();
+  // 키워드 매칭 우선
+  let best = null;
+  let bestScore = 0;
+  for (const img of DEMO_IMAGES) {
+    const score = img.keywords.reduce((acc, k) => acc + (q.includes(k.toLowerCase()) ? 1 : 0), 0);
+    if (score > bestScore) { best = img; bestScore = score; }
+  }
+  if (best) return best;
+  // 매칭 없으면 query 해시로 결정 (같은 query → 같은 이미지)
+  let hash = 0;
+  for (let i = 0; i < q.length; i++) hash = ((hash << 5) - hash + q.charCodeAt(i)) | 0;
+  return DEMO_IMAGES[Math.abs(hash) % DEMO_IMAGES.length];
+}

@@ -11,14 +11,6 @@ module.exports = async function handler(req, res) {
 
   const apiKey = process.env.OPENAI_API_KEY || '';
   const isPlaceholder = !apiKey || apiKey.trim() === '' || /^sk-\.+$/.test(apiKey) || apiKey.length < 20;
-  if (isPlaceholder) {
-    res.status(500).json({
-      ok: false,
-      code: 'NO_KEY',
-      error: '.env 의 OPENAI_API_KEY 가 placeholder 입니다.',
-    });
-    return;
-  }
 
   const {
     brand = '미옥당 본점',
@@ -34,6 +26,25 @@ module.exports = async function handler(req, res) {
     slide_count = 6,
     model = process.env.TEXT_MODEL || 'gpt-4o',
   } = req.body || {};
+
+  // 키 없으면 미옥당 봄나물 코스 데모 텍스트 fallback
+  if (isPlaceholder) {
+    res.json({
+      ok: true,
+      slides: DEMO_SLIDES,
+      flagged: [],
+      meta: {
+        source: 'demo-fallback',
+        demoMode: true,
+        model: 'demo',
+        latencyMs: 0,
+        costUsd: 0,
+        costKrw: 0,
+        notice: 'OPENAI_API_KEY 미설정 — 큐레이션된 데모 텍스트로 대체',
+      },
+    });
+    return;
+  }
 
   const startedAt = Date.now();
   const openai = new OpenAI({ apiKey });
@@ -158,3 +169,25 @@ module.exports = async function handler(req, res) {
     res.status(status).json({ ok: false, error: message });
   }
 };
+
+// 미옥당 5월 봄나물 코스 데모 슬라이드 (OPENAI_API_KEY 미설정 시)
+const DEMO_SLIDES = [
+  { role: 'title', label: '미옥당 · 5월 한정',
+    title: '5월의 봄나물,\n한 상에 모았습니다',
+    sub: '평일 점심 한정 코스 · 종로 수송동' },
+  { role: 'hook', label: '02 · 새벽',
+    title: '새벽 4시,\n시장에서 골라 온',
+    sub: '오늘 한 상에 오를 5월의 봄나물' },
+  { role: 'story', label: '03 · 30년',
+    title: '종로 수송동,\n30년 한자리',
+    sub: '한자리에서 30년, 같은 마음으로 모십니다' },
+  { role: 'menu', label: '04 · 코스',
+    title: '봄나물 점심 코스\n4종 구성',
+    sub: '시금치·두릅·머위로 차린 정갈한 한 상' },
+  { role: 'menu', label: '05 · 정찬',
+    title: '봄나물 정식 코스\n6종 구성',
+    sub: '거래처 점심·가족 모임에 어울리는 정찬' },
+  { role: 'cta', label: '06 · 예약',
+    title: '평일 점심,\n사전 예약 권장',
+    sub: '광화문역 도보 6분 · 단체석 별도 안내' },
+];
