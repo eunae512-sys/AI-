@@ -25,6 +25,71 @@
       pointer-events: none;
     }
     .myeongjo { font-family: 'Nanum Myeongjo', serif; }
+
+    /* 이미지가 들어오면 gradient 가린다 */
+    .slide-canvas img.bg-img {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; z-index: 0;
+    }
+    .slide-canvas[data-has-image="true"]::after { display: none !important; }
+    /* 가독성을 위해 이미지 위에 살짝 어둠 처리 */
+    .slide-canvas[data-has-image="true"] .slide-text {
+      background: linear-gradient(to bottom, rgba(0,0,0,0.0) 30%, rgba(0,0,0,0.55) 100%);
+      z-index: 1;
+    }
+
+    /* 슬라이드 안 텍스트 편집 가능 */
+    .slide-text [contenteditable="true"] {
+      cursor: text;
+      border-radius: 3px;
+      transition: outline 0.12s, background 0.12s;
+      outline: 1px dashed transparent;
+      outline-offset: 4px;
+    }
+    .slide-text [contenteditable="true"]:hover {
+      outline-color: rgba(255,255,255,0.35);
+      background: rgba(255,255,255,0.05);
+    }
+    /* 어두운 글자(stone-800/900) 슬라이드는 outline 도 어둡게 */
+    .slide-text.text-stone-800 [contenteditable="true"]:hover,
+    .slide-text.text-stone-900 [contenteditable="true"]:hover {
+      outline-color: rgba(0,0,0,0.4);
+      background: rgba(255,255,255,0.45);
+    }
+    .slide-text [contenteditable="true"]:focus {
+      outline: 2px solid rgba(99,102,241,0.85) !important;
+      background: rgba(0,0,0,0.18);
+    }
+    .slide-text.text-stone-800 [contenteditable="true"]:focus,
+    .slide-text.text-stone-900 [contenteditable="true"]:focus {
+      background: rgba(255,255,255,0.7);
+    }
+
+    /* 이미지 소스 토글 활성 스타일 */
+    #source-toggle .src-btn { color: #4b5563; }
+    #source-toggle .src-btn:hover { color: #111827; }
+    #source-toggle .src-btn.active { background: #111827; color: #fff; }
+
+    /* 스타일 프리셋 토글 */
+    #preset-toggle .preset-btn { color: #4b5563; }
+    #preset-toggle .preset-btn:hover { color: #111827; }
+    #preset-toggle .preset-btn.active { background: #111827; color: #fff; }
+
+    /* Loading shimmer */
+    @keyframes shimmer { 0% { opacity: .4; } 50% { opacity: .8; } 100% { opacity: .4; } }
+    .slide-canvas[data-loading="true"]::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(120deg, rgba(255,255,255,0.0) 30%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.0) 70%);
+      animation: shimmer 1.4s ease-in-out infinite;
+      z-index: 1;
+    }
+    .slide-canvas[data-loading="true"] .loading-pill {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.6); color: white; padding: 6px 12px; border-radius: 999px;
+      font-size: 11px; backdrop-filter: blur(8px); z-index: 2;
+    }
+    .loading-pill { display: none; }
+    .slide-canvas[data-loading="true"] .loading-pill { display: block; }
   </style>
 </head>
 <body class="bg-white text-gray-900">
@@ -92,6 +157,10 @@
             </div>
           </div>
           <div class="flex items-center gap-2">
+            <button data-action="generate-text" class="text-xs font-medium px-3 py-2 rounded-md border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 inline-flex items-center gap-1.5">
+              <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              <span data-text-btn-label>AI 텍스트 생성</span>
+            </button>
             <button class="text-xs px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50 inline-flex items-center gap-1.5">
               <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10"/></svg>
               전체 재생성
@@ -113,12 +182,29 @@
       <div class="px-8 py-4 border-b border-gray-100 bg-gray-50/30">
         <div class="flex items-center gap-6 flex-wrap">
           <div class="flex items-center gap-2">
+            <span class="text-[10px] uppercase tracking-widest text-gray-500 font-semibold">이미지 소스</span>
+            <div class="inline-flex p-0.5 bg-white border border-gray-200 rounded-md" id="source-toggle">
+              <button data-source="pexels" class="src-btn active text-xs font-medium px-2.5 py-1 rounded inline-flex items-center gap-1.5">
+                <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                Pexels <span class="opacity-70 text-[10px]">무료</span>
+              </button>
+              <button data-source="codex" class="src-btn text-xs font-medium px-2.5 py-1 rounded inline-flex items-center gap-1.5">
+                <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                Codex 구독 <span class="opacity-70 text-[10px]">gpt-image-2</span>
+              </button>
+              <button data-source="ai" class="src-btn text-xs font-medium px-2.5 py-1 rounded inline-flex items-center gap-1.5">
+                <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg>
+                API <span class="opacity-70 text-[10px]">$0.04</span>
+              </button>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
             <span class="text-[10px] uppercase tracking-widest text-gray-500 font-semibold">스타일 프리셋</span>
-            <div class="inline-flex p-0.5 bg-white border border-gray-200 rounded-md">
-              <button class="text-xs font-medium px-2.5 py-1 rounded bg-gray-900 text-white">정통 한정식</button>
-              <button class="text-xs font-medium px-2.5 py-1 text-gray-600 hover:text-gray-900">모던 한식</button>
-              <button class="text-xs font-medium px-2.5 py-1 text-gray-600 hover:text-gray-900">감성 사진</button>
-              <button class="text-xs font-medium px-2.5 py-1 text-gray-600 hover:text-gray-900">일러스트</button>
+            <div class="inline-flex p-0.5 bg-white border border-gray-200 rounded-md" id="preset-toggle">
+              <button data-preset="traditional" class="preset-btn active text-xs font-medium px-2.5 py-1 rounded">정통 한정식</button>
+              <button data-preset="modern" class="preset-btn text-xs font-medium px-2.5 py-1 rounded">모던 한식</button>
+              <button data-preset="moody" class="preset-btn text-xs font-medium px-2.5 py-1 rounded">감성 사진</button>
+              <button data-preset="illustration" class="preset-btn text-xs font-medium px-2.5 py-1 rounded">일러스트</button>
             </div>
           </div>
           <div class="flex items-center gap-2">
@@ -171,12 +257,12 @@
                   <span class="text-[10px] font-mono text-gray-400 tabular-nums">$0.04 · 4.2s</span>
                 </div>
                 <div class="text-[11px] text-gray-600 leading-relaxed line-clamp-2 mb-2.5" contenteditable="true">
-                  Warm radial light on a traditional Korean stone wall texture, soft amber-cream tones with deep wine red accent (#7B2D26), centered composition with negative space top, no text in image
+                  Hero food photography of a traditional Korean spring vegetable banquet (한정식). Multiple small ceramic bowls of seasonal Korean spring greens — fresh spinach, baby gosari, butterbur leaves — arranged on a warm wooden table. Soft natural daylight from the side. Cream and amber tones with deep wine red (#7B2D26) napkin accent. 45-degree angle, generous empty space at top for title. Editorial food magazine style, restrained, premium feel.
                 </div>
                 <div class="flex items-center gap-1">
-                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">재생성</button>
-                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">변형</button>
-                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">PNG</button>
+                  <button data-action="regenerate" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">재생성</button>
+                  <button data-action="variation" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">변형</button>
+                  <button data-action="download" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">PNG</button>
                 </div>
               </div>
             </article>
@@ -202,12 +288,12 @@
                   <span class="text-[10px] font-mono text-gray-400 tabular-nums">$0.04 · 3.8s</span>
                 </div>
                 <div class="text-[11px] text-gray-600 leading-relaxed line-clamp-2 mb-2.5" contenteditable="true">
-                  Dim pre-dawn wholesale market mood, low-key amber lighting, hands of an aged chef sorting fresh greens, dark moody background, deep brown and crimson palette, cinematic, no text
+                  Pre-dawn moody photo of weathered hands of an aged Korean chef carefully selecting fresh spring spinach (시금치) bunches at a Korean wholesale produce market. Dim amber tungsten lighting, blurred wooden crates of green vegetables in background. Hands and fresh green leaves in sharp focus. Cinematic dark palette with warm amber highlights, deep brown and crimson tones. Empty space on right for text overlay. Documentary photography style.
                 </div>
                 <div class="flex items-center gap-1">
-                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">재생성</button>
-                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">변형</button>
-                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">PNG</button>
+                  <button data-action="regenerate" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">재생성</button>
+                  <button data-action="variation" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">변형</button>
+                  <button data-action="download" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">PNG</button>
                 </div>
               </div>
             </article>
@@ -233,12 +319,12 @@
                   <span class="text-[10px] font-mono text-gray-400 tabular-nums">$0.04 · 4.1s</span>
                 </div>
                 <div class="text-[11px] text-gray-600 leading-relaxed line-clamp-2 mb-2.5" contenteditable="true">
-                  Warm afternoon light on cream-and-amber traditional Korean restaurant interior, soft texture of hanji paper wall, gentle shadow, calm composition, vintage analog photography feel, no text
+                  Warm interior photograph of a traditional Korean fine dining restaurant (한정식 식당). Aged hanok wooden beams overhead, soft hanji paper sliding doors, low Korean wooden table set with cream linen runner and an empty floor cushion seat. Late afternoon natural daylight streaming through the rice paper window. Calm, lived-in, intimate atmosphere. Cream, amber and deep wine red accents. Slight film grain. Empty space at bottom for text.
                 </div>
                 <div class="flex items-center gap-1">
-                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">재생성</button>
-                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">변형</button>
-                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">PNG</button>
+                  <button data-action="regenerate" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">재생성</button>
+                  <button data-action="variation" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">변형</button>
+                  <button data-action="download" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">PNG</button>
                 </div>
               </div>
             </article>
@@ -264,12 +350,12 @@
                   <span class="text-[10px] font-mono text-gray-400 tabular-nums">$0.04 · 3.6s</span>
                 </div>
                 <div class="text-[11px] text-gray-600 leading-relaxed line-clamp-2 mb-2.5" contenteditable="true">
-                  Soft natural daylight on a single ceramic bowl with fresh greens, top-down composition, cream linen background, minimalist food photography, restrained palette, no text
+                  Top-down editorial food photography of a 4-dish Korean lunch course (점심 코스). Four small Korean ceramic bowls neatly arranged on a cream linen runner: fresh spinach side dish (시금치무침), pan-fried baby butterbur fritter (두릅전), seasoned mountain greens (머위쌈), small ceramic bowl of stone-pot rice (솥밥). Soft natural daylight, restrained minimal palette of cream and earth tones, deep wine red napkin accent. Generous negative space around composition.
                 </div>
                 <div class="flex items-center gap-1">
-                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">재생성</button>
-                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">변형</button>
-                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">PNG</button>
+                  <button data-action="regenerate" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">재생성</button>
+                  <button data-action="variation" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">변형</button>
+                  <button data-action="download" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">PNG</button>
                 </div>
               </div>
             </article>
@@ -295,13 +381,13 @@
                   <span class="text-[10px] font-mono text-gray-400 tabular-nums">$0.04 · 4.5s</span>
                 </div>
                 <div class="text-[11px] text-gray-600 leading-relaxed line-clamp-2 mb-2.5" contenteditable="true">
-                  Multiple small ceramic dishes arranged on dark wood table, traditional Korean banquet vibe, warm tungsten light, deep brown and amber palette, slight bokeh, no text
+                  Wide-angle editorial food photo of a full traditional Korean fine-dining banquet (정식 6종 코스). Six to eight small ceramic dishes arranged on a warm wooden table with cream linen — assorted seasonal Korean spring vegetables (banchan), spinach soup, rice, grilled main, pickled radish. Soft warm natural daylight from the side, slight depth of field. Sophisticated, restrained, premium feel. Cream and amber palette with deep wine red accent.
                 </div>
                 <div class="rounded bg-amber-50 border border-amber-100 px-2 py-1.5 mb-2 text-[10px] text-amber-900">
                   <span class="font-medium">⚠ 검토 코멘트</span> · 김기획: 어두운 톤이 SNS 피드에서 묻힐 수 있어요. 한 번 더 변형 부탁
                 </div>
                 <div class="flex items-center gap-1">
-                  <button class="text-[10px] flex-1 px-2 py-1 rounded bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100">재생성</button>
+                  <button data-action="regenerate" class="text-[10px] flex-1 px-2 py-1 rounded bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100">재생성</button>
                   <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">변형</button>
                   <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">PNG</button>
                 </div>
@@ -332,18 +418,18 @@
                   <span class="text-[10px] font-mono text-gray-400 tabular-nums">$0.04 · 3.9s</span>
                 </div>
                 <div class="text-[11px] text-gray-600 leading-relaxed line-clamp-2 mb-2.5" contenteditable="true">
-                  Closing slide mood, dim warm restaurant entrance with soft glow, deep wine red and dark amber gradient, intimate atmosphere, slight vignette, leaves negative space for text overlay, no text
+                  Atmospheric photograph of a traditional Korean restaurant entrance at dusk. Warm amber glow from inside through hanji paper sliding doors. Stone path leading to entrance, small hanging Korean wooden lantern, intimate inviting feel. Deep wine red and dark amber palette, soft vignette. Empty negative space at bottom for CTA text. Cinematic, no people visible.
                 </div>
                 <div class="flex items-center gap-1">
-                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">재생성</button>
-                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">변형</button>
-                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">PNG</button>
+                  <button data-action="regenerate" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">재생성</button>
+                  <button data-action="variation" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">변형</button>
+                  <button data-action="download" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">PNG</button>
                 </div>
               </div>
             </article>
 
             <!-- Add slide -->
-            <button class="rounded-xl border border-dashed border-gray-300 hover:border-gray-400 hover:bg-white p-6 grid place-items-center text-gray-400 hover:text-gray-700 transition aspect-[4/5]">
+            <button data-action="add-slide" id="add-slide-btn" class="rounded-xl border border-dashed border-gray-300 hover:border-indigo-400 hover:bg-indigo-50/30 p-6 grid place-items-center text-gray-400 hover:text-indigo-700 transition aspect-[4/5]">
               <div class="text-center">
                 <svg class="h-8 w-8 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>
                 <div class="mt-2 text-xs font-medium">슬라이드 추가</div>
@@ -357,9 +443,10 @@
             <div class="flex items-start gap-3">
               <svg class="h-4 w-4 mt-0.5 text-gray-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
               <div class="text-gray-700 leading-relaxed">
-                <span class="font-medium text-gray-900">한글 텍스트는 이미지 위 캔버스로 오버레이됩니다.</span>
-                gpt-image-1은 한글 렌더링이 부정확해, AI는 배경 무드만 생성하고 한글(Pretendard / 나눔명조)과 로고는 프론트에서 합성합니다.
-                덕분에 슬라이드 텍스트를 수정해도 이미지는 그대로 — 같은 비용으로 카피를 무한 변경할 수 있습니다.
+                <span class="font-medium text-gray-900">텍스트는 슬라이드 위에서 직접 편집할 수 있습니다.</span>
+                슬라이드의 라벨 · 제목 · 서브카피를 클릭해서 바로 수정하세요. <kbd class="text-[10px] bg-gray-100 px-1 py-0.5 rounded border border-gray-300">Enter</kbd> = 줄바꿈, <kbd class="text-[10px] bg-gray-100 px-1 py-0.5 rounded border border-gray-300">Esc</kbd> = 편집 종료.
+                <br>
+                <span class="text-gray-500">한글은 이미지에 새기지 않고 Canvas 오버레이로 합성되므로, 텍스트를 바꿔도 같은 이미지에 그대로 얹힙니다 — 추가 생성 비용 없이 카피만 무한 변경 가능.</span>
               </div>
             </div>
           </div>
@@ -493,5 +580,581 @@
       </div>
     </main>
   </div>
+
+  <!-- Sticky API key banner (shown only when no key) -->
+  <div id="key-banner" class="hidden fixed top-0 inset-x-0 z-50 bg-rose-600 text-white text-sm font-medium">
+    <div class="px-8 py-3 flex items-center gap-3">
+      <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4M12 17h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <div class="flex-1">
+        <span class="font-semibold">OpenAI API 키 미설정</span>
+        <span class="opacity-90 ml-2 text-[13px]" id="key-banner-detail">.env 파일의 OPENAI_API_KEY 를 실제 키로 교체 후 서버를 재시작해주세요.</span>
+      </div>
+      <a href="https://platform.openai.com/api-keys" target="_blank" class="text-xs underline hover:no-underline whitespace-nowrap">키 발급 →</a>
+      <button onclick="this.closest('#key-banner').classList.add('hidden')" class="text-xs px-2 py-1 rounded bg-white/15 hover:bg-white/25 whitespace-nowrap">닫기</button>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toast-root" class="fixed bottom-6 right-6 z-50 space-y-2 pointer-events-none max-w-sm"></div>
+
+  <script>
+    // ============================================================
+    // 카드뉴스 이미지 생성 — 로컬 프로토타입
+    // ============================================================
+
+    // 이미지 소스 토글 (기본 Pexels 무료)
+    let IMAGE_SOURCE = 'pexels';   // 'pexels' | 'codex' | 'ai'
+
+    // 스타일 프리셋 (기본 정통 한정식)
+    let STYLE_PRESET = 'traditional';   // traditional | modern | moody | illustration
+
+    // 프리셋별 modifier — Pexels 검색어 / AI 프롬프트 스타일 suffix
+    const STYLE_MODIFIERS = {
+      traditional: {
+        pexels: 'traditional korean',
+        ai: 'editorial food photography style, warm natural tungsten light, traditional Korean wooden textures and hanji paper, restrained refined feel, cream and amber palette with deep wine red accent (#7B2D26), film photography aesthetic',
+      },
+      modern: {
+        pexels: 'modern minimalist',
+        ai: 'modern minimalist food photography, bright natural daylight, clean white linen surfaces, contemporary korean aesthetic, restrained palette, magazine cover style, sharp focus, generous negative space',
+      },
+      moody: {
+        pexels: 'moody dim cinematic',
+        ai: 'moody cinematic photography, low-key dramatic lighting, deep shadows, soft film grain, intimate atmosphere, deep wine red and dark amber palette, side rim light, restaurant ambiance',
+      },
+      illustration: {
+        pexels: 'illustration korean traditional',
+        ai: 'flat vector illustration style, minimal line art, Korean traditional patterns (jogakbo / dancheong inspired), restrained 4-color palette of cream amber and wine red, no photorealism, editorial illustration',
+      },
+    };
+
+    // 각 슬라이드별 시드 (변형 시 변경, AI 모드에서 사용)
+    const SEEDS = { 1: 'a7f3', 2: 'a7f3', 3: 'a7f3', 4: 'a7f3', 5: 'a7f3', 6: 'a7f3' };
+
+    // 슬라이드별 Pexels 검색어 (역할에 맞춘 keyword)
+    const PEXELS_QUERIES = {
+      1: 'korean food banquet table',
+      2: 'fresh green vegetables market hands',
+      3: 'traditional korean restaurant interior',
+      4: 'korean cuisine ceramic bowls',
+      5: 'korean banquet course meal',
+      6: 'korean restaurant lantern entrance',
+    };
+
+    // 슬라이드 변형 시 다른 사진 뽑기 위한 인덱스
+    const PEXELS_PICK = {};
+
+    // ----- 자동 wiring -----
+    document.querySelectorAll('[class*="slide-bg-"]').forEach((canvas, idx) => {
+      const article = canvas.closest('article');
+      if (!article) return;
+      const slideId = String(idx + 1);
+      article.dataset.slideId = slideId;
+
+      // 프롬프트 div 태깅 (bottom section 의 contenteditable)
+      const promptDiv = article.querySelector('.line-clamp-2[contenteditable]');
+      if (promptDiv) promptDiv.dataset.prompt = slideId;
+
+      // 우측 상단 status 배지
+      const statusBadge = canvas.querySelector('.absolute.top-2.right-2');
+      if (statusBadge) statusBadge.dataset.status = slideId;
+
+      // 로딩 pill 주입 (슬라이드별 1개)
+      if (!canvas.querySelector('.loading-pill')) {
+        const pill = document.createElement('div');
+        pill.className = 'loading-pill';
+        pill.textContent = '생성 중…';
+        canvas.appendChild(pill);
+      }
+
+      // 슬라이드 안 텍스트 편집 가능 처리
+      const slideText = canvas.querySelector('.slide-text');
+      if (slideText) {
+        slideText.querySelectorAll('div').forEach(div => {
+          // BR/SPAN/EM/STRONG 만 자식으로 가진 leaf 텍스트 div 만 편집 대상
+          const isLeafText = Array.from(div.children).every(c =>
+            ['BR', 'SPAN', 'EM', 'STRONG', 'B', 'I'].includes(c.tagName)
+          );
+          if (isLeafText && div.textContent.trim().length > 0) {
+            div.setAttribute('contenteditable', 'true');
+            div.setAttribute('spellcheck', 'false');
+            div.setAttribute('title', '클릭하여 편집');
+          }
+        });
+      }
+    });
+
+    // Enter 키로 줄바꿈 (편집 중 div 안에서)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        const editable = document.activeElement;
+        if (editable && editable.closest('.slide-text') && editable.getAttribute('contenteditable') === 'true') {
+          // <br> 를 삽입하고 줄바꿈 효과
+          e.preventDefault();
+          document.execCommand('insertLineBreak');
+        }
+      }
+      // Esc 로 편집 빠져나오기
+      if (e.key === 'Escape') {
+        const editable = document.activeElement;
+        if (editable && editable.getAttribute('contenteditable') === 'true') {
+          editable.blur();
+        }
+      }
+    });
+
+    // ----- 토스트 (에러는 사용자가 닫을 때까지 sticky) -----
+    function toast(message, kind = 'info', opts = {}) {
+      const root = document.getElementById('toast-root');
+      const el = document.createElement('div');
+      const colors = {
+        success: 'bg-emerald-600 text-white',
+        error:   'bg-rose-600 text-white',
+        info:    'bg-gray-900 text-white',
+      };
+      el.className = `pointer-events-auto rounded-lg shadow-xl px-4 py-3 text-xs font-medium ${colors[kind] || colors.info} flex items-start gap-2`;
+      el.innerHTML = `
+        <span class="flex-1 leading-relaxed whitespace-pre-wrap">${message.replace(/</g, '&lt;')}</span>
+        <button class="opacity-70 hover:opacity-100 -mr-1 -mt-0.5 text-base leading-none">×</button>
+      `;
+      el.querySelector('button').addEventListener('click', () => el.remove());
+      root.appendChild(el);
+      const ttl = opts.persistent || kind === 'error' ? 0 : 3000;
+      if (ttl) {
+        setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .25s'; }, ttl);
+        setTimeout(() => el.remove(), ttl + 300);
+      }
+    }
+
+    // ----- 상태 배지 갱신 -----
+    function setStatus(slideId, state /* 'idle' | 'loading' | 'done' | 'error' */, text) {
+      const badge = document.querySelector(`[data-status="${slideId}"]`);
+      if (!badge) return;
+      const map = {
+        idle:    'bg-gray-500/70 text-white',
+        loading: 'bg-amber-500/85 text-white',
+        done:    'bg-emerald-500/80 text-white',
+        error:   'bg-rose-500/85 text-white',
+      };
+      badge.className = `absolute top-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-medium backdrop-blur ${map[state]}`;
+      badge.textContent = text || ({ idle: '대기', loading: '생성 중…', done: '생성 완료', error: '실패' })[state];
+    }
+
+    // ----- 슬라이드 이미지 적용 (소스 무관 공통 로직) -----
+    function applySlideImage(article, canvas, slideId, imageUrl, meta) {
+      let bgImg = canvas.querySelector('img.bg-img');
+      if (!bgImg) {
+        bgImg = document.createElement('img');
+        bgImg.className = 'bg-img';
+        bgImg.alt = `slide ${slideId} background`;
+        bgImg.crossOrigin = 'anonymous';
+        canvas.insertBefore(bgImg, canvas.firstChild);
+      }
+      bgImg.src = imageUrl;
+
+      canvas.dataset.hasImage = 'true';
+      canvas.dataset.imageUrl = imageUrl;
+      delete canvas.dataset.loading;
+
+      // 원본 보기 링크 + Pexels 크레딧
+      const promptRow = article.querySelector('[data-prompt]')?.parentElement;
+      if (!promptRow) return;
+
+      let credit = article.querySelector('[data-credit]');
+      if (!credit) {
+        credit = document.createElement('div');
+        credit.dataset.credit = '';
+        credit.className = 'flex items-center justify-between mt-1 mb-2 text-[10px]';
+        promptRow.appendChild(credit);
+      }
+
+      if (meta?.source === 'pexels') {
+        credit.innerHTML = `
+          <a href="${meta.pexelsUrl}" target="_blank" class="text-gray-500 hover:text-gray-900 truncate">📷 ${meta.photographer || 'Unknown'} <span class="opacity-60">/ Pexels</span></a>
+          <a href="${imageUrl}" target="_blank" class="shrink-0 text-indigo-600 hover:text-indigo-700 ml-2">↗ 원본</a>
+        `;
+      } else {
+        credit.innerHTML = `
+          <span class="text-gray-500 truncate">🤖 gpt-image-1</span>
+          <a href="${imageUrl}" target="_blank" class="shrink-0 text-indigo-600 hover:text-indigo-700 ml-2">↗ 원본</a>
+        `;
+      }
+    }
+
+    // ----- 슬라이드 1개 생성 (소스에 따라 분기) -----
+    async function generateSlide(slideId, opts = {}) {
+      const article = document.querySelector(`[data-slide-id="${slideId}"]`);
+      if (!article) return;
+      const canvas = article.querySelector('[class*="slide-bg-"]');
+
+      canvas.dataset.loading = 'true';
+      setStatus(slideId, 'loading');
+
+      try {
+        const t0 = performance.now();
+
+        if (IMAGE_SOURCE === 'pexels') {
+          // ===== Pexels 검색 =====
+          const baseQuery = PEXELS_QUERIES[slideId] || `korean food slide ${slideId}`;
+          const styleHint = STYLE_MODIFIERS[STYLE_PRESET]?.pexels || '';
+          const query = styleHint ? `${baseQuery} ${styleHint}` : baseQuery;
+          const pickIndex = opts.newSeed ? -1 : (PEXELS_PICK[slideId] ?? -1);
+          const r = await fetch('/api/search-pexels', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query, orientation: 'portrait', pickIndex }),
+          });
+          const data = await r.json();
+          if (!data.ok) throw new Error(data.error || `HTTP ${r.status}`);
+
+          PEXELS_PICK[slideId] = data.meta?.pickedIndex ?? -1;
+          console.log(`[slide ${slideId}] Pexels OK · "${query}" · pick ${data.meta?.pickedIndex}/${data.meta?.totalReturned} · by ${data.meta?.photographer}`);
+
+          applySlideImage(article, canvas, slideId, data.image, data.meta);
+          const t1 = performance.now();
+          setStatus(slideId, 'done', `Pexels ${((t1 - t0) / 1000).toFixed(1)}s`);
+          toast(`슬라이드 ${slideId} · 무료 ₩0 · 📷 ${data.meta?.photographer}`, 'success');
+
+        } else if (IMAGE_SOURCE === 'codex') {
+          // ===== Codex 구독 (gpt-image-2 via god-tibo-imagen) =====
+          const promptEl = article.querySelector(`[data-prompt="${slideId}"]`);
+          const basePrompt = (promptEl?.innerText || '').trim();
+          if (!basePrompt || basePrompt.length < 5) throw new Error('프롬프트가 비어 있습니다');
+          const styleSuffix = STYLE_MODIFIERS[STYLE_PRESET]?.ai || '';
+          const prompt = styleSuffix ? `${basePrompt}. Style: ${styleSuffix}` : basePrompt;
+
+          const r = await fetch('/api/generate-image-codex', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt, size: '1024x1536', provider: 'auto' }),
+          });
+          const data = await r.json();
+          if (!data.ok) throw new Error(data.error || `HTTP ${r.status}`);
+          if (!data.image) throw new Error('Codex 응답에 이미지 경로가 없습니다');
+
+          console.log(`[slide ${slideId}] Codex OK · ${data.meta?.fileSizeKb}KB · ${data.meta?.latencyMs}ms · provider ${data.meta?.provider}`);
+          applySlideImage(article, canvas, slideId, data.image, { ...data.meta, source: 'codex' });
+          const t1 = performance.now();
+          setStatus(slideId, 'done', `Codex ${((t1 - t0) / 1000).toFixed(1)}s`);
+          toast(`슬라이드 ${slideId} · 구독 ₩0 · ${data.meta?.fileSizeKb}KB`, 'success');
+
+        } else {
+          // ===== AI 생성 (gpt-image-1 — OpenAI API 직결) =====
+          const promptEl = article.querySelector(`[data-prompt="${slideId}"]`);
+          const basePrompt = (promptEl?.innerText || '').trim();
+          if (!basePrompt || basePrompt.length < 5) throw new Error('프롬프트가 비어 있습니다');
+
+          const styleSuffix = STYLE_MODIFIERS[STYLE_PRESET]?.ai || '';
+          const stylePrompt = styleSuffix ? `${basePrompt}. Style: ${styleSuffix}` : basePrompt;
+
+          const seed = opts.newSeed ? Math.random().toString(36).slice(2, 6) : SEEDS[slideId];
+          if (opts.newSeed) SEEDS[slideId] = seed;
+          const fullPrompt = `${stylePrompt} [seed:${seed}]`;
+
+          const r = await fetch('/api/generate-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: fullPrompt, size: '1024x1536', quality: 'medium' }),
+          });
+          const data = await r.json();
+          if (!data.ok) throw new Error(data.error || `HTTP ${r.status}`);
+          if (!data.image || !data.image.startsWith('data:image/')) {
+            throw new Error('서버 응답에 유효한 이미지 데이터가 없습니다');
+          }
+          console.log(`[slide ${slideId}] AI OK · ${(data.image.length / 1024).toFixed(0)}KB · ${data.meta?.latencyMs}ms`);
+
+          applySlideImage(article, canvas, slideId, data.image, { ...data.meta, source: 'ai' });
+          const t1 = performance.now();
+          setStatus(slideId, 'done', `API ${((t1 - t0) / 1000).toFixed(1)}s`);
+          toast(`슬라이드 ${slideId} · ₩${data.meta?.costKrw ?? '?'}`, 'success');
+        }
+      } catch (err) {
+        console.error('[generateSlide]', slideId, err);
+        delete canvas.dataset.loading;
+        setStatus(slideId, 'error', '실패 ↻');
+        toast(`슬라이드 ${slideId} 실패: ${err.message}`, 'error');
+      }
+    }
+
+    // ----- 전체 생성 -----
+    async function generateAll() {
+      const ids = ['1', '2', '3', '4', '5', '6'];
+      for (const id of ids) {
+        await generateSlide(id);
+      }
+    }
+
+    // ----- PNG 다운로드 -----
+    async function downloadSlide(slideId) {
+      const article = document.querySelector(`[data-slide-id="${slideId}"]`);
+      if (!article) return;
+      const canvas = article.querySelector('[class*="slide-bg-"]');
+      const imageUrl = canvas.dataset.imageUrl;
+      if (!imageUrl) {
+        toast(`슬라이드 ${slideId}: 먼저 이미지를 생성해주세요`, 'error');
+        return;
+      }
+      // 텍스트 오버레이를 합성한 최종 PNG 만들기 (Canvas)
+      const slideText = article.querySelector('.slide-text');
+      const W = 1080, H = 1350;
+      const off = document.createElement('canvas');
+      off.width = W; off.height = H;
+      const ctx = off.getContext('2d');
+
+      // 배경 그리기
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = imageUrl; });
+      // cover 효과
+      const ratio = Math.max(W / img.width, H / img.height);
+      const dw = img.width * ratio, dh = img.height * ratio;
+      ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+
+      // 어둠 그라데이션
+      const grad = ctx.createLinearGradient(0, H * 0.3, 0, H);
+      grad.addColorStop(0, 'rgba(0,0,0,0)');
+      grad.addColorStop(1, 'rgba(0,0,0,0.55)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+
+      // 텍스트는 html2canvas 없이 정확히 합성하기는 어려우므로,
+      // 슬라이드 캡처는 단순히 배경 + 작은 워터마크만 (프로토타입)
+      ctx.fillStyle = 'rgba(255,255,255,0.6)';
+      ctx.font = '20px "Pretendard Variable", sans-serif';
+      ctx.fillText('AdOps AI · 미옥당 본점', 60, H - 60);
+
+      const link = document.createElement('a');
+      link.download = `slide-${String(slideId).padStart(2, '0')}.png`;
+      link.href = off.toDataURL('image/png');
+      link.click();
+    }
+
+    // ----- AI 텍스트 6장 일괄 생성 -----
+    async function generateAllText() {
+      const btn = document.querySelector('[data-action="generate-text"]');
+      const label = btn?.querySelector('[data-text-btn-label]');
+      const origLabel = label?.textContent;
+      if (btn) btn.disabled = true;
+      if (label) label.textContent = '생성 중…';
+
+      toast('GPT-4o 가 6장 카드뉴스 텍스트를 생성합니다 (약 8~15초)', 'info');
+
+      try {
+        const res = await fetch('/api/generate-text', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),  // 기본값 (미옥당 + 5월 봄나물 코스) 사용
+        });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+        const slides = data.slides || [];
+        let applied = 0;
+        slides.slice(0, 6).forEach((slide, idx) => {
+          if (applySlideText(String(idx + 1), slide)) applied++;
+        });
+
+        // 가드레일 검사
+        const flagged = data.flagged || [];
+        if (flagged.length) {
+          flagged.forEach(f => toast(`⚠ 슬라이드 ${f.slide}: 금지어 "${f.word}" 감지됨 — 검토 필요`, 'error'));
+        }
+
+        const cost = data.meta?.costKrw ?? '?';
+        const tokens = `in ${data.meta?.usage?.prompt_tokens ?? '?'} · out ${data.meta?.usage?.completion_tokens ?? '?'}`;
+        toast(`${applied}장 텍스트 적용 완료 · ₩${cost} (${tokens})`, 'success');
+
+        if (label && origLabel) label.textContent = 'AI 텍스트 재생성';
+      } catch (err) {
+        console.error('[generateAllText]', err);
+        toast('텍스트 생성 실패: ' + err.message, 'error');
+        if (label && origLabel) label.textContent = origLabel;
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    // 한 슬라이드에 텍스트 적용
+    function applySlideText(slideId, slide) {
+      const article = document.querySelector(`[data-slide-id="${slideId}"]`);
+      if (!article) return false;
+      const slideText = article.querySelector('.slide-text');
+      if (!slideText) return false;
+
+      const editables = Array.from(slideText.querySelectorAll('[contenteditable="true"]'));
+      if (editables.length < 2) return false;
+
+      const fmt = (s) => String(s || '').replace(/\\n/g, '\n').replace(/\n/g, '<br>');
+
+      // 순서: label / title / sub (페이지 DOM 구조 기준)
+      if (slide.label) editables[0].innerHTML = fmt(slide.label);
+      if (slide.title && editables[1]) editables[1].innerHTML = fmt(slide.title);
+      if (slide.sub && editables[2]) editables[2].innerHTML = fmt(slide.sub);
+
+      // 시각 강조 (잠시)
+      [editables[0], editables[1], editables[2]].filter(Boolean).forEach(el => {
+        el.style.transition = 'background 0.6s';
+        el.style.background = 'rgba(99, 102, 241, 0.25)';
+        setTimeout(() => { el.style.background = ''; }, 700);
+      });
+      return true;
+    }
+
+    // ----- 슬라이드 추가 / 삭제 -----
+    let nextSlideId = 7;  // 기본 6장 다음부터
+
+    function addSlide() {
+      const id = String(nextSlideId);
+      const idPad = String(nextSlideId).padStart(2, '0');
+      const bgIdx = ((nextSlideId - 1) % 6) + 1;  // gradient 6개 순환
+
+      const article = document.createElement('article');
+      article.dataset.slideId = id;
+      article.className = 'rounded-xl border border-gray-200 bg-white overflow-hidden hover:shadow-md transition group';
+      article.innerHTML = `
+        <div class="slide-canvas slide-bg-${bgIdx}">
+          <div class="slide-text text-white">
+            <div contenteditable="true" spellcheck="false" title="클릭하여 편집" class="text-[10px] uppercase tracking-[0.3em] opacity-80 font-semibold">${idPad} · 새 슬라이드</div>
+            <div class="mt-auto">
+              <div contenteditable="true" spellcheck="false" title="클릭하여 편집" class="text-2xl myeongjo font-bold leading-tight">제목을<br>입력하세요</div>
+              <div contenteditable="true" spellcheck="false" title="클릭하여 편집" class="mt-3 text-[11px] opacity-80">서브 카피</div>
+            </div>
+          </div>
+          <div class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/40 text-white text-[10px] font-mono backdrop-blur">${idPad}</div>
+          <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-gray-500/70 text-white text-[10px] font-medium backdrop-blur" data-status="${id}">대기</div>
+          <div class="loading-pill">생성 중…</div>
+        </div>
+        <div class="px-3.5 py-3 border-t border-gray-100">
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">새 슬라이드</div>
+            <button data-action="remove-slide" class="text-[10px] text-rose-500 hover:text-rose-700 inline-flex items-center gap-0.5">
+              <svg class="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg> 삭제
+            </button>
+          </div>
+          <div data-prompt="${id}" class="text-[11px] text-gray-600 leading-relaxed line-clamp-2 mb-2.5" contenteditable="true" spellcheck="false">Editorial food photography, soft natural daylight, korean traditional aesthetic, cream and amber palette with deep wine red accent, restrained refined feel, generous negative space.</div>
+          <div class="flex items-center gap-1">
+            <button data-action="regenerate" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">재생성</button>
+            <button data-action="variation" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">변형</button>
+            <button data-action="download" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">PNG</button>
+          </div>
+        </div>
+      `;
+
+      // "슬라이드 추가" 버튼 앞에 삽입
+      const addBtn = document.getElementById('add-slide-btn');
+      addBtn.parentElement.insertBefore(article, addBtn);
+
+      // 상태 등록
+      PEXELS_QUERIES[id] = 'korean food restaurant traditional';
+      SEEDS[id] = 'a7f3';
+
+      // 부드럽게 스크롤 + 제목 자동 포커스
+      article.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => {
+        const title = article.querySelector('.myeongjo');
+        if (title) {
+          title.focus();
+          const range = document.createRange();
+          range.selectNodeContents(title);
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+      }, 350);
+
+      toast(`슬라이드 ${id} 추가됨 — 텍스트와 프롬프트 편집 후 재생성`, 'success');
+      nextSlideId++;
+    }
+
+    function removeSlide(slideId) {
+      const article = document.querySelector(`[data-slide-id="${slideId}"]`);
+      if (!article) return;
+      // 짧은 페이드아웃
+      article.style.transition = 'opacity .25s, transform .25s';
+      article.style.opacity = '0';
+      article.style.transform = 'scale(0.95)';
+      setTimeout(() => {
+        article.remove();
+        delete PEXELS_QUERIES[slideId];
+        delete SEEDS[slideId];
+        delete PEXELS_PICK[slideId];
+      }, 260);
+      toast(`슬라이드 ${slideId} 삭제됨`, 'info');
+    }
+
+    // ----- 이벤트 위임 -----
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const action = btn.dataset.action;
+      const article = btn.closest('[data-slide-id]');
+      const slideId = article?.dataset.slideId;
+
+      if (action === 'regenerate' && slideId) generateSlide(slideId);
+      else if (action === 'variation' && slideId) generateSlide(slideId, { newSeed: true });
+      else if (action === 'download' && slideId) downloadSlide(slideId);
+      else if (action === 'generate-text') generateAllText();
+      else if (action === 'add-slide') addSlide();
+      else if (action === 'remove-slide' && slideId) removeSlide(slideId);
+    });
+
+    // ----- 스타일 프리셋 토글 -----
+    document.getElementById('preset-toggle')?.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-preset]');
+      if (!btn) return;
+      STYLE_PRESET = btn.dataset.preset;
+      document.querySelectorAll('#preset-toggle .preset-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const labels = {
+        traditional: '정통 한정식 — 한지/한옥 텍스처, 와인 레드 액센트',
+        modern: '모던 한식 — 밝은 자연광, 미니멀, 매거진 스타일',
+        moody: '감성 사진 — 저조도 시네마틱, 깊은 그림자, 필름 그레인',
+        illustration: '일러스트 — 플랫 벡터, 한국 전통 패턴, 4색 팔레트',
+      };
+      toast(`스타일 변경: ${labels[STYLE_PRESET] || STYLE_PRESET} · 다음 재생성부터 적용`, 'info');
+    });
+
+    // ----- 이미지 소스 토글 -----
+    document.getElementById('source-toggle')?.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-source]');
+      if (!btn) return;
+      IMAGE_SOURCE = btn.dataset.source;
+      document.querySelectorAll('#source-toggle .src-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const messages = {
+        pexels: 'Pexels 무료 모드 — 검색 기반 (₩0)',
+        codex:  'Codex 구독 모드 — gpt-image-2 (구독료 포함, 호출당 ₩0)',
+        ai:     'OpenAI API 모드 — gpt-image-1, 장당 $0.04',
+      };
+      toast(messages[IMAGE_SOURCE] || `소스 변경: ${IMAGE_SOURCE}`, 'info');
+    });
+
+    // ----- 상단 "전체 재생성" 버튼 -----
+    // (button text 로 매칭)
+    document.querySelectorAll('button').forEach(b => {
+      const txt = (b.textContent || '').trim();
+      if (txt === '전체 재생성') b.addEventListener('click', generateAll);
+      if (txt.startsWith('ZIP 일괄 다운로드')) {
+        b.addEventListener('click', async () => {
+          for (let i = 1; i <= 6; i++) await downloadSlide(String(i));
+        });
+      }
+    });
+
+    // ----- 키 미설정 사전 점검 (page load 시 health 호출 — 비용 X) -----
+    (async () => {
+      try {
+        const r = await fetch('/api/health');
+        const d = await r.json();
+        if (!d.ok) {
+          const banner = document.getElementById('key-banner');
+          banner.classList.remove('hidden');
+          document.getElementById('key-banner-detail').textContent = d.error || '키 누락';
+          // body padding-top 추가해 sticky 배너에 가리지 않게
+          document.body.style.paddingTop = '52px';
+        }
+      } catch (e) { /* 서버 없음 — 무시 */ }
+    })();
+  </script>
 </body>
 </html>
