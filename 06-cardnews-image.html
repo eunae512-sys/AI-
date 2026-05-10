@@ -174,9 +174,17 @@
               <span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-100"><span class="h-1 w-1 rounded-full bg-amber-500"></span>검토 중</span>
               <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">카드뉴스 · 6 슬라이드</span>
               <span class="text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-100">gpt-image-1 · medium</span>
-              <span class="text-[10px] text-gray-400">미옥당 본점 · 톤 v3</span>
+              <!-- 브랜드 / 캠페인 picker -->
+              <div class="relative" id="cnBrandPickerWrap">
+                <button id="cnBrandPickerBtn" type="button" class="inline-flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded border border-gray-200 hover:bg-gray-50 transition">
+                  <span id="cnBrandLetter" class="h-3.5 w-3.5 rounded bg-gradient-to-br from-rose-400 to-orange-400 grid place-items-center text-white text-[9px] font-bold">미</span>
+                  <span id="cnBrandLabel">미옥당 본점 · 톤 v3</span>
+                  <svg class="h-2.5 w-2.5 text-gray-400" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4.5l3 3 3-3"/></svg>
+                </button>
+                <div id="cnBrandPickerMenu" class="hidden absolute z-30 mt-1 left-0 w-72 rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden"></div>
+              </div>
             </div>
-            <h1 class="mt-2 text-xl font-semibold tracking-tight">카드뉴스 이미지 — 5월 봄나물 코스</h1>
+            <h1 class="mt-2 text-xl font-semibold tracking-tight" id="cnPageTitle">카드뉴스 이미지 — 5월 봄나물 코스</h1>
             <div class="mt-2 flex items-center gap-4 text-[11px] text-gray-500 flex-wrap">
               <span>박운영 생성 · 4분 전</span>
               <span class="inline-flex items-center gap-1.5">
@@ -644,6 +652,246 @@
 
     // 스타일 프리셋 (기본 정통 한정식)
     let STYLE_PRESET = 'traditional';   // traditional | modern | moody | illustration
+
+    // ============================================================
+    // 카드뉴스 — 브랜드별 캠페인 데이터
+    // ============================================================
+    const CN_BRANDS = {
+      'miokdang': {
+        name: '미옥당 본점', letter: '미', gradient: 'from-rose-400 to-orange-400',
+        toneVersion: 'v3', industry: '한정식',
+        campaign: '5월 봄나물 코스',
+        slides: [
+          { label: '미옥당 · 5월 한정', title: '5월의 봄나물,\n한 상에 모았습니다.', sub: '평일 점심 한정 코스 · 종로 수송동',
+            prompt: 'Hero food photography of a traditional Korean spring vegetable banquet (한정식). Multiple small ceramic bowls of seasonal Korean spring greens — fresh spinach, baby gosari, butterbur leaves — arranged on a warm wooden table. Soft natural daylight from the side. Cream and amber tones with deep wine red (#7B2D26) napkin accent. Editorial food magazine style.' },
+          { label: '02 · 새벽', title: '새벽 4시,\n시장에서\n골라 온.', sub: '시금치 · 두릅 · 머위',
+            prompt: 'Pre-dawn moody photo of weathered hands of an aged Korean chef carefully selecting fresh spring spinach (시금치) bunches at a Korean wholesale produce market. Dim amber tungsten lighting, blurred wooden crates of green vegetables in background. Cinematic dark palette with warm amber highlights.' },
+          { label: '03 · 자리', title: '30년,\n한자리에서\n차린 한 상.', sub: '종로 수송동 골목 안쪽',
+            prompt: 'Warm interior photograph of a traditional Korean fine dining restaurant (한정식 식당). Aged hanok wooden beams overhead, soft hanji paper sliding doors, low Korean wooden table set with cream linen runner. Late afternoon natural daylight. Calm, intimate atmosphere.' },
+          { label: '04 · MENU 1', title: '봄나물 점심 코스\n4종 구성', sub: '시금치무침 · 두릅전\n머위쌈 · 솥밥 정식',
+            prompt: 'Top-down editorial food photography of a 4-dish Korean lunch course (점심 코스). Four small Korean ceramic bowls neatly arranged on a cream linen runner: fresh spinach side dish, pan-fried baby butterbur fritter, seasoned mountain greens, small ceramic bowl of stone-pot rice.' },
+          { label: '05 · MENU 2', title: '봄나물 정식 코스\n6종 정찬', sub: '거래처 · 가족 모임에\n맞춘 정찬 구성',
+            prompt: 'Wide-angle editorial food photo of a full traditional Korean fine-dining banquet (정식 6종 코스). Six to eight small ceramic dishes arranged on a warm wooden table with cream linen, assorted seasonal Korean spring vegetables. Sophisticated, restrained, premium feel.' },
+          { label: '06 · 예약', title: '평일 점심,\n조용히 모십니다.', sub: '광화문역 7번 출구 · 도보 6분\n네이버 플레이스 → 예약하기',
+            prompt: 'Atmospheric photograph of a traditional Korean restaurant entrance at dusk. Warm amber glow from inside through hanji paper sliding doors. Stone path leading to entrance, small hanging Korean wooden lantern. Cinematic.' },
+        ],
+        pexels: {
+          1: 'korean food banquet table',
+          2: 'fresh green vegetables market hands',
+          3: 'traditional korean restaurant interior',
+          4: 'korean cuisine ceramic bowls',
+          5: 'korean banquet course meal',
+          6: 'korean restaurant lantern entrance',
+        },
+      },
+      'luna-hair': {
+        name: '루나 헤어 강남점', letter: '루', gradient: 'from-violet-400 to-fuchsia-500',
+        toneVersion: 'v5', industry: '미용 · 헤어살롱',
+        campaign: '5월 모카브라운 컬러',
+        slides: [
+          { label: '루나 헤어 · 5월', title: '차분한 모카브라운,\n결을 살리는 한 톤.', sub: '컬러 + 영양 케어 패키지 · 강남역',
+            prompt: 'Editorial fashion photo of a young Korean woman with sleek mocha brown hair, soft natural light from a window, subtle shine catching her hair, modern minimal salon background. Cream and warm taupe palette with subtle violet accent.' },
+          { label: '02 · 톤', title: '오늘 들어온 톤', sub: '가장 자연스러운 광택',
+            prompt: 'Close-up shot of hair color sample swatches arranged on a white marble surface, sleek mocha brown shades highlighted, soft daylight. Minimalist editorial style.' },
+          { label: '03 · 룩', title: '사무실 · 캐주얼\n모두 잘 어울리는\n데일리 컬러', sub: '',
+            prompt: 'Modern Korean woman in office attire with mocha brown hair, smiling subtly, natural side light, urban Seoul background blurred. Sophisticated daily look.' },
+          { label: '04 · 케어', title: '컬러 + 영양 케어\n패키지', sub: '5월 한정',
+            prompt: 'Hair salon close-up of a luxurious nourishing hair treatment being applied, glossy product on hair strands, warm professional lighting, hands of a stylist visible.' },
+          { label: '05 · 디자이너', title: '디자이너별\n결 분석 후 추천', sub: '1:1 상담 가능',
+            prompt: 'Korean professional hair designer in modern minimalist salon, holding hair color chart, focused expression, soft natural daylight, contemporary salon decor.' },
+          { label: '06 · 예약', title: '강남역 11번 출구\n도보 5분', sub: '카카오톡 채널 → 예약하기',
+            prompt: 'Modern minimalist Korean hair salon storefront at golden hour, soft warm light spilling from inside, polished glass facade, sleek branding.' },
+        ],
+        pexels: {
+          1: 'woman mocha brown hair',
+          2: 'hair color swatches palette',
+          3: 'korean office woman portrait',
+          4: 'hair treatment shampoo close up',
+          5: 'hair stylist salon',
+          6: 'modern hair salon entrance',
+        },
+      },
+      'cheongdam-medical': {
+        name: '청담 메디컬 의원', letter: '청', gradient: 'from-sky-400 to-blue-600',
+        toneVersion: 'v2', industry: '의료 · 피부과',
+        campaign: '5월 봄 진단 안내',
+        slides: [
+          { label: '청담 메디컬', title: '시술 전 알아두면\n좋은 5가지', sub: '환절기 봄 진단 안내',
+            prompt: 'Calm modern Korean dermatology clinic interior, clean minimalist design, soft natural lighting, blue and white palette, no people. Sophisticated medical setting.' },
+          { label: '01 · 사전 상담', title: '의료진이 직접\n피부 상태를\n확인합니다.', sub: '',
+            prompt: 'Korean dermatologist in white coat consulting with adult patient in modern clinic, side view, calm professional atmosphere, soft daylight.' },
+          { label: '02 · 개인차', title: '시술 결과는\n개인의 피부 상태에 따라\n달라질 수 있습니다.', sub: '',
+            prompt: 'Calm modern medical examination room with skin analysis equipment, warm natural daylight, no people, sophisticated medical aesthetic, blue accents.' },
+          { label: '03 · 사전 준비', title: '시술 전\n지켜야 하는\n안내가 있습니다.', sub: '',
+            prompt: 'Top-down view of medical clipboard with patient consent form, fresh skincare products neatly arranged, clean white background, professional medical aesthetic.' },
+          { label: '04 · 회복 기간', title: '회복 기간 중\n케어 안내를\n따로 드립니다.', sub: '',
+            prompt: 'Premium Korean skincare products neatly arranged on clean white marble surface, soft natural daylight, sophisticated minimal aesthetic, ampoule and cream.' },
+          { label: '05 · 상담 예약', title: '사전 진료 후\n자세한 안내', sub: '청담동 · 압구정로데오역\n도보 8분',
+            prompt: 'Modern Korean medical clinic exterior at dusk, sleek glass facade, subtle blue lighting, professional sophisticated architecture, urban Seoul setting.' },
+        ],
+        pexels: {
+          1: 'modern medical clinic interior',
+          2: 'doctor patient consultation',
+          3: 'medical examination room clean',
+          4: 'medical clipboard checklist',
+          5: 'skincare products white surface',
+          6: 'modern clinic building exterior',
+        },
+      },
+      'best-eng': {
+        name: '베스트 영어학원', letter: '베', gradient: 'from-emerald-400 to-teal-500',
+        toneVersion: 'v4', industry: '교육 · 학원',
+        campaign: '5월 신학기 학습 가이드',
+        slides: [
+          { label: '베스트 영어', title: '학부모님이 알면 좋은\n단계별 학습 가이드', sub: '5월 신학기 안내',
+            prompt: 'Cozy editorial photo of a tidy student desk with English textbooks, dictionary, neat notebook, warm afternoon light, educational atmosphere. No people.' },
+          { label: '01 · 진단', title: '레벨 테스트로\n시작', sub: '학생별 1:1',
+            prompt: 'Korean middle school classroom interior with empty desks, clean blackboard, English alphabet poster, warm natural daylight, calm educational atmosphere.' },
+          { label: '02 · 단어', title: '매일 30개\n한 달 누적', sub: '',
+            prompt: 'Top-down editorial photo of a student vocabulary notebook, neat handwriting practice, English flash cards spread out, warm wooden desk surface.' },
+          { label: '03 · 독해', title: '짧은 글부터\n천천히', sub: '',
+            prompt: 'Cozy reading nook with English childrens books open on a table, soft warm light, library bookshelf in background, focused reading atmosphere.' },
+          { label: '04 · 점검', title: '2주마다\n단어 시험', sub: '',
+            prompt: 'Top-down view of a fresh English vocabulary test paper with pencil, eraser, gentle natural light, warm beige paper tones, neat student desk.' },
+          { label: '05 · 시작', title: '망원역\n도보 4분', sub: '1:1 학습 진단 후 반 배정',
+            prompt: 'Modern Korean academy entrance with welcoming signage, clean storefront, evening warm interior light visible, urban Mapo neighborhood vibe.' },
+        ],
+        pexels: {
+          1: 'english textbook study desk',
+          2: 'classroom english alphabet',
+          3: 'vocabulary notebook handwriting',
+          4: 'reading english books',
+          5: 'student exam test paper',
+          6: 'academy storefront entrance',
+        },
+      },
+      'forum-fashion': {
+        name: 'FORUM 패션', letter: 'F', gradient: 'from-slate-700 to-zinc-900',
+        toneVersion: 'v6', industry: '쇼핑몰 · 컨템포러리',
+        campaign: '회차 #18 핏 가이드',
+        slides: [
+          { label: 'FORUM · 회차 #18', title: '도시의 무채색 위에\n한 톤의 따뜻함.', sub: '#18 핏 가이드',
+            prompt: 'Editorial fashion lookbook photography, minimalist composition, model wearing tonal beige and slate outfit, urban Seoul background blurred, soft natural light. Stone, zinc, and warm taupe palette.' },
+          { label: '01 · 핏', title: '정제된\n일자 라인', sub: '',
+            prompt: 'Editorial fashion close-up of clean tailored cotton shirt and straight-leg trousers, side profile, soft daylight, minimal background, premium texture detail.' },
+          { label: '02 · 컬러', title: '무채색 +\n카멜 액센트', sub: '',
+            prompt: 'Editorial flat lay of fashion color palette, neutrals with one warm camel accent, fabric swatches, minimal composition, soft daylight, sophisticated aesthetic.' },
+          { label: '03 · 셋업', title: '셔츠 + 데님\n+ 머플러', sub: '',
+            prompt: 'Top-down flat lay of a complete daily fashion setup — neutral cotton shirt, dark denim trousers, camel scarf, leather bag, minimal urban editorial style.' },
+          { label: '04 · 사이즈', title: '프리 · S · M · L', sub: '핏 가이드 · 디테일 컷',
+            prompt: 'Editorial close-up of fashion garment hanging on a sleek brushed steel rack, minimal showroom interior, soft directional light, sophisticated aesthetic.' },
+          { label: '05 · 입고', title: '#18 · 1차 D-1', sub: '자체몰 / 스마트스토어',
+            prompt: 'Modern minimalist fashion store storefront window display at evening, sleek mannequin, warm interior glow, urban contemporary architecture.' },
+        ],
+        pexels: {
+          1: 'fashion editorial minimal',
+          2: 'tailored shirt trousers detail',
+          3: 'fabric swatch palette',
+          4: 'fashion flatlay accessories',
+          5: 'minimalist clothing rack',
+          6: 'fashion store window display',
+        },
+      },
+      'roastery-1985': {
+        name: '로스터리 1985', letter: 'R', gradient: 'from-amber-700 to-stone-800',
+        toneVersion: 'v1', industry: '카페 · 스페셜티',
+        campaign: '5/18 오픈 인사',
+        slides: [
+          { label: '로스터리 1985', title: '오늘 한 잔,\n오늘의 산미.', sub: '5/18 오픈 · 연남동',
+            prompt: 'Cozy specialty coffee roastery interior at golden hour, warm amber lighting, vintage espresso machine on wooden bar counter, brick wall background, intimate cafe atmosphere.' },
+          { label: '01 · 약속', title: '매주 화요일에 볶아\n그 주 안에\n다 마십니다.', sub: '',
+            prompt: 'Editorial close-up of fresh coffee beans being scooped from a roasting drum, warm amber light, hands of a barista visible, artisan roastery atmosphere.' },
+          { label: '02 · 첫 손님', title: '오픈 5/18\n첫 한 모금', sub: '',
+            prompt: 'Atmospheric pour-over coffee being made on a wooden bar counter, hand pouring water, steam rising, dramatic warm lighting, intimate cafe setting.' },
+          { label: '03 · 클래스', title: '핸드드립 클래스\n50%', sub: '오픈 첫 7일',
+            prompt: 'Group of people learning hand-drip coffee technique in a modern roastery, focused atmosphere, warm natural daylight, professional but inviting.' },
+          { label: '04 · 구독', title: '원두 구독\n3개월권 사전', sub: '6/15까지',
+            prompt: 'Top-down editorial of artisan coffee bean bags neatly arranged with kraft paper packaging, hand-stamped labels, warm wooden surface, specialty coffee aesthetic.' },
+          { label: '05 · 오시는 길', title: '연남동 · 홍대입구역\n3번 출구\n도보 9분', sub: '',
+            prompt: 'Cozy independent cafe storefront at dusk in Yeonnam-dong neighborhood, warm interior light spilling out, hand-painted signage, intimate Seoul backstreet atmosphere.' },
+        ],
+        pexels: {
+          1: 'specialty coffee roaster interior',
+          2: 'fresh coffee beans roasting',
+          3: 'pour over coffee barista',
+          4: 'coffee class barista training',
+          5: 'coffee bean packaging',
+          6: 'cafe storefront yeonnam',
+        },
+      },
+    };
+
+    let CURRENT_BRAND_ID = 'miokdang';
+
+    function getBrandIdFromUrl() {
+      const id = new URLSearchParams(window.location.search).get('id');
+      return CN_BRANDS[id] ? id : 'miokdang';
+    }
+
+    function applyBrandToCardnews(brandId) {
+      const b = CN_BRANDS[brandId];
+      if (!b) return;
+      CURRENT_BRAND_ID = brandId;
+
+      // 헤더 업데이트
+      const letterEl = document.getElementById('cnBrandLetter');
+      if (letterEl) {
+        letterEl.className = `h-3.5 w-3.5 rounded bg-gradient-to-br ${b.gradient} grid place-items-center text-white text-[9px] font-bold`;
+        letterEl.textContent = b.letter;
+      }
+      const labelEl = document.getElementById('cnBrandLabel');
+      if (labelEl) labelEl.textContent = `${b.name} · 톤 ${b.toneVersion}`;
+      const title = document.getElementById('cnPageTitle');
+      if (title) title.textContent = `카드뉴스 이미지 — ${b.campaign}`;
+      document.title = `AdOps AI · 카드뉴스 — ${b.name}`;
+
+      // 6 슬라이드 텍스트 업데이트
+      document.querySelectorAll('[data-slide-id]').forEach(article => {
+        const idx = Number(article.dataset.slideId) - 1;
+        const s = b.slides[idx];
+        if (!s) return;
+        const slideText = article.querySelector('.slide-text');
+        if (slideText) {
+          // label = 첫 번째 자식 div (uppercase tracking)
+          const labelDiv = slideText.querySelector('div[class*="tracking-["]');
+          if (labelDiv) labelDiv.textContent = s.label;
+          // title = .myeongjo 클래스 가진 div
+          const titleDiv = slideText.querySelector('.myeongjo');
+          if (titleDiv) {
+            // 줄바꿈은 \n → <br>, span 보존하지 않고 일관 처리
+            titleDiv.innerHTML = s.title.split('\n').map(t => t).join('<br>');
+          }
+          // sub = .mt-3 자식 div (제목 아래)
+          const subDiv = slideText.querySelector('.mt-3');
+          if (subDiv) subDiv.innerHTML = s.sub.split('\n').join('<br>');
+        }
+        // prompt textarea (.line-clamp-2 contenteditable)
+        const promptDiv = article.querySelector('.line-clamp-2[contenteditable]');
+        if (promptDiv) promptDiv.textContent = s.prompt;
+      });
+
+      // PEXELS_QUERIES 동적 업데이트
+      Object.keys(b.pexels).forEach(k => { PEXELS_QUERIES[k] = b.pexels[k]; });
+
+      // 캐시 키 (PEXELS_PICK) 초기화 — 브랜드 바뀌면 새 사진 풀에서 다시 픽
+      Object.keys(PEXELS_PICK).forEach(k => delete PEXELS_PICK[k]);
+    }
+
+    function renderCnBrandMenu() {
+      const menu = document.getElementById('cnBrandPickerMenu');
+      if (!menu) return;
+      menu.innerHTML = Object.entries(CN_BRANDS).map(([id, b]) => `
+        <button type="button" data-cn-brand-id="${id}" class="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-gray-50 ${id === CURRENT_BRAND_ID ? 'bg-gray-50' : ''}">
+          <div class="h-7 w-7 rounded-md bg-gradient-to-br ${b.gradient} grid place-items-center text-white text-[11px] font-bold">${b.letter}</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium truncate">${b.name}</div>
+            <div class="text-[11px] text-gray-500 truncate">${b.industry} · 톤 ${b.toneVersion} · ${b.campaign}</div>
+          </div>
+          ${id === CURRENT_BRAND_ID ? '<svg class="h-3.5 w-3.5 text-gray-900 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+        </button>
+      `).join('');
+    }
+
 
     // 프리셋별 modifier — Pexels 검색어 / AI 프롬프트 스타일 suffix
     const STYLE_MODIFIERS = {
@@ -1243,6 +1491,50 @@
           document.body.style.paddingTop = '52px';
         }
       } catch (e) { /* 서버 없음 — 무시 */ }
+    })();
+
+    // ----- 카드뉴스 브랜드 / 캠페인 picker -----
+    (function initCnBrandPicker() {
+      const initialId = getBrandIdFromUrl();
+      applyBrandToCardnews(initialId);
+      renderCnBrandMenu();
+
+      const wrap = document.getElementById('cnBrandPickerWrap');
+      const btn  = document.getElementById('cnBrandPickerBtn');
+      const menu = document.getElementById('cnBrandPickerMenu');
+
+      btn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menu?.classList.toggle('hidden');
+      });
+      menu?.addEventListener('click', (e) => {
+        const opt = e.target.closest('[data-cn-brand-id]');
+        if (!opt) return;
+        const id = opt.dataset.cnBrandId;
+        if (!CN_BRANDS[id]) return;
+        applyBrandToCardnews(id);
+        renderCnBrandMenu();
+        menu.classList.add('hidden');
+        // URL 동기화
+        const url = new URL(window.location.href);
+        url.searchParams.set('id', id);
+        window.history.replaceState({}, '', url);
+        toast(`${CN_BRANDS[id].name} · ${CN_BRANDS[id].campaign} 으로 전환됨 · 이미지 다시 생성하려면 [전체 재생성]`, 'info');
+        // 이미지가 이미 표시 중이면 한 번 더 강조 (재생성 권장)
+        document.querySelectorAll('button').forEach(b => {
+          if ((b.textContent || '').trim() === '전체 재생성') {
+            b.classList.add('regen-pulse');
+            setTimeout(() => b.classList.remove('regen-pulse'), 4500);
+          }
+        });
+      });
+      // 바깥 클릭 / ESC
+      document.addEventListener('click', (e) => {
+        if (!wrap?.contains(e.target)) menu?.classList.add('hidden');
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') menu?.classList.add('hidden');
+      });
     })();
   </script>
 </body>
