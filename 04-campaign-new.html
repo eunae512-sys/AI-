@@ -180,109 +180,38 @@
 
         <!-- RIGHT (7/12): brief stream -->
         <section class="col-span-12 lg:col-span-7">
-          <div class="rounded-xl border border-gray-200 bg-white overflow-hidden">
+          <div class="rounded-xl border border-gray-200 bg-white overflow-hidden" id="brief-card">
             <!-- header -->
             <div class="px-5 py-3.5 border-b border-gray-100 flex items-center bg-gradient-to-r from-white to-indigo-50/30">
               <div class="flex items-center gap-2">
-                <span class="relative flex h-2 w-2">
+                <span class="relative flex h-2 w-2" id="brief-live-dot">
                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
-                <h2 class="text-sm font-semibold tracking-tight">AI 브리프 생성 중</h2>
+                <h2 class="text-sm font-semibold tracking-tight" id="brief-status">AI 브리프 생성 중</h2>
               </div>
               <div class="ml-3 flex items-center gap-3 text-[11px] text-gray-500">
-                <span class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-violet-500"></span>claude-sonnet-4-6</span>
-                <span class="inline-flex items-center gap-1.5"><span class="font-mono">cache hit</span><span class="font-medium text-gray-700">68%</span></span>
-                <span class="font-mono tabular-nums">₩28.4 / 12.3s</span>
+                <span class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-violet-500"></span><span data-bind="briefModel">claude-sonnet-4-6</span></span>
+                <span class="inline-flex items-center gap-1.5"><span class="font-mono">cache hit</span><span class="font-medium text-gray-700" data-bind="briefCacheHit">68%</span></span>
+                <span class="font-mono tabular-nums" data-bind="briefCost">₩28.4 / 12.3s</span>
               </div>
               <div class="ml-auto flex items-center gap-2">
-                <button data-mock="브리프 스트리밍 정지 (mockup)" class="text-xs px-2.5 py-1.5 rounded-md border border-gray-200 hover:bg-gray-50">정지</button>
-                <button data-mock="브리프 재생성 (mockup)" class="text-xs px-2.5 py-1.5 rounded-md border border-gray-200 hover:bg-gray-50">재생성</button>
+                <button id="brief-stop-btn"  class="text-xs px-2.5 py-1.5 rounded-md border border-gray-200 hover:bg-gray-50">정지</button>
+                <button id="brief-regen-btn" class="text-xs px-2.5 py-1.5 rounded-md border border-gray-200 hover:bg-gray-50 inline-flex items-center gap-1.5">
+                  <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10"/></svg>
+                  재생성
+                </button>
               </div>
             </div>
 
-            <!-- body -->
-            <div class="p-6 space-y-6 leading-relaxed">
-
-              <!-- Section: 핵심 메시지 -->
-              <div>
-                <div class="text-[10px] uppercase tracking-widest text-indigo-600 font-semibold">핵심 메시지</div>
-                <p class="mt-2 text-base text-gray-900 leading-relaxed">
-                  <span class="bg-yellow-100/40 rounded">5월의 봄나물을 정성껏 한 상에 모았습니다 — 종로 한복판에서, 조용히.</span>
-                </p>
-                <p class="mt-2 text-xs text-gray-500">서브카피: 평일 점심 한정 코스 · 사전 예약 권장 · 단체석 별도 안내</p>
-              </div>
-
-              <!-- Section: 채널 믹스 -->
-              <div>
-                <div class="text-[10px] uppercase tracking-widest text-indigo-600 font-semibold">채널 믹스 & 일정</div>
-                <ul class="mt-3 space-y-2 text-sm">
-                  <li class="flex items-start gap-3">
-                    <span class="shrink-0 inline-flex h-5 px-1.5 items-center rounded text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">네이버 블로그</span>
-                    <span class="text-gray-700">주 2회 장문 포스팅 — 코스 구성 비하인드 + 사장님 인터뷰 톤</span>
-                  </li>
-                  <li class="flex items-start gap-3">
-                    <span class="shrink-0 inline-flex h-5 px-1.5 items-center rounded text-[10px] font-medium bg-rose-50 text-rose-700 border border-rose-100">인스타 피드</span>
-                    <span class="text-gray-700">코스 사진 + 짧은 캡션 (1~2문장) — 주 3회</span>
-                  </li>
-                  <li class="flex items-start gap-3">
-                    <span class="shrink-0 inline-flex h-5 px-1.5 items-center rounded text-[10px] font-medium bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-100">인스타 릴스</span>
-                    <span class="text-gray-700">"오늘의 봄나물" 30초 시리즈 — 주 1회</span>
-                  </li>
-                  <li class="flex items-start gap-3">
-                    <span class="shrink-0 inline-flex h-5 px-1.5 items-center rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-100">카카오 채널</span>
-                    <span class="text-gray-700">단골 손님 대상 주 1회 메시지 — 평일 점심 사전예약 안내</span>
-                  </li>
-                </ul>
-              </div>
-
-              <!-- Section: KPI -->
-              <div>
-                <div class="text-[10px] uppercase tracking-widest text-indigo-600 font-semibold">성공 지표 (KPI)</div>
-                <div class="mt-3 grid grid-cols-3 gap-3">
-                  <div class="rounded-lg border border-gray-200 p-3">
-                    <div class="text-[10px] text-gray-500">평일 점심 예약</div>
-                    <div class="mt-1 text-lg font-semibold tabular-nums">+30%</div>
-                    <div class="text-[10px] text-gray-400 mt-0.5">전월 대비</div>
-                  </div>
-                  <div class="rounded-lg border border-gray-200 p-3">
-                    <div class="text-[10px] text-gray-500">네이버 플레이스 저장</div>
-                    <div class="mt-1 text-lg font-semibold tabular-nums">+200건</div>
-                    <div class="text-[10px] text-gray-400 mt-0.5">캠페인 기간</div>
-                  </div>
-                  <div class="rounded-lg border border-gray-200 p-3">
-                    <div class="text-[10px] text-gray-500">인스타 도달</div>
-                    <div class="mt-1 text-lg font-semibold tabular-nums">15K</div>
-                    <div class="text-[10px] text-gray-400 mt-0.5">반경 5km 타겟</div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Section: 후크 -->
-              <div>
-                <div class="text-[10px] uppercase tracking-widest text-indigo-600 font-semibold">후크 후보</div>
-                <ul class="mt-3 space-y-1.5 text-sm">
-                  <li class="flex items-start gap-2"><span class="text-gray-400 mt-1">▸</span><span class="text-gray-700">"퇴근길 5분, 오늘만큼은 나에게 차린 한 상"</span></li>
-                  <li class="flex items-start gap-2"><span class="text-gray-400 mt-1">▸</span><span class="text-gray-700">"5월의 봄나물, 종로에서 조용히 모시겠습니다"</span></li>
-                  <li class="flex items-start gap-2"><span class="text-gray-400 mt-1">▸</span><span class="text-gray-700">"30년 한정식 사장님이 직접 골라낸 오늘의 시금치"<span class="caret inline-block w-[2px] h-3 bg-gray-900 align-middle ml-0.5"></span></span></li>
-                </ul>
-              </div>
-
-              <!-- Section: 가드레일 -->
-              <div class="rounded-lg border border-amber-100 bg-amber-50/50 px-4 py-3 text-xs text-amber-900">
-                <div class="flex items-start gap-2">
-                  <svg class="h-3.5 w-3.5 mt-0.5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/></svg>
-                  <div class="leading-relaxed">
-                    <span class="font-medium">가드레일</span> · 표시광고법 — "최고/유일/100%" 표현은 system 단계에서 자동 제외됐습니다.
-                    의료 가드레일은 이 클라이언트(음식점)에 비활성.
-                  </div>
-                </div>
-              </div>
+            <!-- body — 동적 렌더링 -->
+            <div class="p-6 space-y-6 leading-relaxed" data-render="brief">
+              <!-- applyBrief() 가 채움 -->
             </div>
 
             <!-- footer actions -->
             <div class="border-t border-gray-100 bg-gray-50/30 px-5 py-3 flex items-center gap-2">
-              <span class="text-[11px] text-gray-500">68% 캐시로 약 ₩78 절감 · 4초 단축</span>
+              <span class="text-[11px] text-gray-500" data-bind="briefSavings">68% 캐시로 약 ₩78 절감 · 4초 단축</span>
               <div class="ml-auto flex items-center gap-2">
                 <button data-mock="이전 단계로 — 다음 페이즈에 위저드 흐름 활성화" class="text-xs font-medium px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50">이전</button>
                 <button data-go="05-content-result.html" class="text-xs font-medium px-3 py-2 rounded-md bg-gray-900 text-white hover:bg-black inline-flex items-center gap-1.5 shadow-sm">
@@ -298,19 +227,198 @@
   </div>
   <script src="mockup-runtime.js" defer></script>
   <script defer>
-    // 브랜드 후보 — 02-clients / 03-brand-detail와 동일 6개
+    // ============================================================
+    // 브랜드 + 브리프 데이터 — 6개 클라이언트
+    // ============================================================
+    const CHANNEL_BADGE = {
+      blog:     'bg-emerald-50 text-emerald-700 border border-emerald-100',
+      insta:    'bg-rose-50 text-rose-700 border border-rose-100',
+      reels:    'bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-100',
+      kakao:    'bg-amber-50 text-amber-700 border border-amber-100',
+      meta:     'bg-blue-50 text-blue-700 border border-blue-100',
+      place:    'bg-teal-50 text-teal-700 border border-teal-100',
+      cardnews: 'bg-amber-50 text-amber-700 border border-amber-100',
+      story:    'bg-rose-50 text-rose-700 border border-rose-100',
+    };
+
     const BRANDS = [
-      { id: 'miokdang',           name: '미옥당 본점',         letter: '미', gradient: 'from-rose-400 to-orange-400',    meta: '음식점 · 한정식 · 톤 v3 활성',   campaign: '5월 신메뉴 봄나물 코스 런칭',     target: '30~50대 직장인 + 가족 모임 · 종로/광화문 반경 1km · 평일 점심 회식 결정권자' },
-      { id: 'luna-hair',          name: '루나 헤어 강남점',    letter: '루', gradient: 'from-violet-400 to-fuchsia-500', meta: '미용 · 헤어살롱 · 톤 v5 활성',     campaign: '5월 모카브라운 컬러 프로모션',    target: '20~30대 여성 · 강남역 도보 10분 · 디자이너 지명 예약 결정권자' },
-      { id: 'cheongdam-medical',  name: '청담 메디컬 의원',    letter: '청', gradient: 'from-sky-400 to-blue-600',       meta: '의료 · 피부과 · 의료 가드레일 active', campaign: '봄맞이 피부 진단 상담 캠페인', target: '30~50대 여성 · 청담/압구정 거주 · 피부 시술 사전 상담 의향' },
-      { id: 'best-eng',           name: '베스트 영어학원',      letter: '베', gradient: 'from-emerald-400 to-teal-500',   meta: '교육 · 학원 · 톤 v4 활성',         campaign: '5월 신학기 레벨 테스트 모집',     target: '초·중등 자녀를 둔 30~40대 학부모 · 마포구 거주 · 학습 진단 결정권자' },
-      { id: 'forum-fashion',      name: 'FORUM 패션',          letter: 'F',  gradient: 'from-slate-700 to-zinc-900',     meta: '쇼핑몰 · 컨템포러리 · 톤 v6 활성', campaign: '5월 신상 입고 회차 #18',          target: '20~30대 여성 · 컨템포러리 의류 관심 · 신상 입고 회차 사전 알림 구독자' },
-      { id: 'roastery-1985',      name: '로스터리 1985',       letter: 'R',  gradient: 'from-amber-700 to-stone-800',    meta: '카페 · 스페셜티 · 톤 v1 학습 중',  campaign: '오픈 기념 원두 구독 사전 안내',   target: '20~40대 · 연남/홍대 인근 · 핸드드립·싱글오리진 관심 단골 후보' },
+      { id: 'miokdang', name: '미옥당 본점', letter: '미', gradient: 'from-rose-400 to-orange-400',
+        meta: '음식점 · 한정식 · 톤 v3 활성',
+        campaign: '5월 신메뉴 봄나물 코스 런칭',
+        target: '30~50대 직장인 + 가족 모임 · 종로/광화문 반경 1km · 평일 점심 회식 결정권자',
+        brief: {
+          model: 'claude-sonnet-4-6', cacheHit: '68%', cost: '₩28.4 / 12.3s', savings: '68% 캐시로 약 ₩78 절감 · 4초 단축',
+          core: '5월의 봄나물을 정성껏 한 상에 모았습니다 — 종로 한복판에서, 조용히.',
+          sub:  '평일 점심 한정 코스 · 사전 예약 권장 · 단체석 별도 안내',
+          channels: [
+            { tag: '네이버 블로그', tone: 'blog',  desc: '주 2회 장문 포스팅 — 코스 구성 비하인드 + 사장님 인터뷰 톤' },
+            { tag: '인스타 피드',   tone: 'insta', desc: '코스 사진 + 짧은 캡션 (1~2문장) — 주 3회' },
+            { tag: '인스타 릴스',   tone: 'reels', desc: '"오늘의 봄나물" 30초 시리즈 — 주 1회' },
+            { tag: '카카오 채널',   tone: 'kakao', desc: '단골 손님 대상 주 1회 메시지 — 평일 점심 사전예약 안내' },
+          ],
+          kpis: [
+            { label: '평일 점심 예약',     value: '+30%',  note: '전월 대비' },
+            { label: '네이버 플레이스 저장', value: '+200건', note: '캠페인 기간' },
+            { label: '인스타 도달',         value: '15K',   note: '반경 5km 타겟' },
+          ],
+          hooks: [
+            '"퇴근길 5분, 오늘만큼은 나에게 차린 한 상"',
+            '"5월의 봄나물, 종로에서 조용히 모시겠습니다"',
+            '"30년 한정식 사장님이 직접 골라낸 오늘의 시금치"',
+          ],
+          guardrail: { tone: 'amber', label: '가드레일',
+            text: '표시광고법 — "최고/유일/100%" 표현은 system 단계에서 자동 제외됐습니다. 의료 가드레일은 이 클라이언트(음식점)에 비활성.' },
+        }
+      },
+      { id: 'luna-hair', name: '루나 헤어 강남점', letter: '루', gradient: 'from-violet-400 to-fuchsia-500',
+        meta: '미용 · 헤어살롱 · 톤 v5 활성',
+        campaign: '5월 모카브라운 컬러 프로모션',
+        target: '20~30대 여성 · 강남역 도보 10분 · 디자이너 지명 예약 결정권자',
+        brief: {
+          model: 'claude-sonnet-4-6', cacheHit: '72%', cost: '₩24.8 / 10.6s', savings: '72% 캐시로 약 ₩94 절감 · 5초 단축',
+          core: '차분한 모카브라운으로 결을 살리는 한 톤 — 5월 컬러 + 영양 케어 패키지.',
+          sub:  '디자이너 지명 권장 · 강남역 도보 5분 · 카카오 1:1 상담',
+          channels: [
+            { tag: '인스타 피드',   tone: 'insta', desc: '룩 클로즈업 + 짧은 캡션 — 주 3회' },
+            { tag: '인스타 릴스',   tone: 'reels', desc: '시술 전후 split-screen 12초 — 주 2회' },
+            { tag: '카카오 채널',   tone: 'kakao', desc: '단골 컬러 추천 1:1 메시지 — 주 1회' },
+            { tag: '네이버 블로그', tone: 'blog',  desc: '봄 컬러 추천 장문 1편 — 격주' },
+          ],
+          kpis: [
+            { label: '디자이너 지명 예약', value: '+28건', note: '캠페인 기간' },
+            { label: '평일 평균 매출',      value: '+12%',  note: '주말 대비 분산' },
+            { label: '인스타 도달',         value: '22K',   note: '강남 카테고리' },
+          ],
+          hooks: [
+            '"오늘 들어온 톤"',
+            '"이번 시즌, 결이 가장 살아나요"',
+            '"미리 잡는 디자이너"',
+          ],
+          guardrail: { tone: 'amber', label: '가드레일',
+            text: '가격 강조 표현(반값 / 특가 / 초저가 / 최저가) 자동 제외. 결과 강조 톤이 원칙입니다. 의료 가드레일 비활성.' },
+        }
+      },
+      { id: 'cheongdam-medical', name: '청담 메디컬 의원', letter: '청', gradient: 'from-sky-400 to-blue-600',
+        meta: '의료 · 피부과 · 의료 가드레일 active',
+        campaign: '봄맞이 피부 진단 상담 캠페인',
+        target: '30~50대 여성 · 청담/압구정 거주 · 피부 시술 사전 상담 의향',
+        brief: {
+          model: 'claude-sonnet-4-6', cacheHit: '54%', cost: '₩42.1 / 18.7s', savings: '54% 캐시로 약 ₩42 절감 · 의광법 검수 +2초',
+          core: '환절기 봄철 피부 사전 진단 — 의료진 진료 후 안내드립니다.',
+          sub:  '결과는 개인차가 있을 수 있음 · 사전 진료제 · 청담동',
+          channels: [
+            { tag: '네이버 블로그', tone: 'blog',  desc: '의료진 인터뷰 + 진단 절차 안내 — 격주 1편' },
+            { tag: '인스타 피드',   tone: 'insta', desc: '진료실 차분한 분위기 컷 + 안내 캡션 — 주 2회' },
+            { tag: '카카오 채널',   tone: 'kakao', desc: '단골 시술 후 7일 케어 안내 — 트리거 기반' },
+            { tag: 'Meta 광고',     tone: 'meta',  desc: '봄 진단 상담 안내 — 의광법 검수 통과 카피만 사용' },
+          ],
+          kpis: [
+            { label: '상담 접수',          value: '+12건', note: '월 기준' },
+            { label: '블로그 유입',        value: '+320',  note: '의료진 인터뷰 시리즈' },
+            { label: '의광법 검수 통과율', value: '100%',  note: '출고 전 의무' },
+          ],
+          hooks: [
+            '"환절기, 피부 점검 한 번"',
+            '"전문의 상담 후 안내드립니다"',
+            '"개인의 피부 상태에 따라 결과가 달라질 수 있습니다"',
+          ],
+          guardrail: { tone: 'rose', label: '의료 가드레일 active',
+            text: '의료광고법 — "효과 보장 / 100% / 부작용 없음 / 안전 보장 / 최고" 자동 차단. 모든 카피는 출고 전 의료 검수팀 승인 필수.' },
+        }
+      },
+      { id: 'best-eng', name: '베스트 영어학원', letter: '베', gradient: 'from-emerald-400 to-teal-500',
+        meta: '교육 · 학원 · 톤 v4 활성',
+        campaign: '5월 신학기 레벨 테스트 모집',
+        target: '초·중등 자녀를 둔 30~40대 학부모 · 마포구 거주 · 학습 진단 결정권자',
+        brief: {
+          model: 'claude-sonnet-4-6', cacheHit: '74%', cost: '₩22.6 / 9.4s', savings: '74% 캐시로 약 ₩102 절감 · 6초 단축',
+          core: '한 학기 꾸준히 다지면 다음 시험에서 변화 — 레벨 테스트부터 천천히.',
+          sub:  '학생별 1:1 진단 후 반 배정 · 망원역 도보 4분 · 카카오 1:1 상담',
+          channels: [
+            { tag: '네이버 블로그', tone: 'blog',     desc: '시험 대비 단어/독해 가이드 — 주 1편' },
+            { tag: '인스타 피드',   tone: 'insta',    desc: '학부모 후기 + 수업 풍경 — 주 2회' },
+            { tag: '카드뉴스',      tone: 'cardnews', desc: '학부모 단계별 가이드 6장 — 월 1세트' },
+            { tag: '카카오 채널',   tone: 'kakao',    desc: '단골 학부모 진도 안내 — 격주' },
+          ],
+          kpis: [
+            { label: '신규 등록',     value: '+20명', note: '5월 기준' },
+            { label: '레벨 테스트',   value: '+18건', note: '캠페인 기간' },
+            { label: '카카오 응답률', value: '78%',   note: '학부모 1:1' },
+          ],
+          hooks: [
+            '"꾸준히 따라오면, 한 학기 만에"',
+            '"이번 학기 변화, 천천히 시작"',
+            '"한 단계씩, 무리 없이"',
+          ],
+          guardrail: { tone: 'amber', label: '가드레일',
+            text: '"1등 / 보장 / 확실히 / 단기간" 표현 자동 제외. 학부모 친근형 ~해요 톤이 원칙입니다. 의료 가드레일 비활성.' },
+        }
+      },
+      { id: 'forum-fashion', name: 'FORUM 패션', letter: 'F', gradient: 'from-slate-700 to-zinc-900',
+        meta: '쇼핑몰 · 컨템포러리 · 톤 v6 활성',
+        campaign: '5월 신상 입고 회차 #18',
+        target: '20~30대 여성 · 컨템포러리 의류 관심 · 신상 입고 회차 사전 알림 구독자',
+        brief: {
+          model: 'claude-sonnet-4-6', cacheHit: '81%', cost: '₩18.2 / 7.8s', savings: '81% 캐시로 약 ₩142 절감 · 8초 단축',
+          core: '도시의 무채색 위에 한 톤의 따뜻함 — 회차 #18, 1차 입고 D-1.',
+          sub:  '자체몰 + 스마트스토어 동시 입고 · 카카오 단골 알림',
+          channels: [
+            { tag: '인스타 피드',   tone: 'insta', desc: '룩북 1컷 + 디테일 클로즈업 페어 — 매일 1회' },
+            { tag: '인스타 릴스',   tone: 'reels', desc: '데일리 셋업 12초 + split-screen — 주 3회' },
+            { tag: 'Meta 광고',     tone: 'meta',  desc: '회차 #18 1차 입고 안내 — 평일 21~23시' },
+            { tag: '카카오 채널',   tone: 'kakao', desc: '단골 회차 사전 알림 (옵트인 1,820명)' },
+          ],
+          kpis: [
+            { label: '회차 #18 1차 매출', value: '+38%', note: '회차 #17 1차 대비' },
+            { label: '자체몰 PV',          value: '+22%', note: '캠페인 기간' },
+            { label: '단골 ROAS',          value: '8.4배', note: '카카오 사전 알림' },
+          ],
+          hooks: [
+            '"이번 회차의 첫 톤"',
+            '"조용한 무게, 한 톤의 따뜻함"',
+            '"#18 · 1차 입고 D-1"',
+          ],
+          guardrail: { tone: 'amber', label: '가드레일',
+            text: '"세일 / 폭탄 / 득템 / 대박" 표현 자동 제외. 에디토리얼 톤(~입니다)이 원칙입니다. 의료 가드레일 비활성.' },
+        }
+      },
+      { id: 'roastery-1985', name: '로스터리 1985', letter: 'R', gradient: 'from-amber-700 to-stone-800',
+        meta: '카페 · 스페셜티 · 톤 v1 학습 중',
+        campaign: '오픈 기념 원두 구독 사전 안내',
+        target: '20~40대 · 연남/홍대 인근 · 핸드드립·싱글오리진 관심 단골 후보',
+        brief: {
+          model: 'claude-sonnet-4-6', cacheHit: '12%', cost: '₩48.6 / 22.1s', savings: '톤 v1 학습 단계 — 캐시 적중률 점진 상승 중',
+          core: '8년 로스터의 첫 가게 — 5/18 오픈, 연남동.',
+          sub:  '오픈 7일간 핸드드립 클래스 50% · 원두 구독 3개월권 사전',
+          channels: [
+            { tag: '인스타 스토리', tone: 'story', desc: '오픈 D-7 카운트다운 — 매일 1편' },
+            { tag: '인스타 피드',   tone: 'insta', desc: '오늘 볶은 원두 + 컵 노트 — 주 3회' },
+            { tag: '네이버 블로그', tone: 'blog',  desc: '오픈 인터뷰 + 원두 스토리 — 격주' },
+            { tag: '카카오 채널',   tone: 'kakao', desc: '구독 사전 안내 (옵트인 + 동네 스타터)' },
+          ],
+          kpis: [
+            { label: '클래스 사전 등록', value: '+50석', note: '오픈 첫 7일' },
+            { label: '원두 구독 사전',   value: '+30명', note: '6/15까지' },
+            { label: '동네 매거진 협찬',  value: '1건',   note: '오픈 인지 부스트' },
+          ],
+          hooks: [
+            '"오늘 한 잔, 오늘의 산미"',
+            '"이 잔의 첫 향"',
+            '"8년 로스터의 첫 가게"',
+          ],
+          guardrail: { tone: 'amber', label: '가드레일',
+            text: '"최고 / 독보적 / 극강 / 폭탄" 표현 자동 제외. 톤 v1 학습 단계 — 카피 출고 전 검수 권장.' },
+        }
+      },
     ];
 
     function getBrandIdFromUrl() {
       const id = new URLSearchParams(window.location.search).get('id');
       return BRANDS.some(b => b.id === id) ? id : 'miokdang';
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
     }
 
     function applyBrand(b) {
@@ -325,6 +433,151 @@
       if (c) c.value = b.campaign;
       if (t) t.value = b.target;
       document.title = 'AdOps AI · 새 캠페인 — ' + b.name;
+      // 브리프 업데이트
+      applyBrief(b);
+    }
+
+    // ============================================================
+    // AI 브리프 렌더링 + 스트리밍 시뮬레이션
+    // ============================================================
+    let BRIEF_TIMERS = [];
+
+    function clearBriefTimers() {
+      BRIEF_TIMERS.forEach(t => clearTimeout(t));
+      BRIEF_TIMERS = [];
+    }
+
+    function setBriefStatus(state, text) {
+      const status = document.getElementById('brief-status');
+      const dot    = document.getElementById('brief-live-dot');
+      if (!status || !dot) return;
+      status.textContent = text || ({
+        streaming:  'AI 브리프 생성 중',
+        done:       'AI 브리프 생성 완료',
+        stopped:    'AI 브리프 생성 정지됨',
+        regenerating: 'AI 브리프 재생성 중',
+      })[state];
+      dot.innerHTML = state === 'done'
+        ? '<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>'
+        : state === 'stopped'
+          ? '<span class="relative inline-flex rounded-full h-2 w-2 bg-gray-400"></span>'
+          : '<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>' +
+            '<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>';
+    }
+
+    function renderBriefHtml(brief, opts = {}) {
+      const showCaret = opts.showCaret;
+      const guardCls = brief.guardrail.tone === 'rose'
+        ? 'border-rose-100 bg-rose-50/50 text-rose-900'
+        : 'border-amber-100 bg-amber-50/50 text-amber-900';
+      const guardIconCls = brief.guardrail.tone === 'rose' ? 'text-rose-600' : 'text-amber-600';
+
+      return `
+        <!-- 핵심 메시지 -->
+        <div>
+          <div class="text-[10px] uppercase tracking-widest text-indigo-600 font-semibold">핵심 메시지</div>
+          <p class="mt-2 text-base text-gray-900 leading-relaxed">
+            <span class="bg-yellow-100/40 rounded">${escapeHtml(brief.core)}</span>
+          </p>
+          <p class="mt-2 text-xs text-gray-500">서브카피: ${escapeHtml(brief.sub)}</p>
+        </div>
+        <!-- 채널 믹스 -->
+        <div>
+          <div class="text-[10px] uppercase tracking-widest text-indigo-600 font-semibold">채널 믹스 &amp; 일정</div>
+          <ul class="mt-3 space-y-2 text-sm">
+            ${brief.channels.map(ch => `
+              <li class="flex items-start gap-3">
+                <span class="shrink-0 inline-flex h-5 px-1.5 items-center rounded text-[10px] font-medium ${CHANNEL_BADGE[ch.tone] || CHANNEL_BADGE.insta}">${escapeHtml(ch.tag)}</span>
+                <span class="text-gray-700">${escapeHtml(ch.desc)}</span>
+              </li>`).join('')}
+          </ul>
+        </div>
+        <!-- KPI -->
+        <div>
+          <div class="text-[10px] uppercase tracking-widest text-indigo-600 font-semibold">성공 지표 (KPI)</div>
+          <div class="mt-3 grid grid-cols-3 gap-3">
+            ${brief.kpis.map(k => `
+              <div class="rounded-lg border border-gray-200 p-3">
+                <div class="text-[10px] text-gray-500">${escapeHtml(k.label)}</div>
+                <div class="mt-1 text-lg font-semibold tabular-nums">${escapeHtml(k.value)}</div>
+                <div class="text-[10px] text-gray-400 mt-0.5">${escapeHtml(k.note)}</div>
+              </div>`).join('')}
+          </div>
+        </div>
+        <!-- 후크 -->
+        <div>
+          <div class="text-[10px] uppercase tracking-widest text-indigo-600 font-semibold">후크 후보</div>
+          <ul class="mt-3 space-y-1.5 text-sm">
+            ${brief.hooks.map((h, i) => `
+              <li class="flex items-start gap-2">
+                <span class="text-gray-400 mt-1">▸</span>
+                <span class="text-gray-700">${escapeHtml(h)}${(showCaret && i === brief.hooks.length - 1) ? '<span class="caret inline-block w-[2px] h-3 bg-gray-900 align-middle ml-0.5"></span>' : ''}</span>
+              </li>`).join('')}
+          </ul>
+        </div>
+        <!-- 가드레일 -->
+        <div class="rounded-lg border ${guardCls} px-4 py-3 text-xs">
+          <div class="flex items-start gap-2">
+            <svg class="h-3.5 w-3.5 mt-0.5 ${guardIconCls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/></svg>
+            <div class="leading-relaxed">
+              <span class="font-medium">${escapeHtml(brief.guardrail.label)}</span> · ${escapeHtml(brief.guardrail.text)}
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function applyBrief(b) {
+      const brief = b.brief;
+      if (!brief) return;
+      // 헤더 stat
+      document.querySelectorAll('[data-bind="briefModel"]').forEach(el => el.textContent = brief.model);
+      document.querySelectorAll('[data-bind="briefCacheHit"]').forEach(el => el.textContent = brief.cacheHit);
+      document.querySelectorAll('[data-bind="briefCost"]').forEach(el => el.textContent = brief.cost);
+      document.querySelectorAll('[data-bind="briefSavings"]').forEach(el => el.textContent = brief.savings);
+      // 본문
+      document.querySelectorAll('[data-render="brief"]').forEach(el => {
+        el.innerHTML = renderBriefHtml(brief, { showCaret: false });
+      });
+      setBriefStatus('done');
+    }
+
+    // 재생성 — 가짜 스트리밍: 본문 비우고 단계별로 채워넣음
+    function regenerateBrief(b) {
+      clearBriefTimers();
+      const brief = b.brief;
+      if (!brief) return;
+      const target = document.querySelector('[data-render="brief"]');
+      if (!target) return;
+      setBriefStatus('regenerating');
+      target.innerHTML = `<div class="text-xs text-gray-400 italic">${escapeHtml(b.name)} · 캠페인 컨텍스트 분석 중…</div>`;
+      // 단계별 출현
+      const steps = [
+        { ms: 320,  msg: `${b.name} · 톤 v${(brief.model || '').slice(-1) || '?'} 적용 중…` },
+        { ms: 780,  msg: '핵심 메시지 추출 중…' },
+        { ms: 1240, msg: '채널 믹스 생성 중…' },
+        { ms: 1700, msg: 'KPI · 후크 후보 작성 중…' },
+      ];
+      steps.forEach(s => {
+        BRIEF_TIMERS.push(setTimeout(() => {
+          target.innerHTML = `<div class="text-xs text-gray-400 italic">${escapeHtml(s.msg)}</div>`;
+        }, s.ms));
+      });
+      // 최종 렌더 (caret 한 번 빛나고 사라짐)
+      BRIEF_TIMERS.push(setTimeout(() => {
+        target.innerHTML = renderBriefHtml(brief, { showCaret: true });
+        setBriefStatus('streaming');
+      }, 2200));
+      BRIEF_TIMERS.push(setTimeout(() => {
+        target.innerHTML = renderBriefHtml(brief, { showCaret: false });
+        setBriefStatus('done');
+        window.mockupToast && window.mockupToast(`${b.name} 브리프 재생성 완료`, 'success');
+      }, 3400));
+    }
+
+    function stopBrief() {
+      clearBriefTimers();
+      setBriefStatus('stopped');
+      window.mockupToast && window.mockupToast('브리프 생성 정지됨', 'info');
     }
 
     function renderBrandMenu(currentId) {
@@ -350,6 +603,10 @@
       applyBrand(current);
       renderBrandMenu(currentId);
 
+      // 브리프 재생성 / 정지
+      document.getElementById('brief-regen-btn')?.addEventListener('click', () => regenerateBrief(current));
+      document.getElementById('brief-stop-btn')?.addEventListener('click', () => stopBrief());
+
       const btn = document.getElementById('brandPickerBtn');
       const menu = document.getElementById('brandPickerMenu');
       const wrap = document.getElementById('brandPickerWrap');
@@ -366,14 +623,17 @@
         const next = BRANDS.find(b => b.id === id);
         if (!next) return;
         currentId = id;
+        current = next;
         applyBrand(next);
         renderBrandMenu(id);
         menu.classList.add('hidden');
-        // URL도 동기화 (선택 사항 — 새로고침 시 유지)
+        // URL도 동기화
         const url = new URL(window.location.href);
         url.searchParams.set('id', id);
         window.history.replaceState({}, '', url);
-        window.mockupToast && window.mockupToast(next.name + ' 으로 전환됨', 'info');
+        window.mockupToast && window.mockupToast(next.name + ' 으로 전환됨 · 브리프 재생성', 'info');
+        // 브랜드 변경시 자동 재생성
+        regenerateBrief(next);
       });
 
       // 바깥 클릭 시 닫기

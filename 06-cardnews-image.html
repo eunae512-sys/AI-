@@ -90,9 +90,40 @@
     }
     .loading-pill { display: none; }
     .slide-canvas[data-loading="true"] .loading-pill { display: block; }
+
+    /* ================================ */
+    /* 스타일 프리셋 — body 클래스로 모든 .bg-img 에 필터 적용 */
+    /* ================================ */
+    body.style-traditional .slide-canvas img.bg-img {
+      filter: saturate(1.05) contrast(1.02);
+      transition: filter 0.4s ease;
+    }
+    body.style-modern .slide-canvas img.bg-img {
+      filter: saturate(0.78) brightness(1.08) contrast(0.95);
+      transition: filter 0.4s ease;
+    }
+    body.style-moody .slide-canvas img.bg-img {
+      filter: saturate(1.18) brightness(0.72) contrast(1.18);
+      transition: filter 0.4s ease;
+    }
+    body.style-illustration .slide-canvas img.bg-img {
+      filter: sepia(0.35) saturate(1.55) hue-rotate(-12deg) contrast(1.08) brightness(1.02);
+      transition: filter 0.4s ease;
+    }
+    /* gradient 배경에도 일부 효과 적용 (이미지 없을 때) */
+    body.style-modern  .slide-canvas:not([data-has-image="true"]) { filter: saturate(0.85) brightness(1.05); }
+    body.style-moody   .slide-canvas:not([data-has-image="true"]) { filter: brightness(0.78) contrast(1.12); }
+    body.style-illustration .slide-canvas:not([data-has-image="true"]) { filter: sepia(0.25) saturate(1.3); }
+
+    /* 재생성 버튼 강조 (스타일 변경 직후) */
+    @keyframes pulseRing {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.55); }
+      50%      { box-shadow: 0 0 0 6px rgba(99,102,241,0); }
+    }
+    .regen-pulse { animation: pulseRing 1.4s ease-in-out 3; }
   </style>
 </head>
-<body class="bg-white text-gray-900" data-no-mock-fallback="1">
+<body class="bg-white text-gray-900 style-traditional" data-no-mock-fallback="1">
   <div class="flex min-h-screen">
     <!-- Sidebar -->
     <aside class="w-60 shrink-0 border-r border-gray-100 bg-gray-50/40 flex flex-col">
@@ -104,12 +135,13 @@
         <a href="index.html" class="block px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:bg-gray-100">홈</a>
         <a href="02-clients.html" class="block px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:bg-gray-100">클라이언트</a>
         <a href="04-campaign-new.html" class="block px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:bg-gray-100">캠페인</a>
-        <a href="05-content-result.html" class="flex items-center px-2.5 py-1.5 rounded-md text-xs font-medium bg-white border border-gray-200 shadow-sm cursor-pointer"><span class="text-indigo-600 mr-1.5">●</span>콘텐츠</a>
+        <a href="05-content-result.html" class="block px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:bg-gray-100">콘텐츠</a>
         <a class="flex items-center px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:bg-gray-100 cursor-pointer">검토 큐 <span class="ml-auto text-[10px] tabular-nums px-1.5 py-px rounded bg-amber-100 text-amber-700">7</span></a>
         <div class="pt-4 pb-1.5 px-2.5 text-[10px] uppercase tracking-widest text-gray-400 font-semibold">생성 도구</div>
-        <a class="flex items-center px-2.5 py-1.5 rounded-md text-xs font-medium bg-indigo-50 text-indigo-700 cursor-pointer">
-          <svg class="h-4 w-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
-          AI 이미지 <span class="ml-auto text-[10px] px-1.5 py-px rounded bg-indigo-100 text-indigo-700 font-medium">NEW</span>
+        <a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium bg-white border border-gray-200 shadow-sm cursor-pointer">
+          <span class="text-indigo-600">●</span>
+          <span class="flex-1">카드뉴스 이미지</span>
+          <span class="text-[10px] px-1.5 py-px rounded bg-indigo-100 text-indigo-700 font-medium">NEW</span>
         </a>
       </nav>
       <div class="border-t border-gray-100 p-3 flex items-center gap-2.5">
@@ -1105,13 +1137,29 @@
       STYLE_PRESET = btn.dataset.preset;
       document.querySelectorAll('#preset-toggle .preset-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+      // body 클래스로 CSS 필터 즉시 적용
+      document.body.classList.remove('style-traditional', 'style-modern', 'style-moody', 'style-illustration');
+      document.body.classList.add('style-' + STYLE_PRESET);
       const labels = {
         traditional: '정통 한정식 — 한지/한옥 텍스처, 와인 레드 액센트',
         modern: '모던 한식 — 밝은 자연광, 미니멀, 매거진 스타일',
         moody: '감성 사진 — 저조도 시네마틱, 깊은 그림자, 필름 그레인',
         illustration: '일러스트 — 플랫 벡터, 한국 전통 패턴, 4색 팔레트',
       };
-      toast(`스타일 변경: ${labels[STYLE_PRESET] || STYLE_PRESET} · 다음 재생성부터 적용`, 'info');
+      // Pexels 모드일 때만 자동 재생성 (Codex/AI 는 비용/시간 때문에 수동)
+      if (IMAGE_SOURCE === 'pexels') {
+        toast(`${labels[STYLE_PRESET]} · 새 이미지로 갱신 중…`, 'info');
+        generateAll();
+      } else {
+        toast(`${labels[STYLE_PRESET]} · 시각 필터 즉시 적용. 새 이미지가 필요하면 [전체 재생성] 클릭`, 'info');
+        // 재생성 버튼 강조
+        document.querySelectorAll('button').forEach(b => {
+          if ((b.textContent || '').trim() === '전체 재생성') {
+            b.classList.add('regen-pulse');
+            setTimeout(() => b.classList.remove('regen-pulse'), 4500);
+          }
+        });
+      }
     });
 
     // ----- 이미지 소스 토글 -----

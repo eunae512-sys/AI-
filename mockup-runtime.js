@@ -42,12 +42,13 @@
   // ============ 사이드바 nav 자동 href ============
   // 첫 단어가 아닌 startsWith 매칭으로 "검토 큐" / "AI 이미지"도 정확히 잡음
   const NAV_MAP = {
-    '홈':         'index.html',
-    '클라이언트':  '02-clients.html',
-    '캠페인':     '04-campaign-new.html',
-    '콘텐츠':     '05-content-result.html',
-    '검토 큐':    '05-content-result.html',
-    'AI 이미지':  '06-cardnews-image.html',
+    '홈':            'index.html',
+    '클라이언트':     '02-clients.html',
+    '캠페인':        '04-campaign-new.html',
+    '콘텐츠':        '05-content-result.html',
+    '검토 큐':       '05-content-result.html',
+    '카드뉴스 이미지': '06-cardnews-image.html',
+    'AI 이미지':     '06-cardnews-image.html', // 옛 라벨 호환
     // 멤버 / AI 비용 / 워크스페이스 등 설정 섹션은 의도적으로 제외 → fallback에서 mock 토스트
   };
   // 길이 긴 키부터 매칭 (e.g. "AI 비용" 이 "AI"보다 우선)
