@@ -29,7 +29,7 @@
         <h1 class="mt-12 text-2xl font-semibold tracking-tight">워크스페이스에 로그인</h1>
         <p class="mt-2 text-sm text-gray-500">소상공인 광고대행사 운영팀 전용 워크스페이스입니다.</p>
 
-        <form class="mt-10 space-y-5" onsubmit="event.preventDefault()">
+        <form class="mt-10 space-y-5" data-submit-go="02-clients.html">
           <div>
             <label class="text-xs font-medium text-gray-700">업무용 이메일</label>
             <input type="email" placeholder="hello@adops.kr" class="mt-1.5 w-full rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm placeholder-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/5 outline-none transition" />
@@ -51,7 +51,7 @@
             <div class="relative flex justify-center"><span class="bg-white px-3 text-[11px] text-gray-400 uppercase tracking-widest">또는</span></div>
           </div>
 
-          <button type="button" class="w-full rounded-lg border border-gray-200 hover:bg-gray-50 px-4 py-2.5 text-sm font-medium text-gray-900 transition flex items-center justify-center gap-2.5">
+          <button type="button" data-go="02-clients.html" class="w-full rounded-lg border border-gray-200 hover:bg-gray-50 px-4 py-2.5 text-sm font-medium text-gray-900 transition flex items-center justify-center gap-2.5">
             <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
               <path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.44c-.27 1.4-1.06 2.59-2.26 3.39v2.81h3.66c2.14-1.97 3.39-4.88 3.39-8.44z"/>
               <path fill="#34A853" d="M12 24c3.05 0 5.6-1.01 7.46-2.74l-3.66-2.81c-1.01.68-2.31 1.08-3.8 1.08-2.92 0-5.4-1.97-6.29-4.61H1.94v2.91A11.99 11.99 0 0 0 12 24z"/>
@@ -121,5 +121,6 @@
       </div>
     </div>
   </div>
+  <script src="mockup-runtime.js" defer></script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AdOps AI · 미옥당 본점</title>
+  <title data-bind="title">AdOps AI · 미옥당 본점</title>
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ['"Pretendard Variable"', 'Pretendard', 'system-ui', 'sans-serif'] } } } }</script>
@@ -47,9 +47,9 @@
       <header class="border-b border-gray-100 bg-white/70 backdrop-blur sticky top-0 z-10">
         <div class="px-8 py-3.5 flex items-center gap-4">
           <div class="flex items-center gap-2 text-xs">
-            <a class="text-gray-500 hover:text-gray-900">클라이언트</a>
+            <a href="02-clients.html" class="text-gray-500 hover:text-gray-900">클라이언트</a>
             <svg class="h-3 w-3 text-gray-300" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 3l3 3-3 3"/></svg>
-            <span class="text-gray-900 font-medium">미옥당 본점</span>
+            <span class="text-gray-900 font-medium" data-bind="name">미옥당 본점</span>
           </div>
           <div class="ml-auto flex items-center gap-2">
             <button class="text-xs px-2.5 py-1.5 rounded-md border border-gray-200 hover:bg-gray-50">알림</button>
@@ -60,25 +60,28 @@
       <!-- Hero -->
       <div class="px-8 pt-8 pb-6">
         <div class="flex items-start gap-5">
-          <div class="h-16 w-16 rounded-2xl bg-gradient-to-br from-rose-400 to-orange-400 grid place-items-center text-white text-xl font-bold shadow-sm">미</div>
+          <div data-bind="avatar" class="h-16 w-16 rounded-2xl bg-gradient-to-br from-rose-400 to-orange-400 grid place-items-center text-white text-xl font-bold shadow-sm">미</div>
           <div class="flex-1">
             <div class="flex items-center gap-2 flex-wrap">
-              <h1 class="text-2xl font-semibold tracking-tight">미옥당 본점</h1>
-              <span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100"><span class="h-1 w-1 rounded-full bg-emerald-500"></span>활성</span>
-              <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">음식점 · 한정식</span>
+              <h1 class="text-2xl font-semibold tracking-tight" data-bind="name">미옥당 본점</h1>
+              <span data-bind="statusBadge" class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100"><span class="h-1 w-1 rounded-full bg-emerald-500"></span>활성</span>
+              <span data-bind="industry" class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">음식점 · 한정식</span>
+              <span data-bind="medicalBadge" class="hidden inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-100" title="의료광고법 가드레일 active">
+                <svg class="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4M12 17h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> 의료 가드레일
+              </span>
             </div>
-            <p class="mt-2 text-sm text-gray-500 max-w-2xl leading-relaxed">서울 종로구 수송동에 위치한 한정식 본점. 30~50대 직장인·가족 모임 타겟. 점심 한정 코스가 시그니처.</p>
+            <p class="mt-2 text-sm text-gray-500 max-w-2xl leading-relaxed" data-bind="description">서울 종로구 수송동에 위치한 한정식 본점. 30~50대 직장인·가족 모임 타겟. 점심 한정 코스가 시그니처.</p>
             <div class="mt-3 flex items-center gap-4 text-[11px] text-gray-500">
-              <span class="inline-flex items-center gap-1.5"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>등록 2025-11-04</span>
-              <span class="inline-flex items-center gap-1.5"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>캠페인 7개</span>
-              <span class="inline-flex items-center gap-1.5"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>콘텐츠 38개</span>
-              <span class="inline-flex items-center gap-1.5">담당 <span class="font-medium text-gray-700">김기획 · 박운영</span></span>
+              <span class="inline-flex items-center gap-1.5"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>등록 <span data-bind="register">2025-11-04</span></span>
+              <span class="inline-flex items-center gap-1.5"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>캠페인 <span data-bind="campaignCount">7</span>개</span>
+              <span class="inline-flex items-center gap-1.5"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>콘텐츠 <span data-bind="contentCount">38</span>개</span>
+              <span class="inline-flex items-center gap-1.5">담당 <span class="font-medium text-gray-700" data-bind="owners">김기획 · 박운영</span></span>
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <button class="text-xs font-medium px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50">편집</button>
-            <button class="text-xs font-medium px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50">아카이브</button>
-            <button class="text-xs font-medium px-3 py-2 rounded-md bg-gray-900 text-white hover:bg-black inline-flex items-center gap-1.5 shadow-sm">
+            <button data-mock="브랜드 편집 모달 — 다음 페이즈" class="text-xs font-medium px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50">편집</button>
+            <button data-mock="아카이브 동작 — 다음 페이즈" class="text-xs font-medium px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50">아카이브</button>
+            <button data-go="04-campaign-new.html" class="text-xs font-medium px-3 py-2 rounded-md bg-gray-900 text-white hover:bg-black inline-flex items-center gap-1.5 shadow-sm">
               <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
               새 캠페인
             </button>
@@ -113,11 +116,11 @@
             <div class="px-5 py-5 grid grid-cols-2 gap-x-8 gap-y-5">
               <div>
                 <div class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">슬로건</div>
-                <div class="mt-1.5 text-sm">정성으로 차린 한 상, 미옥당</div>
+                <div class="mt-1.5 text-sm" data-bind="slogan">정성으로 차린 한 상, 미옥당</div>
               </div>
               <div>
                 <div class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">컬러</div>
-                <div class="mt-1.5 flex items-center gap-2">
+                <div class="mt-1.5 flex items-center gap-2 flex-wrap" data-render="colors">
                   <div class="h-5 w-5 rounded border border-gray-200 bg-[#7B2D26]"></div>
                   <span class="text-xs font-mono text-gray-600">#7B2D26</span>
                   <div class="h-5 w-5 rounded border border-gray-200 bg-[#E9DCC0] ml-2"></div>
@@ -126,7 +129,7 @@
               </div>
               <div>
                 <div class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">톤 키워드</div>
-                <div class="mt-1.5 flex items-center gap-1.5 flex-wrap">
+                <div class="mt-1.5 flex items-center gap-1.5 flex-wrap" data-render="toneKeywords">
                   <span class="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">정성</span>
                   <span class="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">고즈넉</span>
                   <span class="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">전통</span>
@@ -135,12 +138,12 @@
               </div>
               <div>
                 <div class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">존대 톤</div>
-                <div class="mt-1.5 text-sm">~합니다 / 차분한 어투</div>
+                <div class="mt-1.5 text-sm" data-bind="formality">~합니다 / 차분한 어투</div>
               </div>
               <div class="col-span-2 pt-4 border-t border-gray-100 grid grid-cols-2 gap-8">
                 <div>
                   <div class="text-[10px] uppercase tracking-widest text-emerald-700 font-semibold">필수어 (must say)</div>
-                  <div class="mt-1.5 flex items-center gap-1.5 flex-wrap">
+                  <div class="mt-1.5 flex items-center gap-1.5 flex-wrap" data-render="mustSay">
                     <span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">한정식</span>
                     <span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">코스</span>
                     <span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">한 상</span>
@@ -148,7 +151,7 @@
                 </div>
                 <div>
                   <div class="text-[10px] uppercase tracking-widest text-rose-700 font-semibold">금지어 (do not say)</div>
-                  <div class="mt-1.5 flex items-center gap-1.5 flex-wrap">
+                  <div class="mt-1.5 flex items-center gap-1.5 flex-wrap" data-render="dontSay">
                     <span class="text-[11px] px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-100 line-through">최고</span>
                     <span class="text-[11px] px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-100 line-through">100%</span>
                     <span class="text-[11px] px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-100 line-through">싸고</span>
@@ -163,31 +166,31 @@
           <div class="rounded-xl border border-gray-200 bg-white">
             <div class="px-5 py-3.5 border-b border-gray-100 flex items-center">
               <h2 class="text-sm font-semibold tracking-tight">톤 프로파일</h2>
-              <span class="ml-2 inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-100">v3 활성</span>
-              <span class="ml-2 text-[10px] text-gray-400">12개 샘플 · Claude Sonnet 4.6 추출</span>
+              <span class="ml-2 inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-100" data-bind="toneVersion">v3 활성</span>
+              <span class="ml-2 text-[10px] text-gray-400" data-bind="toneMeta">12개 샘플 · Claude Sonnet 4.6 추출</span>
               <button class="ml-auto text-xs text-gray-500 hover:text-gray-900">버전 기록</button>
               <button class="ml-3 text-xs text-indigo-600 hover:text-indigo-700">재학습</button>
             </div>
             <div class="px-5 py-5 grid grid-cols-2 gap-x-8 gap-y-5">
               <div>
                 <div class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">Voice</div>
-                <div class="mt-1.5 text-sm">사장님이 직접 손님께 말 걸듯, 따뜻하고 단정</div>
+                <div class="mt-1.5 text-sm" data-bind="voice">사장님이 직접 손님께 말 걸듯, 따뜻하고 단정</div>
               </div>
               <div>
                 <div class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">Persona</div>
-                <div class="mt-1.5 text-sm">25년 경력 한정식 장인의 자부심</div>
+                <div class="mt-1.5 text-sm" data-bind="persona">25년 경력 한정식 장인의 자부심</div>
               </div>
               <div>
                 <div class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">자주 쓰는 표현</div>
-                <div class="mt-1.5 text-xs text-gray-700 leading-relaxed">"정성껏 차렸습니다" · "오늘 들어온" · "조용히 모십니다"</div>
+                <div class="mt-1.5 text-xs text-gray-700 leading-relaxed" data-bind="mostUsed">"정성껏 차렸습니다" · "오늘 들어온" · "조용히 모십니다"</div>
               </div>
               <div>
                 <div class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">피하는 표현</div>
-                <div class="mt-1.5 text-xs text-gray-700 leading-relaxed">"맛집" · "JMT" · 이모지 남발</div>
+                <div class="mt-1.5 text-xs text-gray-700 leading-relaxed" data-bind="avoided">"맛집" · "JMT" · 이모지 남발</div>
               </div>
               <div class="col-span-2 pt-4 border-t border-gray-100">
                 <div class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold mb-2">샘플 미리보기</div>
-                <blockquote class="text-xs text-gray-700 italic border-l-2 border-gray-200 pl-3 leading-relaxed">
+                <blockquote class="text-xs text-gray-700 italic border-l-2 border-gray-200 pl-3 leading-relaxed" data-bind="sample">
                   "오늘 새벽에 들어온 가지런한 시금치로 한 상을 차렸습니다. 점심엔 코스로 조용히 모시고, 저녁엔 가족 모임 단체석을 미리 받습니다."
                 </blockquote>
               </div>
@@ -210,7 +213,7 @@
                   <th class="px-5 py-2.5 text-right font-medium">AI 비용</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-100">
+              <tbody class="divide-y divide-gray-100" data-render="campaigns">
                 <tr class="hover:bg-gray-50/50 cursor-pointer">
                   <td class="px-5 py-3">
                     <div class="font-medium">5월 신메뉴 봄나물 코스 런칭</div>
@@ -220,36 +223,6 @@
                   <td class="px-5 py-3"><span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100"><span class="h-1 w-1 rounded-full bg-emerald-500"></span>활성</span></td>
                   <td class="px-5 py-3 tabular-nums">8</td>
                   <td class="px-5 py-3 text-right tabular-nums">₩4,820</td>
-                </tr>
-                <tr class="hover:bg-gray-50/50 cursor-pointer">
-                  <td class="px-5 py-3">
-                    <div class="font-medium">어버이날 가족 코스 예약 프로모션</div>
-                    <div class="text-[10px] text-gray-400 mt-0.5">예약 전환</div>
-                  </td>
-                  <td class="px-5 py-3 text-gray-600">4/22 — 5/8</td>
-                  <td class="px-5 py-3"><span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">완료</span></td>
-                  <td class="px-5 py-3 tabular-nums">12</td>
-                  <td class="px-5 py-3 text-right tabular-nums">₩7,160</td>
-                </tr>
-                <tr class="hover:bg-gray-50/50 cursor-pointer">
-                  <td class="px-5 py-3">
-                    <div class="font-medium">평일 점심 한정 코스 인스타 캠페인</div>
-                    <div class="text-[10px] text-gray-400 mt-0.5">인지도</div>
-                  </td>
-                  <td class="px-5 py-3 text-gray-600">4/1 — 4/30</td>
-                  <td class="px-5 py-3"><span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">완료</span></td>
-                  <td class="px-5 py-3 tabular-nums">9</td>
-                  <td class="px-5 py-3 text-right tabular-nums">₩3,940</td>
-                </tr>
-                <tr class="hover:bg-gray-50/50 cursor-pointer">
-                  <td class="px-5 py-3">
-                    <div class="font-medium">3월 첫 손님 환영 카드뉴스</div>
-                    <div class="text-[10px] text-gray-400 mt-0.5">브랜딩</div>
-                  </td>
-                  <td class="px-5 py-3 text-gray-600">3/12 — 3/24</td>
-                  <td class="px-5 py-3"><span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">완료</span></td>
-                  <td class="px-5 py-3 tabular-nums">5</td>
-                  <td class="px-5 py-3 text-right tabular-nums">₩2,310</td>
                 </tr>
               </tbody>
             </table>
@@ -264,20 +237,11 @@
           <div class="rounded-xl border border-gray-200 bg-white">
             <div class="px-5 py-3.5 border-b border-gray-100 flex items-center">
               <h2 class="text-sm font-semibold tracking-tight">자산 라이브러리</h2>
-              <span class="ml-1.5 text-[10px] text-gray-400">14</span>
+              <span class="ml-1.5 text-[10px] text-gray-400" data-bind="assetCount">14</span>
               <button class="ml-auto text-xs text-indigo-600 hover:text-indigo-700">+ 업로드</button>
             </div>
-            <div class="p-3 grid grid-cols-3 gap-2">
+            <div class="p-3 grid grid-cols-3 gap-2" data-render="assets">
               <div class="aspect-square rounded-md bg-gradient-to-br from-amber-100 to-rose-100 border border-gray-200 grid place-items-center text-[10px] text-gray-600 font-medium">로고</div>
-              <div class="aspect-square rounded-md bg-gradient-to-br from-emerald-100 to-teal-100 border border-gray-200 grid place-items-center text-[10px] text-gray-600 font-medium">메뉴판</div>
-              <div class="aspect-square rounded-md bg-gradient-to-br from-orange-100 to-rose-100 border border-gray-200 grid place-items-center text-[10px] text-gray-600 font-medium">코스 사진</div>
-              <div class="aspect-square rounded-md bg-gradient-to-br from-stone-100 to-amber-100 border border-gray-200 grid place-items-center text-[10px] text-gray-600 font-medium">홀</div>
-              <div class="aspect-square rounded-md bg-gradient-to-br from-yellow-100 to-orange-100 border border-gray-200 grid place-items-center text-[10px] text-gray-600 font-medium">간판</div>
-              <div class="aspect-square rounded-md bg-gradient-to-br from-rose-100 to-fuchsia-100 border border-gray-200 grid place-items-center text-[10px] text-gray-600 font-medium">사장님</div>
-              <div class="aspect-square rounded-md border border-dashed border-gray-300 grid place-items-center text-gray-400">
-                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>
-              </div>
-              <div class="aspect-square rounded-md bg-gray-50 border border-gray-200 grid place-items-center text-[10px] text-gray-600 font-medium">+8</div>
             </div>
             <div class="px-5 py-3 border-t border-gray-100 text-[11px] text-gray-500">비공개 버킷 · signed URL · PII 마스킹 적용</div>
           </div>
@@ -287,33 +251,12 @@
             <div class="px-5 py-3.5 border-b border-gray-100">
               <h2 class="text-sm font-semibold tracking-tight">최근 활동</h2>
             </div>
-            <ul class="px-5 py-3 space-y-3.5 text-xs">
+            <ul class="px-5 py-3 space-y-3.5 text-xs" data-render="activity">
               <li class="flex gap-3">
                 <div class="h-6 w-6 shrink-0 rounded-full bg-indigo-50 text-indigo-600 grid place-items-center text-[10px] font-semibold">박</div>
                 <div class="flex-1">
                   <div><span class="font-medium">박운영</span> 님이 <span class="text-indigo-600">5월 신메뉴 봄나물 코스</span> 인스타 카피 승인</div>
                   <div class="text-[10px] text-gray-400 mt-0.5">2시간 전</div>
-                </div>
-              </li>
-              <li class="flex gap-3">
-                <div class="h-6 w-6 shrink-0 rounded-full bg-amber-50 text-amber-600 grid place-items-center text-[10px] font-semibold">AI</div>
-                <div class="flex-1">
-                  <div>네이버 블로그 초안 4개 생성 완료 <span class="text-gray-400">· cache hit 67%</span></div>
-                  <div class="text-[10px] text-gray-400 mt-0.5">4시간 전 · ₩520</div>
-                </div>
-              </li>
-              <li class="flex gap-3">
-                <div class="h-6 w-6 shrink-0 rounded-full bg-emerald-50 text-emerald-600 grid place-items-center text-[10px] font-semibold">김</div>
-                <div class="flex-1">
-                  <div><span class="font-medium">김기획</span> 님이 톤 프로파일 v3 저장</div>
-                  <div class="text-[10px] text-gray-400 mt-0.5">어제 오후 4:18</div>
-                </div>
-              </li>
-              <li class="flex gap-3">
-                <div class="h-6 w-6 shrink-0 rounded-full bg-rose-50 text-rose-600 grid place-items-center text-[10px] font-semibold">!</div>
-                <div class="flex-1">
-                  <div>"최고의 한정식" 표현이 가드레일에서 차단됨 → 자동 재작성</div>
-                  <div class="text-[10px] text-gray-400 mt-0.5">2일 전</div>
                 </div>
               </li>
             </ul>
@@ -323,5 +266,478 @@
       </div>
     </main>
   </div>
+  <style>
+    .mock-tab-active { color:#111827 !important; border-bottom-color:#111827 !important; font-weight:600 !important; }
+  </style>
+  <script src="mockup-runtime.js" defer></script>
+  <script defer>
+    // ====== 브랜드 데이터 ======
+    const BRANDS = {
+      'miokdang': {
+        name: '미옥당 본점',
+        avatar: { letter: '미', gradient: 'from-rose-400 to-orange-400' },
+        status: { label: '활성', tone: 'emerald' },
+        industry: '음식점 · 한정식',
+        medical: false,
+        description: '서울 종로구 수송동에 위치한 한정식 본점. 30~50대 직장인·가족 모임 타겟. 점심 한정 코스가 시그니처.',
+        register: '2025-11-04',
+        campaignCount: 7,
+        contentCount: 38,
+        owners: '김기획 · 박운영',
+        slogan: '정성으로 차린 한 상, 미옥당',
+        colors: [['#7B2D26'], ['#E9DCC0']],
+        toneKeywords: ['정성', '고즈넉', '전통', '단정'],
+        formality: '~합니다 / 차분한 어투',
+        mustSay: ['한정식', '코스', '한 상'],
+        dontSay: ['최고', '100%', '싸고', '대박'],
+        toneVersion: 'v3 활성',
+        toneMeta: '12개 샘플 · Claude Sonnet 4.6 추출',
+        voice: '사장님이 직접 손님께 말 걸듯, 따뜻하고 단정',
+        persona: '25년 경력 한정식 장인의 자부심',
+        mostUsed: '"정성껏 차렸습니다" · "오늘 들어온" · "조용히 모십니다"',
+        avoided: '"맛집" · "JMT" · 이모지 남발',
+        sample: '"오늘 새벽에 들어온 가지런한 시금치로 한 상을 차렸습니다. 점심엔 코스로 조용히 모시고, 저녁엔 가족 모임 단체석을 미리 받습니다."',
+        campaigns: [
+          { title: '5월 신메뉴 봄나물 코스 런칭', goal: '신규 고객 유입', period: '5/8 — 5/31', status: 'active', content: 8, cost: '₩4,820' },
+          { title: '어버이날 가족 코스 예약 프로모션', goal: '예약 전환', period: '4/22 — 5/8', status: 'done', content: 12, cost: '₩7,160' },
+          { title: '평일 점심 한정 코스 인스타 캠페인', goal: '인지도', period: '4/1 — 4/30', status: 'done', content: 9, cost: '₩3,940' },
+          { title: '3월 첫 손님 환영 카드뉴스', goal: '브랜딩', period: '3/12 — 3/24', status: 'done', content: 5, cost: '₩2,310' },
+        ],
+        assetCount: 14,
+        assets: [
+          { label: '로고', gradient: 'from-amber-100 to-rose-100' },
+          { label: '메뉴판', gradient: 'from-emerald-100 to-teal-100' },
+          { label: '코스 사진', gradient: 'from-orange-100 to-rose-100' },
+          { label: '홀', gradient: 'from-stone-100 to-amber-100' },
+          { label: '간판', gradient: 'from-yellow-100 to-orange-100' },
+          { label: '사장님', gradient: 'from-rose-100 to-fuchsia-100' },
+        ],
+        moreAssets: 8,
+        activity: [
+          { who: '박', tone: 'indigo', html: '<span class="font-medium">박운영</span> 님이 <span class="text-indigo-600">5월 신메뉴 봄나물 코스</span> 인스타 카피 승인', when: '2시간 전' },
+          { who: 'AI', tone: 'amber', html: '네이버 블로그 초안 4개 생성 완료 <span class="text-gray-400">· cache hit 67%</span>', when: '4시간 전 · ₩520' },
+          { who: '김', tone: 'emerald', html: '<span class="font-medium">김기획</span> 님이 톤 프로파일 v3 저장', when: '어제 오후 4:18' },
+          { who: '!', tone: 'rose', html: '"최고의 한정식" 표현이 가드레일에서 차단됨 → 자동 재작성', when: '2일 전' },
+        ],
+      },
+      'luna-hair': {
+        name: '루나 헤어 강남점',
+        avatar: { letter: '루', gradient: 'from-violet-400 to-fuchsia-500' },
+        status: { label: '활성', tone: 'emerald' },
+        industry: '미용 · 헤어살롱',
+        medical: false,
+        description: '강남역 도보 5분, 20~30대 여성 타겟의 트렌드 헤어살롱. 원장 직강 컬러 시술과 주말 대기 1시간이 시그니처.',
+        register: '2025-09-21',
+        campaignCount: 12,
+        contentCount: 56,
+        owners: '이크리에이티브 · 박운영',
+        slogan: '오늘의 나, 가장 빛나는 결',
+        colors: [['#1B1B1F'], ['#D9B6A1']],
+        toneKeywords: ['트렌디', '세련', '자신감', '디테일'],
+        formality: '~해요 / 친근하지만 단정',
+        mustSay: ['컬러', '디자이너', '예약'],
+        dontSay: ['초저가', '반값', '특가', '최저가'],
+        toneVersion: 'v5 활성',
+        toneMeta: '24개 샘플 · Claude Sonnet 4.6 추출',
+        voice: '단골에게 살짝 추천하듯, 가볍지만 또렷하게',
+        persona: '8년차 컬러 전문 디자이너의 안목',
+        mostUsed: '"이번 주 들어온 톤" · "결이 살아요" · "다음 시즌 예열"',
+        avoided: '"인생 헤어" · 과한 의문문 · 이모지 도배',
+        sample: '"이번 시즌은 차분한 모카브라운이 결을 가장 살려줘요. 디자이너별 예약 가능 시간은 메시지로 안내드릴게요."',
+        campaigns: [
+          { title: '5월 컬러 프로모션 — 모카브라운', goal: '신규 예약', period: '5/2 — 5/31', status: 'active', content: 11, cost: '₩6,210' },
+          { title: '주말 디자이너 지명 이벤트', goal: '재방문', period: '4/15 — 5/15', status: 'active', content: 7, cost: '₩3,840' },
+          { title: '봄 시즌 펌 카드뉴스', goal: '인지도', period: '3/20 — 4/14', status: 'done', content: 9, cost: '₩4,520' },
+          { title: '졸업 시즌 헤어 패키지', goal: '신규 유입', period: '2/10 — 3/5', status: 'done', content: 8, cost: '₩3,210' },
+        ],
+        assetCount: 22,
+        assets: [
+          { label: '로고', gradient: 'from-violet-100 to-fuchsia-100' },
+          { label: '인테리어', gradient: 'from-stone-100 to-rose-100' },
+          { label: '컬러 차트', gradient: 'from-amber-100 to-orange-100' },
+          { label: '디자이너', gradient: 'from-indigo-100 to-violet-100' },
+          { label: '시술 전후', gradient: 'from-emerald-100 to-teal-100' },
+          { label: '간판', gradient: 'from-rose-100 to-pink-100' },
+        ],
+        moreAssets: 16,
+        activity: [
+          { who: '이', tone: 'indigo', html: '<span class="font-medium">이크리에이티브</span> 님이 <span class="text-indigo-600">모카브라운 프로모션</span> 릴스 승인', when: '50분 전' },
+          { who: 'AI', tone: 'amber', html: '인스타 캐러셀 6장 생성 <span class="text-gray-400">· cache hit 72%</span>', when: '3시간 전 · ₩680' },
+          { who: '박', tone: 'emerald', html: '<span class="font-medium">박운영</span> 님이 톤 프로파일 v5 활성화', when: '어제 오후 5:02' },
+          { who: '!', tone: 'rose', html: '"반값 이벤트" 표현이 가드레일에서 차단됨 → "한정 프로모션"으로 재작성', when: '2일 전' },
+        ],
+      },
+      'cheongdam-medical': {
+        name: '청담 메디컬 의원',
+        avatar: { letter: '청', gradient: 'from-sky-400 to-blue-600' },
+        status: { label: '검토 필요', tone: 'amber' },
+        industry: '의료 · 피부과',
+        medical: true,
+        description: '청담동 소재 피부과 의원. 30~50대 타겟의 리프팅·레이저 시술 중심. 의료광고법·표시광고법 가드레일 상시 적용.',
+        register: '2025-12-12',
+        campaignCount: 5,
+        contentCount: 21,
+        owners: '김기획 · 의료 검수팀',
+        slogan: '오늘의 결정, 내일의 자신감',
+        colors: [['#0E2C4B'], ['#C7D8E8']],
+        toneKeywords: ['신뢰', '전문성', '차분', '근거'],
+        formality: '~합니다 / 단정한 의료 어투',
+        mustSay: ['상담', '의료진', '예약 문의'],
+        dontSay: ['최고', '100%', '부작용 없음', '안전 보장', '효과 보장'],
+        toneVersion: 'v2 활성',
+        toneMeta: '8개 샘플 · 의료 가이드라인 적용',
+        voice: '의료진이 차분하게 안내하는 어투. 효과 단정 표현은 사용하지 않음',
+        persona: '15년 경력 피부과 전문의의 신중함',
+        mostUsed: '"전문의 상담 후" · "개인차가 있을 수 있습니다" · "사전 진료가 필요합니다"',
+        avoided: '"100% 효과" · "부작용 없음" · 단정형 비교 표현',
+        sample: '"리프팅 시술은 개인의 피부 상태에 따라 결과가 달라질 수 있습니다. 정확한 안내는 사전 진료 후 의료진을 통해 받아보실 수 있습니다."',
+        campaigns: [
+          { title: '5월 봄맞이 피부 진단 캠페인', goal: '상담 예약', period: '5/1 — 5/31', status: 'active', content: 6, cost: '₩9,840' },
+          { title: '리프팅 시술 안내 블로그 시리즈', goal: '인지도', period: '4/10 — 4/30', status: 'done', content: 5, cost: '₩4,210' },
+          { title: '겨울철 피부 관리 콘텐츠', goal: '브랜딩', period: '12/1 — 12/31', status: 'done', content: 8, cost: '₩5,920' },
+        ],
+        assetCount: 9,
+        assets: [
+          { label: '로고', gradient: 'from-sky-100 to-blue-100' },
+          { label: '의료진', gradient: 'from-indigo-100 to-sky-100' },
+          { label: '진료실', gradient: 'from-slate-100 to-blue-100' },
+          { label: '시술 장비', gradient: 'from-cyan-100 to-teal-100' },
+          { label: '대기실', gradient: 'from-stone-100 to-sky-100' },
+          { label: '의원 외관', gradient: 'from-blue-100 to-indigo-100' },
+        ],
+        moreAssets: 3,
+        activity: [
+          { who: '!', tone: 'rose', html: '"100% 효과" 표현이 가드레일에서 차단됨 → 의료광고법 위반', when: '1시간 전' },
+          { who: '검', tone: 'amber', html: '<span class="font-medium">의료 검수팀</span> 님이 <span class="text-indigo-600">5월 피부 진단</span> 블로그 초안 검토 요청', when: '3시간 전' },
+          { who: 'AI', tone: 'amber', html: '의료 가이드라인 위반 의심 표현 12건 자동 재작성', when: '오늘 오전 9:14 · ₩820' },
+          { who: '김', tone: 'emerald', html: '<span class="font-medium">김기획</span> 님이 톤 프로파일 v2 저장', when: '3일 전' },
+        ],
+      },
+      'best-eng': {
+        name: '베스트 영어학원',
+        avatar: { letter: '베', gradient: 'from-emerald-400 to-teal-500' },
+        status: { label: '활성', tone: 'emerald' },
+        industry: '교육 · 학원',
+        medical: false,
+        description: '서울 마포구 소재 초·중등 영어학원. 학부모 타겟의 신학기·방학 캠페인 중심. 학습 결과를 솔직한 후기로 전달하는 톤.',
+        register: '2025-08-30',
+        campaignCount: 9,
+        contentCount: 44,
+        owners: '박운영 · 이크리에이티브',
+        slogan: '꾸준함이 영어가 되는 곳',
+        colors: [['#0F766E'], ['#FFEFC4']],
+        toneKeywords: ['신뢰', '꾸준함', '성장', '응원'],
+        formality: '~해요 / 학부모 친근형',
+        mustSay: ['커리큘럼', '레벨 테스트', '학습 진단'],
+        dontSay: ['1등', '보장', '확실히', '단기간'],
+        toneVersion: 'v4 활성',
+        toneMeta: '18개 샘플 · Claude Sonnet 4.6 추출',
+        voice: '담임 선생님이 학부모에게 차근히 알려주는 어투',
+        persona: '학생을 오래 봐온 원장의 시선',
+        mostUsed: '"꾸준히 따라오면" · "이번 학기 변화" · "한 단계씩"',
+        avoided: '"무조건 1등" · "단기 완성" · "보장"',
+        sample: '"한 학기 동안 단어와 독해를 함께 다지면, 다음 시험에서 서서히 변화가 보이기 시작해요. 이번 주 레벨 테스트부터 천천히 시작해 볼까요?"',
+        campaigns: [
+          { title: '5월 신학기 레벨 테스트 모집', goal: '신규 등록', period: '5/3 — 5/24', status: 'active', content: 10, cost: '₩5,120' },
+          { title: '여름방학 집중반 사전 안내', goal: '예약 등록', period: '4/20 — 5/15', status: 'active', content: 7, cost: '₩3,640' },
+          { title: '3월 학부모 설명회 카드뉴스', goal: '인지도', period: '2/20 — 3/8', status: 'done', content: 6, cost: '₩2,820' },
+          { title: '겨울방학 단기반 후기', goal: '브랜딩', period: '1/10 — 2/15', status: 'done', content: 9, cost: '₩4,140' },
+        ],
+        assetCount: 17,
+        assets: [
+          { label: '로고', gradient: 'from-emerald-100 to-teal-100' },
+          { label: '교실', gradient: 'from-yellow-100 to-emerald-100' },
+          { label: '교재', gradient: 'from-orange-100 to-amber-100' },
+          { label: '커리큘럼', gradient: 'from-teal-100 to-cyan-100' },
+          { label: '원장님', gradient: 'from-rose-100 to-amber-100' },
+          { label: '간판', gradient: 'from-emerald-100 to-yellow-100' },
+        ],
+        moreAssets: 11,
+        activity: [
+          { who: '박', tone: 'indigo', html: '<span class="font-medium">박운영</span> 님이 <span class="text-indigo-600">신학기 레벨 테스트</span> 블로그 승인', when: '1시간 전' },
+          { who: 'AI', tone: 'amber', html: '학부모 타겟 카드뉴스 6장 생성 <span class="text-gray-400">· cache hit 81%</span>', when: '5시간 전 · ₩410' },
+          { who: '이', tone: 'emerald', html: '<span class="font-medium">이크리에이티브</span> 님이 톤 프로파일 v4 저장', when: '어제 오후 3:30' },
+          { who: '!', tone: 'rose', html: '"무조건 1등" 표현이 가드레일에서 차단됨 → 자동 재작성', when: '3일 전' },
+        ],
+      },
+      'forum-fashion': {
+        name: 'FORUM 패션',
+        avatar: { letter: 'F', gradient: 'from-slate-700 to-zinc-900' },
+        status: { label: '활성', tone: 'emerald' },
+        industry: '쇼핑몰 · 컨템포러리',
+        medical: false,
+        description: '20~30대 여성 컨템포러리 의류 쇼핑몰. 신상 입고 회차당 인스타·블로그·상세페이지를 일괄 생성. 이미지 우선·카피 절제 톤.',
+        register: '2025-10-05',
+        campaignCount: 18,
+        contentCount: 92,
+        owners: '이크리에이티브 · 김기획',
+        slogan: 'Quiet Statements for Everyday',
+        colors: [['#111111'], ['#E5E1DB']],
+        toneKeywords: ['미니멀', '정제', '에디토리얼', '도시적'],
+        formality: '~입니다 / 짧고 정제된 어투',
+        mustSay: ['신상', '입고', '컬러', '핏'],
+        dontSay: ['세일', '폭탄', '득템', '대박'],
+        toneVersion: 'v6 활성',
+        toneMeta: '32개 샘플 · Claude Sonnet 4.6 추출',
+        voice: '에디토리얼 매거진 캡션처럼 짧고 절제된 어투',
+        persona: '편집숍 디렉터의 안목',
+        mostUsed: '"이번 회차" · "조용한 무게" · "데일리 무드"',
+        avoided: '"역대급" · "득템" · 과한 느낌표',
+        sample: '"이번 회차는 도시의 무채색 위에 한 톤의 따뜻함을 더했습니다. 데일리 무드를 조용히 받쳐주는 컬러 두 가지를 먼저 만나보세요."',
+        campaigns: [
+          { title: '5월 신상 입고 회차 #18', goal: '신상 판매', period: '5/9 — 5/22', status: 'active', content: 14, cost: '₩8,920' },
+          { title: '봄 아우터 룩북 캠페인', goal: '브랜딩', period: '4/12 — 5/8', status: 'active', content: 16, cost: '₩9,440' },
+          { title: '데일리 셋업 시리즈', goal: '연관 구매', period: '3/20 — 4/10', status: 'done', content: 11, cost: '₩6,310' },
+          { title: '겨울 시즌 마감 룩북', goal: '재고 회전', period: '2/1 — 2/28', status: 'done', content: 12, cost: '₩7,140' },
+        ],
+        assetCount: 48,
+        assets: [
+          { label: '로고', gradient: 'from-stone-100 to-zinc-200' },
+          { label: '룩북 #18', gradient: 'from-stone-200 to-amber-100' },
+          { label: '디테일컷', gradient: 'from-zinc-100 to-stone-200' },
+          { label: '모델 컷', gradient: 'from-rose-100 to-stone-100' },
+          { label: '신상 평촬', gradient: 'from-amber-100 to-stone-100' },
+          { label: '쇼룸', gradient: 'from-zinc-200 to-slate-200' },
+        ],
+        moreAssets: 42,
+        activity: [
+          { who: '이', tone: 'indigo', html: '<span class="font-medium">이크리에이티브</span> 님이 <span class="text-indigo-600">5월 신상 회차 #18</span> 상세페이지 승인', when: '20분 전' },
+          { who: 'AI', tone: 'amber', html: '상세페이지 헤드라인 14개 생성 <span class="text-gray-400">· cache hit 64%</span>', when: '2시간 전 · ₩1,120' },
+          { who: '김', tone: 'emerald', html: '<span class="font-medium">김기획</span> 님이 톤 프로파일 v6 저장', when: '어제 오전 11:48' },
+          { who: '!', tone: 'rose', html: '"역대급 세일" 표현이 가드레일에서 차단됨 → "한정 회차"로 재작성', when: '2일 전' },
+        ],
+      },
+      'roastery-1985': {
+        name: '로스터리 1985',
+        avatar: { letter: 'R', gradient: 'from-amber-700 to-stone-800' },
+        status: { label: '준비 중', tone: 'gray' },
+        industry: '카페 · 스페셜티',
+        medical: false,
+        description: '연남동 소재 스페셜티 로스터리. 20~40대 타겟의 원두 정기 구독과 핸드드립 클래스 중심. 산미와 향에 민감한 고객층.',
+        register: '2026-01-18',
+        campaignCount: 3,
+        contentCount: 11,
+        owners: '김기획',
+        slogan: '오늘 한 잔, 오늘의 산미',
+        colors: [['#3B2A20'], ['#D4B895']],
+        toneKeywords: ['감각적', '담백', '정직', '느긋함'],
+        formality: '~해요 / 편안한 카페 어투',
+        mustSay: ['싱글 오리진', '로스팅', '컵 노트'],
+        dontSay: ['최고', '독보적', '극강', '폭탄'],
+        toneVersion: 'v1 활성',
+        toneMeta: '4개 샘플 · 초기 학습 단계',
+        voice: '바리스타가 단골에게 오늘의 원두를 추천하듯 편안한 어투',
+        persona: '8년차 로스터의 담백한 시선',
+        mostUsed: '"오늘 볶은" · "이 잔의 첫 향" · "느긋하게"',
+        avoided: '"독보적" · "극강" · 과장된 비교',
+        sample: '"오늘은 에티오피아 예가체프를 살짝 약하게 볶았어요. 첫 향에선 자몽, 마실수록 차 같은 끝맛이 길게 남습니다."',
+        campaigns: [
+          { title: '오픈 기념 원두 구독 사전 안내', goal: '구독 등록', period: '5/15 — 6/15', status: 'draft', content: 4, cost: '₩1,820' },
+          { title: '핸드드립 클래스 모집', goal: '체험 예약', period: '5/20 — 6/5', status: 'draft', content: 3, cost: '₩1,140' },
+          { title: '오픈 D-7 카드뉴스', goal: '인지도', period: '5/8 — 5/14', status: 'active', content: 4, cost: '₩980' },
+        ],
+        assetCount: 6,
+        assets: [
+          { label: '로고', gradient: 'from-amber-100 to-stone-200' },
+          { label: '원두 패키지', gradient: 'from-stone-100 to-amber-100' },
+          { label: '카페 외관', gradient: 'from-amber-200 to-orange-100' },
+          { label: '바 카운터', gradient: 'from-stone-200 to-zinc-100' },
+        ],
+        moreAssets: 2,
+        activity: [
+          { who: '김', tone: 'indigo', html: '<span class="font-medium">김기획</span> 님이 <span class="text-indigo-600">오픈 D-7 카드뉴스</span> 초안 저장', when: '40분 전' },
+          { who: 'AI', tone: 'amber', html: '오픈 인사 카피 10건 생성 <span class="text-gray-400">· cache hit 12%</span>', when: '4시간 전 · ₩240' },
+          { who: '김', tone: 'emerald', html: '<span class="font-medium">김기획</span> 님이 톤 프로파일 v1 초기화', when: '어제' },
+          { who: '!', tone: 'rose', html: '"극강의 향" 표현이 가드레일에서 차단됨 → "정직한 향"으로 재작성', when: '2일 전' },
+        ],
+      },
+    };
+
+    const STATUS_BADGE = {
+      active:   { label: '활성', cls: 'bg-emerald-50 text-emerald-700 border border-emerald-100', dot: 'bg-emerald-500' },
+      done:     { label: '완료', cls: 'bg-gray-100 text-gray-600 border border-gray-200', dot: null },
+      draft:    { label: '초안', cls: 'bg-amber-50 text-amber-700 border border-amber-100', dot: 'bg-amber-500' },
+    };
+
+    const HEADER_BADGE = {
+      emerald: { cls: 'bg-emerald-50 text-emerald-700 border border-emerald-100', dot: 'bg-emerald-500' },
+      amber:   { cls: 'bg-amber-50 text-amber-700 border border-amber-100',       dot: 'bg-amber-500' },
+      gray:    { cls: 'bg-gray-100 text-gray-600 border border-gray-200',         dot: 'bg-gray-400' },
+    };
+
+    function getBrandId() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('id') || 'miokdang';
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, function(c) {
+        return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c];
+      });
+    }
+
+    function applyBrand(b) {
+      // 페이지 타이틀
+      document.title = 'AdOps AI · ' + b.name;
+      // 단순 텍스트 바인딩
+      const t = (sel, val) => document.querySelectorAll('[data-bind="' + sel + '"]').forEach(el => { el.textContent = val; });
+      t('name', b.name);
+      t('industry', b.industry);
+      t('description', b.description);
+      t('register', b.register);
+      t('campaignCount', b.campaignCount);
+      t('contentCount', b.contentCount);
+      t('owners', b.owners);
+      t('slogan', b.slogan);
+      t('formality', b.formality);
+      t('toneVersion', b.toneVersion);
+      t('toneMeta', b.toneMeta);
+      t('voice', b.voice);
+      t('persona', b.persona);
+      t('mostUsed', b.mostUsed);
+      t('avoided', b.avoided);
+      t('sample', b.sample);
+      t('assetCount', b.assetCount);
+
+      // 아바타
+      document.querySelectorAll('[data-bind="avatar"]').forEach(el => {
+        el.className = 'h-16 w-16 rounded-2xl bg-gradient-to-br ' + b.avatar.gradient + ' grid place-items-center text-white text-xl font-bold shadow-sm';
+        el.textContent = b.avatar.letter;
+      });
+
+      // 상태 배지 (헤더)
+      const sb = HEADER_BADGE[b.status.tone] || HEADER_BADGE.gray;
+      document.querySelectorAll('[data-bind="statusBadge"]').forEach(el => {
+        el.className = 'inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded ' + sb.cls;
+        el.innerHTML = '<span class="h-1 w-1 rounded-full ' + sb.dot + '"></span>' + escapeHtml(b.status.label);
+      });
+
+      // 의료 가드레일 배지
+      document.querySelectorAll('[data-bind="medicalBadge"]').forEach(el => {
+        if (b.medical) el.classList.remove('hidden');
+        else el.classList.add('hidden');
+      });
+
+      // 컬러 스왓치
+      document.querySelectorAll('[data-render="colors"]').forEach(el => {
+        el.innerHTML = b.colors.map(([hex], i) =>
+          '<div class="h-5 w-5 rounded border border-gray-200' + (i > 0 ? ' ml-2' : '') + '" style="background-color:' + hex + '"></div>' +
+          '<span class="text-xs font-mono text-gray-600">' + escapeHtml(hex) + '</span>'
+        ).join('');
+      });
+
+      // 톤 키워드
+      document.querySelectorAll('[data-render="toneKeywords"]').forEach(el => {
+        el.innerHTML = b.toneKeywords.map(k =>
+          '<span class="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">' + escapeHtml(k) + '</span>'
+        ).join('');
+      });
+
+      // mustSay / dontSay
+      document.querySelectorAll('[data-render="mustSay"]').forEach(el => {
+        el.innerHTML = b.mustSay.map(k =>
+          '<span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">' + escapeHtml(k) + '</span>'
+        ).join('');
+      });
+      document.querySelectorAll('[data-render="dontSay"]').forEach(el => {
+        el.innerHTML = b.dontSay.map(k =>
+          '<span class="text-[11px] px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-100 line-through">' + escapeHtml(k) + '</span>'
+        ).join('');
+      });
+
+      // 캠페인 표
+      document.querySelectorAll('[data-render="campaigns"]').forEach(el => {
+        el.innerHTML = b.campaigns.map(c => {
+          const sd = STATUS_BADGE[c.status] || STATUS_BADGE.done;
+          const dot = sd.dot ? '<span class="h-1 w-1 rounded-full ' + sd.dot + '"></span>' : '';
+          return (
+            '<tr class="hover:bg-gray-50/50 cursor-pointer">' +
+              '<td class="px-5 py-3">' +
+                '<div class="font-medium">' + escapeHtml(c.title) + '</div>' +
+                '<div class="text-[10px] text-gray-400 mt-0.5">' + escapeHtml(c.goal) + '</div>' +
+              '</td>' +
+              '<td class="px-5 py-3 text-gray-600">' + escapeHtml(c.period) + '</td>' +
+              '<td class="px-5 py-3"><span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded ' + sd.cls + '">' + dot + escapeHtml(sd.label) + '</span></td>' +
+              '<td class="px-5 py-3 tabular-nums">' + escapeHtml(c.content) + '</td>' +
+              '<td class="px-5 py-3 text-right tabular-nums">' + escapeHtml(c.cost) + '</td>' +
+            '</tr>'
+          );
+        }).join('');
+      });
+
+      // 자산 그리드
+      document.querySelectorAll('[data-render="assets"]').forEach(el => {
+        const tiles = b.assets.map(a =>
+          '<div class="aspect-square rounded-md bg-gradient-to-br ' + a.gradient + ' border border-gray-200 grid place-items-center text-[10px] text-gray-600 font-medium">' + escapeHtml(a.label) + '</div>'
+        ).join('');
+        const upload = '<div class="aspect-square rounded-md border border-dashed border-gray-300 grid place-items-center text-gray-400">' +
+          '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>' +
+          '</div>';
+        const more = b.moreAssets > 0
+          ? '<div class="aspect-square rounded-md bg-gray-50 border border-gray-200 grid place-items-center text-[10px] text-gray-600 font-medium">+' + b.moreAssets + '</div>'
+          : '';
+        el.innerHTML = tiles + upload + more;
+      });
+
+      // 활동 로그
+      const TONE_CLS = {
+        indigo:  'bg-indigo-50 text-indigo-600',
+        amber:   'bg-amber-50 text-amber-600',
+        emerald: 'bg-emerald-50 text-emerald-600',
+        rose:    'bg-rose-50 text-rose-600',
+      };
+      document.querySelectorAll('[data-render="activity"]').forEach(el => {
+        el.innerHTML = b.activity.map(a => {
+          const cls = TONE_CLS[a.tone] || TONE_CLS.indigo;
+          return (
+            '<li class="flex gap-3">' +
+              '<div class="h-6 w-6 shrink-0 rounded-full ' + cls + ' grid place-items-center text-[10px] font-semibold">' + escapeHtml(a.who) + '</div>' +
+              '<div class="flex-1">' +
+                '<div>' + a.html + '</div>' +
+                '<div class="text-[10px] text-gray-400 mt-0.5">' + escapeHtml(a.when) + '</div>' +
+              '</div>' +
+            '</li>'
+          );
+        }).join('');
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // 브랜드 데이터 적용 (?id= 파라미터 기반, 없으면 미옥당)
+      const id = getBrandId();
+      const brand = BRANDS[id] || BRANDS['miokdang'];
+      applyBrand(brand);
+
+      // 탭바 (개요/브랜드킷/톤/자산/캠페인/활동 로그) — 시각적 토글만
+      const tabNav = document.querySelector('nav.-mb-px');
+      if (tabNav) {
+        const tabs = tabNav.querySelectorAll('button');
+        tabs.forEach(function(t, i) {
+          t.dataset.tab = String(i);
+          if (t.classList.contains('border-gray-900')) t.classList.add('mock-tab-active');
+        });
+        tabs.forEach(function(t) {
+          t.addEventListener('click', function() {
+            tabs.forEach(function(x) { x.classList.toggle('mock-tab-active', x === t); });
+          });
+        });
+      }
+      // 캠페인 표 행 → 콘텐츠 결과 페이지 (재바인딩 — 데이터 렌더 후)
+      document.querySelectorAll('tbody tr.cursor-pointer').forEach(function(tr) {
+        tr.addEventListener('click', function() { window.location.href = '05-content-result.html'; });
+      });
+      // 자산 업로드 버튼 등 toast
+      document.querySelectorAll('button:not([data-go]):not([data-mock])').forEach(function(b) {
+        const t = (b.textContent || '').trim();
+        if (t === '+ 업로드' || t === '편집' || t === '재학습' || t === '버전 기록') {
+          b.dataset.mock = `"${t}" — 다음 페이즈`;
+          b.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.mockupToast && window.mockupToast(b.dataset.mock, 'info');
+          });
+        }
+      });
+    });
+  </script>
 </body>
 </html>

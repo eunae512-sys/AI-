@@ -71,15 +71,55 @@ open index.html
 
 Notion + Stripe + Linear 톤의 미니멀한 관리자 대시보드 5종.
 
-## 개발
+## 로컬 실행 — 카드뉴스 이미지 생성 프로토타입
 
-> Phase 1 진입 시 실제 Next.js + Supabase 스캐폴딩 시작 — 현재는 기획 산출물만 존재.
+OpenAI **gpt-image-1**로 실제 카드뉴스 이미지를 생성하는 동작 프로토타입입니다.
+
+### 1) OpenAI API 키 준비
+
+[platform.openai.com/api-keys](https://platform.openai.com/api-keys) 에서 키 발급. 결제(billing) 활성화 + 이미지 생성 권한(Tier 1 이상) 필요.
+
+### 2) 의존성 설치 + 키 입력
 
 ```bash
-# (예정) Phase 1 진입 후
 npm install
-npm run dev
+cp .env.example .env
+# .env 파일을 편집해 OPENAI_API_KEY=sk-... 채우기
 ```
+
+### 3) 서버 실행
+
+```bash
+npm start
+```
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ AdOps AI · 로컬 서버 시작
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 카드뉴스: http://localhost:3000/06-cardnews-image.html
+ 갤러리:   http://localhost:3000/
+```
+
+### 4) 사용
+
+1. 브라우저에서 `http://localhost:3000/06-cardnews-image.html`
+2. 우측 상단 **"전체 재생성"** 클릭 → 6장 순차 생성 (각 ~$0.04, 약 4~7초)
+3. 슬라이드별 **재생성** / **변형(시드 변경)** / **PNG** 버튼
+4. 프롬프트(영문)는 `contenteditable` — 직접 수정 후 재생성 가능
+
+### 비용 안내
+
+- gpt-image-1 medium 품질: **$0.04 / 장**
+- 6장 1세트: **$0.24 ≈ ₩336**
+- 변형/재생성마다 추가 비용 발생 — `medium` 권장
+
+### 다음 단계
+
+- 한글 텍스트 캔버스 합성 (현재는 HTML 오버레이) — PNG export 시 정확한 합성
+- 슬라이드 5처럼 검토 자동 플래그 (이미지 OCR로 텍스트 감지)
+- 시드 통일 + reference image로 일관성 보강
+- Vercel 배포 (`/api/generate-image.js` 그대로 서버리스 함수로 인식됨, env에 키만 설정)
 
 ## 라이선스
 
