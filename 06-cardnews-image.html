@@ -802,7 +802,7 @@
           const r = await fetch('/api/search-pexels', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query, orientation: 'portrait', pickIndex }),
+            body: JSON.stringify({ query, orientation: 'portrait', pickIndex, slideId }),
           });
           const data = await r.json();
           if (!data.ok) throw new Error(data.error || `HTTP ${r.status}`);
@@ -826,7 +826,7 @@
           const r = await fetch('/api/generate-image-codex', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt, size: '1024x1536', provider: 'auto' }),
+            body: JSON.stringify({ prompt, size: '1024x1536', provider: 'auto', slideId }),
           });
           const data = await r.json();
           if (!data.ok) throw new Error(data.error || `HTTP ${r.status}`);
@@ -854,7 +854,7 @@
           const r = await fetch('/api/generate-image', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: fullPrompt, size: '1024x1536', quality: 'medium' }),
+            body: JSON.stringify({ prompt: fullPrompt, size: '1024x1536', quality: 'medium', slideId }),
           });
           const data = await r.json();
           if (!data.ok) throw new Error(data.error || `HTTP ${r.status}`);

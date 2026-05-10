@@ -28,7 +28,7 @@ module.exports = async function handler(req, res) {
   // ~/.codex/auth.json 존재 사전 확인 — 없으면 데모 이미지 fallback (Vercel 등)
   const authPath = path.join(os.homedir(), '.codex', 'auth.json');
   if (!fs.existsSync(authPath)) {
-    const demo = pickDemoImage(prompt);
+    const demo = pickDemoImage(prompt, req.body?.slideId);
     res.json({
       ok: true,
       image: demo.url,
@@ -139,7 +139,11 @@ const DEMO_IMAGES = [
     keywords: ['lantern', 'entrance', '간판', '입구', '등', 'sign', 'evening'] },
 ];
 
-function pickDemoImage(query) {
+function pickDemoImage(query, slideId) {
+  const idNum = Number(slideId);
+  if (Number.isInteger(idNum) && idNum >= 1) {
+    return DEMO_IMAGES[(idNum - 1) % DEMO_IMAGES.length];
+  }
   const q = String(query || '').toLowerCase();
   let best = null, bestScore = 0;
   for (const img of DEMO_IMAGES) {

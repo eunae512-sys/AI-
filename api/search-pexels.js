@@ -18,7 +18,8 @@ module.exports = async function handler(req, res) {
 
   // 키 없으면 데모 이미지 fallback (Vercel 등 env 미설정 환경)
   if (!apiKey || apiKey.trim() === '' || apiKey === 'YOUR_PEXELS_KEY') {
-    const demo = pickDemoImage(String(query || ''));
+    const slideId = req.body?.slideId;
+    const demo = pickDemoImage(String(query || ''), slideId);
     res.json({
       ok: true,
       image: demo.url,
@@ -125,17 +126,20 @@ const DEMO_IMAGES = [
     pexelsUrl: 'https://www.pexels.com/photo/27969063/', alt: '식당 입구 등불' },
 ];
 
-function pickDemoImage(query) {
+function pickDemoImage(query, slideId) {
+  // slideId(1~6+)가 명시되면 결정적 매핑 — 중복 방지 최우선
+  const idNum = Number(slideId);
+  if (Number.isInteger(idNum) && idNum >= 1) {
+    return DEMO_IMAGES[(idNum - 1) % DEMO_IMAGES.length];
+  }
+  // slideId 없으면 키워드 매칭 + query 해시 fallback
   const q = String(query || '').toLowerCase();
-  // 키워드 매칭 우선
-  let best = null;
-  let bestScore = 0;
+  let best = null, bestScore = 0;
   for (const img of DEMO_IMAGES) {
     const score = img.keywords.reduce((acc, k) => acc + (q.includes(k.toLowerCase()) ? 1 : 0), 0);
     if (score > bestScore) { best = img; bestScore = score; }
   }
   if (best) return best;
-  // 매칭 없으면 query 해시로 결정 (같은 query → 같은 이미지)
   let hash = 0;
   for (let i = 0; i < q.length; i++) hash = ((hash << 5) - hash + q.charCodeAt(i)) | 0;
   return DEMO_IMAGES[Math.abs(hash) % DEMO_IMAGES.length];
