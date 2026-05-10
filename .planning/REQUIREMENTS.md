@@ -175,32 +175,92 @@
 
 ## Traceability
 
-요구사항 ↔ 페이즈 매핑. 로드맵 생성 후 채워짐.
+요구사항 ↔ 페이즈 매핑. 2026-05-10 로드맵 생성 후 채워짐.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01..07 | TBD | Pending |
-| CLNT-01..06 | TBD | Pending |
-| TONE-01..04 | TBD | Pending |
-| CAMP-01..05 | TBD | Pending |
-| XFRM-01..03 | TBD | Pending |
-| ADCP-01..03 | TBD | Pending |
-| REEL-01..03 | TBD | Pending |
-| BLOG-01..03 | TBD | Pending |
-| DTL-01..03  | TBD | Pending |
-| PROD-01..03 | TBD | Pending |
-| CARD-01..03 | TBD | Pending |
-| AIGW-01..06 | TBD | Pending |
-| SAFE-01..04 | TBD | Pending |
-| RVW-01..06  | TBD | Pending |
-| OPS-01..05  | TBD | Pending |
-| UI-01..04   | TBD | Pending |
+| AUTH-01 | Phase 1 | Pending |
+| AUTH-02 | Phase 1 | Pending |
+| AUTH-03 | Phase 1 | Pending |
+| AUTH-04 | Phase 1 | Pending |
+| AUTH-05 | Phase 1 | Pending |
+| AUTH-06 | Phase 1 | Pending |
+| AUTH-07 | Phase 1 | Pending |
+| CLNT-01 | Phase 1 | Pending |
+| CLNT-02 | Phase 1 | Pending |
+| CLNT-03 | Phase 1 | Pending |
+| CLNT-04 | Phase 1 | Pending |
+| CLNT-05 | Phase 1 | Pending |
+| CLNT-06 | Phase 1 | Pending |
+| TONE-01 | Phase 2 | Pending |
+| TONE-02 | Phase 2 | Pending |
+| TONE-03 | Phase 2 | Pending |
+| TONE-04 | Phase 2 | Pending |
+| CAMP-01 | Phase 3 | Pending |
+| CAMP-02 | Phase 3 | Pending |
+| CAMP-03 | Phase 3 | Pending |
+| CAMP-04 | Phase 3 | Pending |
+| CAMP-05 | Phase 3 | Pending |
+| XFRM-01 | Phase 4 | Pending |
+| XFRM-02 | Phase 4 | Pending |
+| XFRM-03 | Phase 4 | Pending |
+| ADCP-01 | Phase 4 | Pending |
+| ADCP-02 | Phase 4 | Pending |
+| ADCP-03 | Phase 4 | Pending |
+| REEL-01 | Phase 5 | Pending |
+| REEL-02 | Phase 5 | Pending |
+| REEL-03 | Phase 5 | Pending |
+| BLOG-01 | Phase 5 | Pending |
+| BLOG-02 | Phase 5 | Pending |
+| BLOG-03 | Phase 5 | Pending |
+| DTL-01 | Phase 5 | Pending |
+| DTL-02 | Phase 5 | Pending |
+| DTL-03 | Phase 5 | Pending |
+| PROD-01 | Phase 5 | Pending |
+| PROD-02 | Phase 5 | Pending |
+| PROD-03 | Phase 5 | Pending |
+| CARD-01 | Phase 5 | Pending |
+| CARD-02 | Phase 5 | Pending |
+| CARD-03 | Phase 5 | Pending |
+| AIGW-01 | Phase 2 | Pending |
+| AIGW-02 | Phase 2 | Pending |
+| AIGW-03 | Phase 2 | Pending |
+| AIGW-04 | Phase 2 | Pending |
+| AIGW-05 | Phase 2 | Pending |
+| AIGW-06 | Phase 2 | Pending |
+| SAFE-01 | Phase 2 | Pending |
+| SAFE-02 | Phase 3 | Pending |
+| SAFE-03 | Phase 3 | Pending |
+| SAFE-04 | Phase 2 | Pending |
+| RVW-01 | Phase 3 | Pending |
+| RVW-02 | Phase 3 | Pending |
+| RVW-03 | Phase 3 | Pending |
+| RVW-04 | Phase 3 | Pending |
+| RVW-05 | Phase 3 | Pending |
+| RVW-06 | Phase 3 | Pending |
+| OPS-01 | Phase 6 | Pending |
+| OPS-02 | Phase 6 | Pending |
+| OPS-03 | Phase 6 | Pending |
+| OPS-04 | Phase 1 | Pending |
+| OPS-05 | Phase 6 | Pending |
+| UI-01  | Phase 1 | Pending |
+| UI-02  | Phase 3 | Pending |
+| UI-03  | Phase 1 | Pending |
+| UI-04  | Phase 6 | Pending |
 
 **Coverage:**
-- v1 requirements: 64 total
-- Mapped to phases: 0 (pending roadmapper)
-- Unmapped: 64 ⚠️ (will be resolved by roadmapper)
+- v1 requirements: 68 total (note: itemized count is 68, header summary previously said 64)
+- Mapped to phases: 68 ✓
+- Unmapped: 0 ✓
+
+**Phase distribution:**
+- Phase 1 (Foundation & Multi-Tenant Data Model): 16 requirements
+- Phase 2 (AI Gateway + Cost Control + Brand Voice): 12 requirements
+- Phase 3 (Campaign Brief + HITL Review): 14 requirements
+- Phase 4 (Short-form Content Cluster): 6 requirements
+- Phase 5 (Long-form Content Cluster): 15 requirements
+- Phase 6 (Operations & Hardening): 5 requirements
 
 ---
 *Requirements defined: 2026-05-10*
-*Last updated: 2026-05-10 after initial definition*
+*Last updated: 2026-05-10 after roadmap creation (traceability filled)*
