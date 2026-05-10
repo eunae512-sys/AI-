@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AdOps AI · 카드뉴스 이미지 생성</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ['"Pretendard Variable"', 'Pretendard', 'system-ui', 'sans-serif'], serif: ['"Nanum Myeongjo"','serif'] } } } }</script>
+  <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+  <style>
+    body{font-family:'Pretendard Variable',Pretendard,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+    .slide-canvas { aspect-ratio: 4/5; position: relative; overflow: hidden; }
+    .slide-text { position: absolute; inset: 0; display: flex; flex-direction: column; padding: 8% 9%; }
+    .slide-bg-1 { background: radial-gradient(circle at 30% 20%, #f4e4c1, #c89968 70%, #7B2D26); }
+    .slide-bg-2 { background: linear-gradient(160deg, #1a1a1a 0%, #3d2817 60%, #7B2D26 100%); }
+    .slide-bg-3 { background: linear-gradient(135deg, #f5ebd6 0%, #e9dcc0 60%, #c2a876 100%); }
+    .slide-bg-4 { background: radial-gradient(circle at 70% 30%, #f8f1e1 0%, #e9dcc0 50%, #b89868 100%); }
+    .slide-bg-5 { background: linear-gradient(170deg, #2d1810 0%, #5a3825 70%, #8b5a3c 100%); }
+    .slide-bg-6 { background: radial-gradient(circle at 50% 80%, #d4a574 0%, #7B2D26 60%, #2d1810 100%); }
+    .slide-bg-1::after, .slide-bg-2::after, .slide-bg-3::after, .slide-bg-4::after, .slide-bg-5::after, .slide-bg-6::after {
+      content: ''; position: absolute; inset: 0;
+      background-image: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.15) 0%, transparent 40%),
+                        radial-gradient(circle at 80% 70%, rgba(0,0,0,0.2) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    .myeongjo { font-family: 'Nanum Myeongjo', serif; }
+  </style>
+</head>
+<body class="bg-white text-gray-900">
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-60 shrink-0 border-r border-gray-100 bg-gray-50/40 flex flex-col">
+      <div class="px-5 py-5 flex items-center gap-2 border-b border-gray-100">
+        <div class="h-7 w-7 rounded-md bg-gradient-to-br from-indigo-500 to-violet-600 grid place-items-center text-white text-xs font-bold">A</div>
+        <span class="text-sm font-semibold tracking-tight">AdOps <span class="text-indigo-600">AI</span></span>
+      </div>
+      <nav class="flex-1 px-3 py-3 space-y-0.5 mt-3">
+        <a href="index.html" class="block px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:bg-gray-100">홈</a>
+        <a href="02-clients.html" class="block px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:bg-gray-100">클라이언트</a>
+        <a href="04-campaign-new.html" class="block px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:bg-gray-100">캠페인</a>
+        <a href="05-content-result.html" class="flex items-center px-2.5 py-1.5 rounded-md text-xs font-medium bg-white border border-gray-200 shadow-sm cursor-pointer"><span class="text-indigo-600 mr-1.5">●</span>콘텐츠</a>
+        <a class="flex items-center px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:bg-gray-100 cursor-pointer">검토 큐 <span class="ml-auto text-[10px] tabular-nums px-1.5 py-px rounded bg-amber-100 text-amber-700">7</span></a>
+        <div class="pt-4 pb-1.5 px-2.5 text-[10px] uppercase tracking-widest text-gray-400 font-semibold">생성 도구</div>
+        <a class="flex items-center px-2.5 py-1.5 rounded-md text-xs font-medium bg-indigo-50 text-indigo-700 cursor-pointer">
+          <svg class="h-4 w-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+          AI 이미지 <span class="ml-auto text-[10px] px-1.5 py-px rounded bg-indigo-100 text-indigo-700 font-medium">NEW</span>
+        </a>
+      </nav>
+      <div class="border-t border-gray-100 p-3 flex items-center gap-2.5">
+        <div class="h-7 w-7 rounded-full bg-gradient-to-br from-amber-400 to-rose-500"></div>
+        <div class="flex-1 min-w-0"><div class="text-xs font-medium truncate">허은애</div></div>
+      </div>
+    </aside>
+
+    <main class="flex-1 min-w-0">
+      <!-- Topbar -->
+      <header class="border-b border-gray-100 bg-white/70 backdrop-blur sticky top-0 z-10">
+        <div class="px-8 py-3.5 flex items-center gap-4">
+          <div class="flex items-center gap-2 text-xs">
+            <a href="index.html" class="text-gray-500 hover:text-gray-900">캠페인</a>
+            <svg class="h-3 w-3 text-gray-300" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 3l3 3-3 3"/></svg>
+            <a href="05-content-result.html" class="text-gray-500 hover:text-gray-900">5월 봄나물 코스</a>
+            <svg class="h-3 w-3 text-gray-300" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 3l3 3-3 3"/></svg>
+            <a class="text-gray-500 hover:text-gray-900">카드뉴스</a>
+            <svg class="h-3 w-3 text-gray-300" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 3l3 3-3 3"/></svg>
+            <span class="text-gray-900 font-medium">이미지 생성</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Page header -->
+      <div class="px-8 pt-7 pb-5 border-b border-gray-100">
+        <div class="flex items-start gap-5">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-100"><span class="h-1 w-1 rounded-full bg-amber-500"></span>검토 중</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">카드뉴스 · 6 슬라이드</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-100">gpt-image-1 · medium</span>
+              <span class="text-[10px] text-gray-400">미옥당 본점 · 톤 v3</span>
+            </div>
+            <h1 class="mt-2 text-xl font-semibold tracking-tight">카드뉴스 이미지 — 5월 봄나물 코스</h1>
+            <div class="mt-2 flex items-center gap-4 text-[11px] text-gray-500 flex-wrap">
+              <span>박운영 생성 · 4분 전</span>
+              <span class="inline-flex items-center gap-1.5">
+                <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+                6 / 6 생성 완료
+              </span>
+              <span class="font-mono tabular-nums">$0.24 ≈ ₩336</span>
+              <span class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>이미지 캐시 미적용 (시드 단위 관리)</span>
+              <span class="text-emerald-600 font-medium">시각 가드레일 통과</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="text-xs px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50 inline-flex items-center gap-1.5">
+              <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10"/></svg>
+              전체 재생성
+            </button>
+            <button class="text-xs px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50 inline-flex items-center gap-1.5">
+              <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+              ZIP 일괄 다운로드
+            </button>
+            <button class="text-xs px-3 py-2 rounded-md bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-100">반려</button>
+            <button class="text-xs font-medium px-3 py-2 rounded-md bg-gray-900 text-white hover:bg-black shadow-sm inline-flex items-center gap-1.5">
+              <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              승인 후 인스타 업로드
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Style controls -->
+      <div class="px-8 py-4 border-b border-gray-100 bg-gray-50/30">
+        <div class="flex items-center gap-6 flex-wrap">
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] uppercase tracking-widest text-gray-500 font-semibold">스타일 프리셋</span>
+            <div class="inline-flex p-0.5 bg-white border border-gray-200 rounded-md">
+              <button class="text-xs font-medium px-2.5 py-1 rounded bg-gray-900 text-white">정통 한정식</button>
+              <button class="text-xs font-medium px-2.5 py-1 text-gray-600 hover:text-gray-900">모던 한식</button>
+              <button class="text-xs font-medium px-2.5 py-1 text-gray-600 hover:text-gray-900">감성 사진</button>
+              <button class="text-xs font-medium px-2.5 py-1 text-gray-600 hover:text-gray-900">일러스트</button>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] uppercase tracking-widest text-gray-500 font-semibold">브랜드 컬러</span>
+            <div class="flex items-center gap-1.5">
+              <div class="h-5 w-5 rounded border border-gray-200 bg-[#7B2D26]" title="#7B2D26"></div>
+              <div class="h-5 w-5 rounded border border-gray-200 bg-[#E9DCC0]" title="#E9DCC0"></div>
+              <span class="text-[11px] text-gray-500">자동 적용</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] uppercase tracking-widest text-gray-500 font-semibold">사이즈</span>
+            <div class="inline-flex p-0.5 bg-white border border-gray-200 rounded-md">
+              <button class="text-xs font-medium px-2.5 py-1 rounded bg-gray-900 text-white">1080×1350 <span class="text-[9px] opacity-60">4:5</span></button>
+              <button class="text-xs font-medium px-2.5 py-1 text-gray-600 hover:text-gray-900">1080×1080 <span class="text-[9px] opacity-60">1:1</span></button>
+            </div>
+          </div>
+          <div class="ml-auto flex items-center gap-1.5">
+            <span class="text-[10px] uppercase tracking-widest text-gray-500 font-semibold">시드</span>
+            <code class="text-[11px] bg-white border border-gray-200 px-2 py-1 rounded font-mono">a7f3-style-v2</code>
+            <button class="text-[10px] text-indigo-600 hover:text-indigo-700">새 시드 ↻</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two-column body -->
+      <div class="grid grid-cols-12 gap-0">
+        <!-- LEFT: slides grid -->
+        <section class="col-span-12 lg:col-span-9 px-8 py-7 border-r border-gray-100 bg-gray-50/20">
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+
+            <!-- ============================================== -->
+            <!-- SLIDE 1: 표지 -->
+            <!-- ============================================== -->
+            <article class="rounded-xl border border-gray-200 bg-white overflow-hidden hover:shadow-md transition group">
+              <div class="slide-canvas slide-bg-1">
+                <div class="slide-text text-white">
+                  <div class="text-[10px] uppercase tracking-[0.3em] opacity-80 font-semibold">미옥당 · 5월 한정</div>
+                  <div class="mt-auto">
+                    <div class="text-2xl myeongjo font-bold leading-tight">5월의 봄나물,<br>한 상에 모았습니다.</div>
+                    <div class="mt-3 text-[11px] opacity-80">평일 점심 한정 코스 · 종로 수송동</div>
+                  </div>
+                </div>
+                <div class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/40 text-white text-[10px] font-mono backdrop-blur">01</div>
+                <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-emerald-500/80 text-white text-[10px] font-medium backdrop-blur">생성 완료</div>
+              </div>
+              <div class="px-3.5 py-3 border-t border-gray-100">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">표지 · TITLE</div>
+                  <span class="text-[10px] font-mono text-gray-400 tabular-nums">$0.04 · 4.2s</span>
+                </div>
+                <div class="text-[11px] text-gray-600 leading-relaxed line-clamp-2 mb-2.5" contenteditable="true">
+                  Warm radial light on a traditional Korean stone wall texture, soft amber-cream tones with deep wine red accent (#7B2D26), centered composition with negative space top, no text in image
+                </div>
+                <div class="flex items-center gap-1">
+                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">재생성</button>
+                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">변형</button>
+                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">PNG</button>
+                </div>
+              </div>
+            </article>
+
+            <!-- ============================================== -->
+            <!-- SLIDE 2: 후크 -->
+            <!-- ============================================== -->
+            <article class="rounded-xl border border-gray-200 bg-white overflow-hidden hover:shadow-md transition group">
+              <div class="slide-canvas slide-bg-2">
+                <div class="slide-text text-white">
+                  <div class="text-[10px] uppercase tracking-[0.3em] opacity-70 font-semibold">02 · 새벽</div>
+                  <div class="mt-auto">
+                    <div class="text-3xl myeongjo font-bold leading-tight">새벽 4시,<br>시장에서<br>골라 온.</div>
+                    <div class="mt-3 text-[11px] opacity-70">시금치 · 두릅 · 머위</div>
+                  </div>
+                </div>
+                <div class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-white/20 text-white text-[10px] font-mono backdrop-blur">02</div>
+                <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-emerald-500/80 text-white text-[10px] font-medium backdrop-blur">생성 완료</div>
+              </div>
+              <div class="px-3.5 py-3 border-t border-gray-100">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">후크 · HOOK</div>
+                  <span class="text-[10px] font-mono text-gray-400 tabular-nums">$0.04 · 3.8s</span>
+                </div>
+                <div class="text-[11px] text-gray-600 leading-relaxed line-clamp-2 mb-2.5" contenteditable="true">
+                  Dim pre-dawn wholesale market mood, low-key amber lighting, hands of an aged chef sorting fresh greens, dark moody background, deep brown and crimson palette, cinematic, no text
+                </div>
+                <div class="flex items-center gap-1">
+                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">재생성</button>
+                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">변형</button>
+                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">PNG</button>
+                </div>
+              </div>
+            </article>
+
+            <!-- ============================================== -->
+            <!-- SLIDE 3: 30년 한자리 -->
+            <!-- ============================================== -->
+            <article class="rounded-xl border border-gray-200 bg-white overflow-hidden hover:shadow-md transition group">
+              <div class="slide-canvas slide-bg-3">
+                <div class="slide-text text-stone-800">
+                  <div class="text-[10px] uppercase tracking-[0.3em] opacity-60 font-semibold">03 · 자리</div>
+                  <div class="mt-auto">
+                    <div class="text-2xl myeongjo font-bold leading-tight">30년,<br>한자리에서<br>차린 한 상.</div>
+                    <div class="mt-3 text-[11px] opacity-70">종로 수송동 골목 안쪽</div>
+                  </div>
+                </div>
+                <div class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-stone-900/40 text-white text-[10px] font-mono backdrop-blur">03</div>
+                <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-emerald-500/80 text-white text-[10px] font-medium backdrop-blur">생성 완료</div>
+              </div>
+              <div class="px-3.5 py-3 border-t border-gray-100">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">스토리 · BRAND</div>
+                  <span class="text-[10px] font-mono text-gray-400 tabular-nums">$0.04 · 4.1s</span>
+                </div>
+                <div class="text-[11px] text-gray-600 leading-relaxed line-clamp-2 mb-2.5" contenteditable="true">
+                  Warm afternoon light on cream-and-amber traditional Korean restaurant interior, soft texture of hanji paper wall, gentle shadow, calm composition, vintage analog photography feel, no text
+                </div>
+                <div class="flex items-center gap-1">
+                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">재생성</button>
+                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">변형</button>
+                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">PNG</button>
+                </div>
+              </div>
+            </article>
+
+            <!-- ============================================== -->
+            <!-- SLIDE 4: 코스 4종 -->
+            <!-- ============================================== -->
+            <article class="rounded-xl border border-gray-200 bg-white overflow-hidden hover:shadow-md transition group">
+              <div class="slide-canvas slide-bg-4">
+                <div class="slide-text text-stone-900">
+                  <div class="text-[10px] uppercase tracking-[0.3em] opacity-60 font-semibold">04 · MENU 1</div>
+                  <div class="mt-auto">
+                    <div class="text-2xl myeongjo font-bold leading-tight">봄나물 점심 코스<br><span class="text-stone-700">4종 구성</span></div>
+                    <div class="mt-3 text-[11px] opacity-70 leading-relaxed">시금치무침 · 두릅전<br>머위쌈 · 솥밥 정식</div>
+                  </div>
+                </div>
+                <div class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-stone-900/40 text-white text-[10px] font-mono backdrop-blur">04</div>
+                <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-emerald-500/80 text-white text-[10px] font-medium backdrop-blur">생성 완료</div>
+              </div>
+              <div class="px-3.5 py-3 border-t border-gray-100">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">메뉴 · COURSE</div>
+                  <span class="text-[10px] font-mono text-gray-400 tabular-nums">$0.04 · 3.6s</span>
+                </div>
+                <div class="text-[11px] text-gray-600 leading-relaxed line-clamp-2 mb-2.5" contenteditable="true">
+                  Soft natural daylight on a single ceramic bowl with fresh greens, top-down composition, cream linen background, minimalist food photography, restrained palette, no text
+                </div>
+                <div class="flex items-center gap-1">
+                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">재생성</button>
+                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">변형</button>
+                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">PNG</button>
+                </div>
+              </div>
+            </article>
+
+            <!-- ============================================== -->
+            <!-- SLIDE 5: 코스 6종 -->
+            <!-- ============================================== -->
+            <article class="rounded-xl border border-gray-200 bg-white overflow-hidden hover:shadow-md transition group">
+              <div class="slide-canvas slide-bg-5">
+                <div class="slide-text text-amber-50">
+                  <div class="text-[10px] uppercase tracking-[0.3em] opacity-70 font-semibold">05 · MENU 2</div>
+                  <div class="mt-auto">
+                    <div class="text-2xl myeongjo font-bold leading-tight">봄나물 정식 코스<br><span class="opacity-80">6종 정찬</span></div>
+                    <div class="mt-3 text-[11px] opacity-70 leading-relaxed">거래처 · 가족 모임에<br>맞춘 정찬 구성</div>
+                  </div>
+                </div>
+                <div class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-white/20 text-white text-[10px] font-mono backdrop-blur">05</div>
+                <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-amber-500/90 text-white text-[10px] font-medium backdrop-blur">검토자 확인</div>
+              </div>
+              <div class="px-3.5 py-3 border-t border-gray-100">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">메뉴 · COURSE</div>
+                  <span class="text-[10px] font-mono text-gray-400 tabular-nums">$0.04 · 4.5s</span>
+                </div>
+                <div class="text-[11px] text-gray-600 leading-relaxed line-clamp-2 mb-2.5" contenteditable="true">
+                  Multiple small ceramic dishes arranged on dark wood table, traditional Korean banquet vibe, warm tungsten light, deep brown and amber palette, slight bokeh, no text
+                </div>
+                <div class="rounded bg-amber-50 border border-amber-100 px-2 py-1.5 mb-2 text-[10px] text-amber-900">
+                  <span class="font-medium">⚠ 검토 코멘트</span> · 김기획: 어두운 톤이 SNS 피드에서 묻힐 수 있어요. 한 번 더 변형 부탁
+                </div>
+                <div class="flex items-center gap-1">
+                  <button class="text-[10px] flex-1 px-2 py-1 rounded bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100">재생성</button>
+                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">변형</button>
+                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">PNG</button>
+                </div>
+              </div>
+            </article>
+
+            <!-- ============================================== -->
+            <!-- SLIDE 6: CTA -->
+            <!-- ============================================== -->
+            <article class="rounded-xl border border-gray-200 bg-white overflow-hidden hover:shadow-md transition group ring-2 ring-indigo-100">
+              <div class="slide-canvas slide-bg-6">
+                <div class="slide-text text-amber-50">
+                  <div class="text-[10px] uppercase tracking-[0.3em] opacity-70 font-semibold">06 · 예약</div>
+                  <div class="mt-auto">
+                    <div class="text-2xl myeongjo font-bold leading-tight">평일 점심,<br>조용히 모십니다.</div>
+                    <div class="mt-3 text-[11px] opacity-80 leading-relaxed">
+                      광화문역 7번 출구 · 도보 6분<br>
+                      네이버 플레이스 → 예약하기
+                    </div>
+                  </div>
+                </div>
+                <div class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/40 text-white text-[10px] font-mono backdrop-blur">06</div>
+                <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-emerald-500/80 text-white text-[10px] font-medium backdrop-blur">생성 완료</div>
+              </div>
+              <div class="px-3.5 py-3 border-t border-gray-100">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="text-[10px] uppercase tracking-widest text-indigo-600 font-semibold">CTA · 예약</div>
+                  <span class="text-[10px] font-mono text-gray-400 tabular-nums">$0.04 · 3.9s</span>
+                </div>
+                <div class="text-[11px] text-gray-600 leading-relaxed line-clamp-2 mb-2.5" contenteditable="true">
+                  Closing slide mood, dim warm restaurant entrance with soft glow, deep wine red and dark amber gradient, intimate atmosphere, slight vignette, leaves negative space for text overlay, no text
+                </div>
+                <div class="flex items-center gap-1">
+                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">재생성</button>
+                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">변형</button>
+                  <button class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">PNG</button>
+                </div>
+              </div>
+            </article>
+
+            <!-- Add slide -->
+            <button class="rounded-xl border border-dashed border-gray-300 hover:border-gray-400 hover:bg-white p-6 grid place-items-center text-gray-400 hover:text-gray-700 transition aspect-[4/5]">
+              <div class="text-center">
+                <svg class="h-8 w-8 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>
+                <div class="mt-2 text-xs font-medium">슬라이드 추가</div>
+                <div class="text-[10px] text-gray-400 mt-0.5">텍스트부터 새로 작성</div>
+              </div>
+            </button>
+          </div>
+
+          <!-- AE memo -->
+          <div class="mt-8 rounded-xl border border-gray-200 bg-white px-5 py-4 text-xs leading-relaxed">
+            <div class="flex items-start gap-3">
+              <svg class="h-4 w-4 mt-0.5 text-gray-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              <div class="text-gray-700 leading-relaxed">
+                <span class="font-medium text-gray-900">한글 텍스트는 이미지 위 캔버스로 오버레이됩니다.</span>
+                gpt-image-1은 한글 렌더링이 부정확해, AI는 배경 무드만 생성하고 한글(Pretendard / 나눔명조)과 로고는 프론트에서 합성합니다.
+                덕분에 슬라이드 텍스트를 수정해도 이미지는 그대로 — 같은 비용으로 카피를 무한 변경할 수 있습니다.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- RIGHT: panel -->
+        <aside class="col-span-12 lg:col-span-3 bg-gray-50/40 px-5 py-7 space-y-5">
+
+          <!-- Brand consistency -->
+          <div class="rounded-xl border border-gray-200 bg-white">
+            <div class="px-4 py-3 border-b border-gray-100">
+              <h3 class="text-xs font-semibold tracking-tight">브랜드 일관성</h3>
+            </div>
+            <ul class="px-4 py-3 space-y-2 text-[11px]">
+              <li class="flex items-center gap-2"><span class="text-emerald-600">✓</span>컬러 팔레트 #7B2D26 / #E9DCC0 적용</li>
+              <li class="flex items-center gap-2"><span class="text-emerald-600">✓</span>스타일 시드 통일 <code class="font-mono text-[10px] bg-gray-100 px-1 rounded">a7f3-style-v2</code></li>
+              <li class="flex items-center gap-2"><span class="text-emerald-600">✓</span>한정식 무드 (정성·고즈넉) 키워드 주입</li>
+              <li class="flex items-center gap-2"><span class="text-emerald-600">✓</span>이미지 내 텍스트 미생성 (오버레이 처리)</li>
+              <li class="flex items-center gap-2"><span class="text-amber-500">⚠</span>슬라이드 5 톤이 다른 슬라이드 대비 어두움</li>
+            </ul>
+          </div>
+
+          <!-- Visual guardrail -->
+          <div class="rounded-xl border border-emerald-100 bg-emerald-50/50">
+            <div class="px-4 py-3 border-b border-emerald-100 flex items-center">
+              <svg class="h-3.5 w-3.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <h3 class="ml-1.5 text-xs font-semibold tracking-tight text-emerald-900">시각 가드레일</h3>
+            </div>
+            <ul class="px-4 py-3 space-y-1.5 text-[10px] text-emerald-900">
+              <li class="flex items-center gap-1.5"><span class="text-emerald-600">✓</span>사장님 얼굴 노출 금지 (브랜드킷)</li>
+              <li class="flex items-center gap-1.5"><span class="text-emerald-600">✓</span>"100%" 같은 시각 강조 표현 금지</li>
+              <li class="flex items-center gap-1.5"><span class="text-emerald-600">✓</span>경쟁 매장 로고 미감지</li>
+              <li class="flex items-center gap-1.5"><span class="text-gray-400">○</span>의료 가드레일 비활성 (음식점)</li>
+            </ul>
+          </div>
+
+          <!-- Cost summary -->
+          <div class="rounded-xl border border-gray-200 bg-white">
+            <div class="px-4 py-3 border-b border-gray-100">
+              <h3 class="text-xs font-semibold tracking-tight">비용 (이번 세트)</h3>
+            </div>
+            <div class="px-4 py-3 space-y-2 text-[11px]">
+              <div class="flex items-center justify-between"><span class="text-gray-500">모델</span><span class="font-medium">gpt-image-1 · medium</span></div>
+              <div class="flex items-center justify-between"><span class="text-gray-500">이미지</span><span class="tabular-nums font-mono">6 × $0.04</span></div>
+              <div class="flex items-center justify-between"><span class="text-gray-500">평균 생성 시간</span><span class="tabular-nums font-mono">4.0s</span></div>
+              <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+                <span class="text-gray-700 font-medium">합계</span>
+                <span class="tabular-nums font-mono font-semibold">$0.24 · ₩336</span>
+              </div>
+              <div class="flex items-center justify-between text-gray-500 text-[10px]">
+                <span>이번 달 이미지 비용</span>
+                <span class="tabular-nums">$8.42 / $50 한도</span>
+              </div>
+              <div class="h-1 rounded-full bg-gray-100 overflow-hidden">
+                <div class="h-full bg-emerald-500 rounded-full" style="width: 17%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Generation log -->
+          <div class="rounded-xl border border-gray-200 bg-white">
+            <div class="px-4 py-3 border-b border-gray-100">
+              <h3 class="text-xs font-semibold tracking-tight">생성 로그</h3>
+            </div>
+            <ul class="divide-y divide-gray-100 text-[11px]">
+              <li class="px-4 py-2 flex items-center gap-2">
+                <span class="font-mono text-gray-400 tabular-nums w-5">06</span>
+                <span class="flex-1 truncate">CTA · 예약</span>
+                <span class="text-gray-400 tabular-nums">3.9s</span>
+                <span class="text-emerald-600">✓</span>
+              </li>
+              <li class="px-4 py-2 flex items-center gap-2">
+                <span class="font-mono text-gray-400 tabular-nums w-5">05</span>
+                <span class="flex-1 truncate">코스 6종</span>
+                <span class="text-gray-400 tabular-nums">4.5s</span>
+                <span class="text-amber-500">⚠</span>
+              </li>
+              <li class="px-4 py-2 flex items-center gap-2">
+                <span class="font-mono text-gray-400 tabular-nums w-5">04</span>
+                <span class="flex-1 truncate">코스 4종</span>
+                <span class="text-gray-400 tabular-nums">3.6s</span>
+                <span class="text-emerald-600">✓</span>
+              </li>
+              <li class="px-4 py-2 flex items-center gap-2">
+                <span class="font-mono text-gray-400 tabular-nums w-5">03</span>
+                <span class="flex-1 truncate">30년 한자리</span>
+                <span class="text-gray-400 tabular-nums">4.1s</span>
+                <span class="text-emerald-600">✓</span>
+              </li>
+              <li class="px-4 py-2 flex items-center gap-2">
+                <span class="font-mono text-gray-400 tabular-nums w-5">02</span>
+                <span class="flex-1 truncate">새벽 4시</span>
+                <span class="text-gray-400 tabular-nums">3.8s</span>
+                <span class="text-emerald-600">✓</span>
+              </li>
+              <li class="px-4 py-2 flex items-center gap-2">
+                <span class="font-mono text-gray-400 tabular-nums w-5">01</span>
+                <span class="flex-1 truncate">표지</span>
+                <span class="text-gray-400 tabular-nums">4.2s</span>
+                <span class="text-emerald-600">✓</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Export options -->
+          <div class="rounded-xl border border-gray-200 bg-white">
+            <div class="px-4 py-3 border-b border-gray-100">
+              <h3 class="text-xs font-semibold tracking-tight">내보내기</h3>
+            </div>
+            <div class="p-3 space-y-1.5">
+              <button class="w-full text-left text-xs px-3 py-2 rounded-md hover:bg-gray-50 flex items-center gap-2">
+                <span class="font-medium flex-1">PNG · 6장 zip</span>
+                <span class="text-[10px] text-gray-400">표준</span>
+              </button>
+              <button class="w-full text-left text-xs px-3 py-2 rounded-md hover:bg-gray-50 flex items-center gap-2">
+                <span class="font-medium flex-1">인스타 캐러셀 메타</span>
+                <span class="text-[10px] text-gray-400">.json</span>
+              </button>
+              <button class="w-full text-left text-xs px-3 py-2 rounded-md hover:bg-gray-50 flex items-center gap-2">
+                <span class="font-medium flex-1">Figma 호환 JSON</span>
+                <span class="text-[10px] text-gray-400">베타</span>
+              </button>
+              <button class="w-full text-left text-xs px-3 py-2 rounded-md hover:bg-gray-50 flex items-center gap-2">
+                <span class="font-medium flex-1">PDF 인쇄용</span>
+                <span class="text-[10px] text-gray-400">CMYK</span>
+              </button>
+            </div>
+          </div>
+
+        </aside>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
