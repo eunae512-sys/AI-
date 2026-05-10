@@ -210,6 +210,10 @@
               직접 업로드
             </button>
             <input type="file" id="upload-all-input" multiple accept="image/*" class="hidden">
+            <button id="fact-check-btn" class="text-xs px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50 inline-flex items-center gap-1.5">
+              <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+              사실 확인
+            </button>
             <button class="text-xs px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50 inline-flex items-center gap-1.5">
               <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
               ZIP 일괄 다운로드
@@ -304,6 +308,7 @@
                 <div class="text-[11px] text-gray-600 leading-relaxed line-clamp-2 mb-2.5" contenteditable="true">
                   Hero food photography of a traditional Korean spring vegetable banquet (한정식). Multiple small ceramic bowls of seasonal Korean spring greens — fresh spinach, baby gosari, butterbur leaves — arranged on a warm wooden table. Soft natural daylight from the side. Cream and amber tones with deep wine red (#7B2D26) napkin accent. 45-degree angle, generous empty space at top for title. Editorial food magazine style, restrained, premium feel.
                 </div>
+                <div data-review-slot class="hidden"></div>
                 <div class="flex items-center gap-1">
                   <button data-action="regenerate" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">재생성</button>
                   <button data-action="variation" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">변형</button>
@@ -335,6 +340,7 @@
                 <div class="text-[11px] text-gray-600 leading-relaxed line-clamp-2 mb-2.5" contenteditable="true">
                   Pre-dawn moody photo of weathered hands of an aged Korean chef carefully selecting fresh spring spinach (시금치) bunches at a Korean wholesale produce market. Dim amber tungsten lighting, blurred wooden crates of green vegetables in background. Hands and fresh green leaves in sharp focus. Cinematic dark palette with warm amber highlights, deep brown and crimson tones. Empty space on right for text overlay. Documentary photography style.
                 </div>
+                <div data-review-slot class="hidden"></div>
                 <div class="flex items-center gap-1">
                   <button data-action="regenerate" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">재생성</button>
                   <button data-action="variation" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">변형</button>
@@ -366,6 +372,7 @@
                 <div class="text-[11px] text-gray-600 leading-relaxed line-clamp-2 mb-2.5" contenteditable="true">
                   Warm interior photograph of a traditional Korean fine dining restaurant (한정식 식당). Aged hanok wooden beams overhead, soft hanji paper sliding doors, low Korean wooden table set with cream linen runner and an empty floor cushion seat. Late afternoon natural daylight streaming through the rice paper window. Calm, lived-in, intimate atmosphere. Cream, amber and deep wine red accents. Slight film grain. Empty space at bottom for text.
                 </div>
+                <div data-review-slot class="hidden"></div>
                 <div class="flex items-center gap-1">
                   <button data-action="regenerate" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">재생성</button>
                   <button data-action="variation" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">변형</button>
@@ -397,6 +404,7 @@
                 <div class="text-[11px] text-gray-600 leading-relaxed line-clamp-2 mb-2.5" contenteditable="true">
                   Top-down editorial food photography of a 4-dish Korean lunch course (점심 코스). Four small Korean ceramic bowls neatly arranged on a cream linen runner: fresh spinach side dish (시금치무침), pan-fried baby butterbur fritter (두릅전), seasoned mountain greens (머위쌈), small ceramic bowl of stone-pot rice (솥밥). Soft natural daylight, restrained minimal palette of cream and earth tones, deep wine red napkin accent. Generous negative space around composition.
                 </div>
+                <div data-review-slot class="hidden"></div>
                 <div class="flex items-center gap-1">
                   <button data-action="regenerate" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">재생성</button>
                   <button data-action="variation" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">변형</button>
@@ -418,7 +426,7 @@
                   </div>
                 </div>
                 <div class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-white/20 text-white text-[10px] font-mono backdrop-blur">05</div>
-                <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-amber-500/90 text-white text-[10px] font-medium backdrop-blur">검토자 확인</div>
+                <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-emerald-500/80 text-white text-[10px] font-medium backdrop-blur">생성 완료</div>
               </div>
               <div class="px-3.5 py-3 border-t border-gray-100">
                 <div class="flex items-center justify-between mb-2">
@@ -428,11 +436,10 @@
                 <div class="text-[11px] text-gray-600 leading-relaxed line-clamp-2 mb-2.5" contenteditable="true">
                   Wide-angle editorial food photo of a full traditional Korean fine-dining banquet (정식 6종 코스). Six to eight small ceramic dishes arranged on a warm wooden table with cream linen — assorted seasonal Korean spring vegetables (banchan), spinach soup, rice, grilled main, pickled radish. Soft warm natural daylight from the side, slight depth of field. Sophisticated, restrained, premium feel. Cream and amber palette with deep wine red accent.
                 </div>
-                <div class="rounded bg-amber-50 border border-amber-100 px-2 py-1.5 mb-2 text-[10px] text-amber-900">
-                  <span class="font-medium">⚠ 검토 코멘트</span> · 김기획: 어두운 톤이 SNS 피드에서 묻힐 수 있어요. 한 번 더 변형 부탁
-                </div>
+                <!-- 검토 코멘트 슬롯 — fact-check 후 동적 삽입됨 -->
+                <div data-review-slot class="hidden"></div>
                 <div class="flex items-center gap-1">
-                  <button data-action="regenerate" class="text-[10px] flex-1 px-2 py-1 rounded bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100">재생성</button>
+                  <button data-action="regenerate" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">재생성</button>
                   <button data-action="variation" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">변형</button>
                   <button data-action="download" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">PNG</button>
                 </div>
@@ -465,6 +472,7 @@
                 <div class="text-[11px] text-gray-600 leading-relaxed line-clamp-2 mb-2.5" contenteditable="true">
                   Atmospheric photograph of a traditional Korean restaurant entrance at dusk. Warm amber glow from inside through hanji paper sliding doors. Stone path leading to entrance, small hanging Korean wooden lantern, intimate inviting feel. Deep wine red and dark amber palette, soft vignette. Empty negative space at bottom for CTA text. Cinematic, no people visible.
                 </div>
+                <div data-review-slot class="hidden"></div>
                 <div class="flex items-center gap-1">
                   <button data-action="regenerate" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">재생성</button>
                   <button data-action="variation" class="text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50">변형</button>
@@ -661,6 +669,16 @@
         name: '미옥당 본점', letter: '미', gradient: 'from-rose-400 to-orange-400',
         toneVersion: 'v3', industry: '한정식',
         campaign: '5월 봄나물 코스',
+        brandColors: { primary: '#7B2D26', secondary: '#E9DCC0' },
+        slideBackgrounds: [
+          'radial-gradient(circle at 30% 20%, #f4e4c1, #c89968 70%, #7B2D26)',
+          'linear-gradient(160deg, #1a1a1a 0%, #3d2817 60%, #7B2D26 100%)',
+          'linear-gradient(135deg, #f5ebd6 0%, #e9dcc0 60%, #c2a876 100%)',
+          'radial-gradient(circle at 70% 30%, #f8f1e1 0%, #e9dcc0 50%, #b89868 100%)',
+          'linear-gradient(170deg, #2d1810 0%, #5a3825 70%, #8b5a3c 100%)',
+          'radial-gradient(circle at 50% 80%, #d4a574 0%, #7B2D26 60%, #2d1810 100%)',
+        ],
+        slideTextClasses: ['text-white', 'text-white', 'text-stone-800', 'text-stone-900', 'text-amber-50', 'text-amber-50'],
         slides: [
           { label: '미옥당 · 5월 한정', title: '5월의 봄나물,\n한 상에 모았습니다.', sub: '평일 점심 한정 코스 · 종로 수송동',
             prompt: 'Hero food photography of a traditional Korean spring vegetable banquet (한정식). Multiple small ceramic bowls of seasonal Korean spring greens — fresh spinach, baby gosari, butterbur leaves — arranged on a warm wooden table. Soft natural daylight from the side. Cream and amber tones with deep wine red (#7B2D26) napkin accent. Editorial food magazine style.' },
@@ -688,6 +706,16 @@
         name: '루나 헤어 강남점', letter: '루', gradient: 'from-violet-400 to-fuchsia-500',
         toneVersion: 'v5', industry: '미용 · 헤어살롱',
         campaign: '5월 모카브라운 컬러',
+        brandColors: { primary: '#1B1B1F', secondary: '#D9B6A1' },
+        slideBackgrounds: [
+          'radial-gradient(circle at 30% 20%, #f3e6db, #c79b88 70%, #6b4742)',
+          'linear-gradient(160deg, #1B1B1F 0%, #2a2530 60%, #5a3a4a 100%)',
+          'linear-gradient(135deg, #f5ebe0 0%, #D9B6A1 60%, #b88770 100%)',
+          'radial-gradient(circle at 70% 30%, #faf3eb 0%, #e8c7b0 50%, #b88770 100%)',
+          'linear-gradient(170deg, #1B1B1F 0%, #3a2a30 70%, #6e4a48 100%)',
+          'radial-gradient(circle at 50% 80%, #D9B6A1 0%, #5a3a48 60%, #1B1B1F 100%)',
+        ],
+        slideTextClasses: ['text-white', 'text-white', 'text-stone-800', 'text-stone-900', 'text-rose-50', 'text-amber-50'],
         slides: [
           { label: '루나 헤어 · 5월', title: '차분한 모카브라운,\n결을 살리는 한 톤.', sub: '컬러 + 영양 케어 패키지 · 강남역',
             prompt: 'Editorial fashion photo of a young Korean woman with sleek mocha brown hair, soft natural light from a window, subtle shine catching her hair, modern minimal salon background. Cream and warm taupe palette with subtle violet accent.' },
@@ -715,6 +743,16 @@
         name: '청담 메디컬 의원', letter: '청', gradient: 'from-sky-400 to-blue-600',
         toneVersion: 'v2', industry: '의료 · 피부과',
         campaign: '5월 봄 진단 안내',
+        brandColors: { primary: '#0E2C4B', secondary: '#C7D8E8' },
+        slideBackgrounds: [
+          'radial-gradient(circle at 30% 20%, #e3eef9, #88a8c8 70%, #0E2C4B)',
+          'linear-gradient(160deg, #051932 0%, #163a5a 60%, #0E2C4B 100%)',
+          'linear-gradient(135deg, #f0f6fc 0%, #C7D8E8 60%, #95b3cf 100%)',
+          'radial-gradient(circle at 70% 30%, #f7faff 0%, #d8e4f0 50%, #95b3cf 100%)',
+          'linear-gradient(170deg, #051932 0%, #1a3a5e 70%, #2d6090 100%)',
+          'radial-gradient(circle at 50% 80%, #88a8c8 0%, #0E2C4B 60%, #051932 100%)',
+        ],
+        slideTextClasses: ['text-white', 'text-white', 'text-slate-900', 'text-slate-900', 'text-sky-50', 'text-sky-50'],
         slides: [
           { label: '청담 메디컬', title: '시술 전 알아두면\n좋은 5가지', sub: '환절기 봄 진단 안내',
             prompt: 'Calm modern Korean dermatology clinic interior, clean minimalist design, soft natural lighting, blue and white palette, no people. Sophisticated medical setting.' },
@@ -742,6 +780,16 @@
         name: '베스트 영어학원', letter: '베', gradient: 'from-emerald-400 to-teal-500',
         toneVersion: 'v4', industry: '교육 · 학원',
         campaign: '5월 신학기 학습 가이드',
+        brandColors: { primary: '#0F766E', secondary: '#FFEFC4' },
+        slideBackgrounds: [
+          'radial-gradient(circle at 30% 20%, #fff8df, #d4b87c 70%, #0F766E)',
+          'linear-gradient(160deg, #0a3a36 0%, #134d48 60%, #0F766E 100%)',
+          'linear-gradient(135deg, #fffaeb 0%, #FFEFC4 60%, #d8c787 100%)',
+          'radial-gradient(circle at 70% 30%, #fffdf3 0%, #FFEFC4 50%, #d8c787 100%)',
+          'linear-gradient(170deg, #0a3a36 0%, #167b72 70%, #2dab9d 100%)',
+          'radial-gradient(circle at 50% 80%, #d4b87c 0%, #0F766E 60%, #0a3a36 100%)',
+        ],
+        slideTextClasses: ['text-white', 'text-white', 'text-emerald-900', 'text-emerald-900', 'text-amber-50', 'text-amber-50'],
         slides: [
           { label: '베스트 영어', title: '학부모님이 알면 좋은\n단계별 학습 가이드', sub: '5월 신학기 안내',
             prompt: 'Cozy editorial photo of a tidy student desk with English textbooks, dictionary, neat notebook, warm afternoon light, educational atmosphere. No people.' },
@@ -769,6 +817,16 @@
         name: 'FORUM 패션', letter: 'F', gradient: 'from-slate-700 to-zinc-900',
         toneVersion: 'v6', industry: '쇼핑몰 · 컨템포러리',
         campaign: '회차 #18 핏 가이드',
+        brandColors: { primary: '#111111', secondary: '#E5E1DB' },
+        slideBackgrounds: [
+          'radial-gradient(circle at 30% 20%, #f5f2ed, #b0a89c 70%, #1a1a1a)',
+          'linear-gradient(160deg, #050505 0%, #1f1f1f 60%, #2a2a2a 100%)',
+          'linear-gradient(135deg, #faf8f4 0%, #E5E1DB 60%, #b8b3a9 100%)',
+          'radial-gradient(circle at 70% 30%, #fcfaf6 0%, #d8d2c8 50%, #b8b3a9 100%)',
+          'linear-gradient(170deg, #050505 0%, #1a1a1a 70%, #3a3a3a 100%)',
+          'radial-gradient(circle at 50% 80%, #b0a89c 0%, #2a2a2a 60%, #050505 100%)',
+        ],
+        slideTextClasses: ['text-white', 'text-white', 'text-zinc-900', 'text-zinc-900', 'text-stone-50', 'text-stone-50'],
         slides: [
           { label: 'FORUM · 회차 #18', title: '도시의 무채색 위에\n한 톤의 따뜻함.', sub: '#18 핏 가이드',
             prompt: 'Editorial fashion lookbook photography, minimalist composition, model wearing tonal beige and slate outfit, urban Seoul background blurred, soft natural light. Stone, zinc, and warm taupe palette.' },
@@ -796,6 +854,16 @@
         name: '로스터리 1985', letter: 'R', gradient: 'from-amber-700 to-stone-800',
         toneVersion: 'v1', industry: '카페 · 스페셜티',
         campaign: '5/18 오픈 인사',
+        brandColors: { primary: '#3B2A20', secondary: '#D4B895' },
+        slideBackgrounds: [
+          'radial-gradient(circle at 30% 20%, #f7eedb, #c89968 70%, #3B2A20)',
+          'linear-gradient(160deg, #1a0f08 0%, #2a1a0e 60%, #3B2A20 100%)',
+          'linear-gradient(135deg, #faf2e0 0%, #D4B895 60%, #ad8d65 100%)',
+          'radial-gradient(circle at 70% 30%, #fbf5e8 0%, #e6d2a8 50%, #ad8d65 100%)',
+          'linear-gradient(170deg, #1a0f08 0%, #3B2A20 70%, #6a4a30 100%)',
+          'radial-gradient(circle at 50% 80%, #c89968 0%, #3B2A20 60%, #1a0f08 100%)',
+        ],
+        slideTextClasses: ['text-white', 'text-white', 'text-stone-900', 'text-stone-900', 'text-amber-50', 'text-amber-50'],
         slides: [
           { label: '로스터리 1985', title: '오늘 한 잔,\n오늘의 산미.', sub: '5/18 오픈 · 연남동',
             prompt: 'Cozy specialty coffee roastery interior at golden hour, warm amber lighting, vintage espresso machine on wooden bar counter, brick wall background, intimate cafe atmosphere.' },
@@ -833,6 +901,9 @@
       if (!b) return;
       CURRENT_BRAND_ID = brandId;
 
+      // 브랜드 전환 시 이전 fact-check 흔적 제거 (clearAllReviews 는 hoisted)
+      if (typeof clearAllReviews === 'function') clearAllReviews();
+
       // 헤더 업데이트
       const letterEl = document.getElementById('cnBrandLetter');
       if (letterEl) {
@@ -845,25 +916,41 @@
       if (title) title.textContent = `카드뉴스 이미지 — ${b.campaign}`;
       document.title = `AdOps AI · 카드뉴스 — ${b.name}`;
 
-      // 6 슬라이드 텍스트 업데이트
+      // 6 슬라이드 텍스트 / 배경 / 텍스트 컬러 업데이트
+      const TEXT_COLOR_CLASSES = ['text-white', 'text-stone-800', 'text-stone-900', 'text-amber-50', 'text-rose-50', 'text-sky-50', 'text-slate-900', 'text-emerald-900', 'text-zinc-900', 'text-stone-50'];
       document.querySelectorAll('[data-slide-id]').forEach(article => {
         const idx = Number(article.dataset.slideId) - 1;
         const s = b.slides[idx];
         if (!s) return;
         const slideText = article.querySelector('.slide-text');
         if (slideText) {
+          // 텍스트 컬러 클래스 교체
+          if (b.slideTextClasses && b.slideTextClasses[idx]) {
+            TEXT_COLOR_CLASSES.forEach(cls => slideText.classList.remove(cls));
+            slideText.classList.add(b.slideTextClasses[idx]);
+          }
           // label = 첫 번째 자식 div (uppercase tracking)
           const labelDiv = slideText.querySelector('div[class*="tracking-["]');
           if (labelDiv) labelDiv.textContent = s.label;
           // title = .myeongjo 클래스 가진 div
           const titleDiv = slideText.querySelector('.myeongjo');
           if (titleDiv) {
-            // 줄바꿈은 \n → <br>, span 보존하지 않고 일관 처리
             titleDiv.innerHTML = s.title.split('\n').map(t => t).join('<br>');
           }
           // sub = .mt-3 자식 div (제목 아래)
           const subDiv = slideText.querySelector('.mt-3');
           if (subDiv) subDiv.innerHTML = s.sub.split('\n').join('<br>');
+        }
+        // 슬라이드 배경 그라데이션 (브랜드 컬러)
+        if (b.slideBackgrounds && b.slideBackgrounds[idx]) {
+          const canvas = article.querySelector(`.slide-bg-${idx + 1}`);
+          if (canvas && !canvas.dataset.hasImage) {
+            // 이미지가 들어와 있으면 background-image 보존, 그렇지 않을 때만 그라데이션 교체
+            canvas.style.background = b.slideBackgrounds[idx];
+          } else if (canvas) {
+            // 이미지 있으면 인라인 background 제거 (이미지 우선)
+            canvas.style.background = '';
+          }
         }
         // prompt textarea (.line-clamp-2 contenteditable)
         const promptDiv = article.querySelector('.line-clamp-2[contenteditable]');
@@ -1492,6 +1579,109 @@
         }
       } catch (e) { /* 서버 없음 — 무시 */ }
     })();
+
+    // ============================================================
+    // Fact-check — 슬라이드 검토 코멘트 동적 삽입
+    // ============================================================
+    // 브랜드별 fact-check 룰 (슬라이드 idx → 검토 코멘트 객체)
+    // 키: brandId, 값: { slideIdx → { reviewer, comment, severity } }
+    const FACT_CHECK_RULES = {
+      'miokdang': {
+        4: { reviewer: '김기획', severity: 'amber',
+             comment: '"새벽 4시 시장" 표현이 사진 분위기와 매칭됐는지 확인 필요. 정식 6종 plating 컷의 어두운 톤이 SNS 피드에서 묻힐 수 있어요.' },
+      },
+      'cheongdam-medical': {
+        0: { reviewer: '의료 검수팀', severity: 'rose',
+             comment: '의료광고법 — "효과" 단정 표현 후보 검출. 표지 문구를 "환절기 사전 진단 안내" 톤으로 한 번 더 검토 부탁드립니다.' },
+        4: { reviewer: '의료 검수팀', severity: 'rose',
+             comment: '시술 결과 이미지에 "개인차가 있을 수 있습니다" 자막 안내 누락 가능성. 출고 전 의료진 검수 필수.' },
+      },
+      'best-eng': {
+        3: { reviewer: '박운영', severity: 'amber',
+             comment: '독해 자막 "한 학기" 표현이 톤 v4 의 "꾸준히" 가이드와 일관되는지 확인. 학부모 친근형 어투로 한 번 더.' },
+      },
+      'forum-fashion': {
+        4: { reviewer: '이크리에이티브', severity: 'amber',
+             comment: '#18 컬러 매칭에서 카멜 액센트 비중이 낮음. 디테일 컷 톤을 한 번 더 살리는 변형 권장.' },
+      },
+      'luna-hair': {
+        1: { reviewer: '이크리에이티브', severity: 'amber',
+             comment: '시술 ASMR 컷의 광택이 약간 떨어져 보임. "결이 살아요" 후크와 일치하도록 보정 권장.' },
+      },
+      'roastery-1985': {},
+    };
+
+    // 코멘트 박스 / 배지 / 재생성 버튼 스타일을 동적으로 토글
+    function applyReviewState(article, review) {
+      const slot = article.querySelector('[data-review-slot]');
+      const canvas = article.querySelector('[class*="slide-bg-"]');
+      const statusBadge = canvas?.querySelector('.absolute.top-2.right-2');
+      const regenBtn = article.querySelector('[data-action="regenerate"]');
+
+      if (!review) {
+        // clear
+        if (slot) { slot.classList.add('hidden'); slot.innerHTML = ''; }
+        if (statusBadge) {
+          statusBadge.className = 'absolute top-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-medium backdrop-blur bg-emerald-500/80 text-white';
+          if (statusBadge.textContent === '검토자 확인' || statusBadge.textContent === '의광법 검수') {
+            statusBadge.textContent = '생성 완료';
+          }
+        }
+        if (regenBtn) {
+          regenBtn.className = 'text-[10px] flex-1 px-2 py-1 rounded border border-gray-200 hover:bg-gray-50';
+        }
+        return;
+      }
+
+      // Apply review state
+      const colorMap = {
+        rose:  { boxBg: 'bg-rose-50',   boxBorder: 'border-rose-100',  textCls: 'text-rose-900',   badgeBg: 'bg-rose-500/90',   regenCls: 'bg-rose-50 text-rose-800 border border-rose-200 hover:bg-rose-100',     icon: '⚠', badgeLabel: '의광법 검수' },
+        amber: { boxBg: 'bg-amber-50',  boxBorder: 'border-amber-100', textCls: 'text-amber-900',  badgeBg: 'bg-amber-500/90',  regenCls: 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100', icon: '⚠', badgeLabel: '검토자 확인' },
+      };
+      const c = colorMap[review.severity] || colorMap.amber;
+
+      if (slot) {
+        slot.classList.remove('hidden');
+        slot.className = `rounded ${c.boxBg} border ${c.boxBorder} px-2 py-1.5 mb-2 text-[10px] ${c.textCls}`;
+        slot.innerHTML = `<span class="font-medium">${c.icon} 검토 코멘트</span> · ${review.reviewer}: ${review.comment}`;
+      }
+      if (statusBadge) {
+        statusBadge.className = `absolute top-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-medium backdrop-blur ${c.badgeBg} text-white`;
+        statusBadge.textContent = c.badgeLabel;
+      }
+      if (regenBtn) {
+        regenBtn.className = `text-[10px] flex-1 px-2 py-1 rounded ${c.regenCls}`;
+      }
+    }
+
+    function clearAllReviews() {
+      document.querySelectorAll('[data-slide-id]').forEach(article => applyReviewState(article, null));
+    }
+
+    function runFactCheck() {
+      const rules = FACT_CHECK_RULES[CURRENT_BRAND_ID] || {};
+      const flagged = [];
+      // 모두 클리어 후 적용 (이전 fact-check 흔적 제거)
+      clearAllReviews();
+      Object.entries(rules).forEach(([idx, review]) => {
+        const article = document.querySelector(`[data-slide-id="${Number(idx) + 1}"]`);
+        if (!article) return;
+        applyReviewState(article, review);
+        flagged.push(Number(idx) + 1);
+      });
+      const b = CN_BRANDS[CURRENT_BRAND_ID];
+      if (flagged.length === 0) {
+        toast(`${b?.name || '브랜드'} · 사실 확인 통과 — 검토 필요 항목 없음`, 'success');
+      } else {
+        toast(`${b?.name || '브랜드'} · 사실 확인 결과 ${flagged.length}건 검토 필요 (슬라이드 ${flagged.join(', ')})`, 'info');
+      }
+      return flagged;
+    }
+
+    // ----- 사실 확인 버튼 -----
+    document.getElementById('fact-check-btn')?.addEventListener('click', () => {
+      runFactCheck();
+    });
 
     // ----- 카드뉴스 브랜드 / 캠페인 picker -----
     (function initCnBrandPicker() {
