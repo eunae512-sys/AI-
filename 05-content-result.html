@@ -41,9 +41,11 @@
       <header class="border-b border-gray-100 bg-white/70 backdrop-blur sticky top-0 z-10">
         <div class="px-8 py-3.5 flex items-center gap-4">
           <div class="flex items-center gap-2 text-xs">
-            <a href="index.html" class="text-gray-500 hover:text-gray-900">캠페인</a>
+            <a href="02-clients.html" class="text-gray-500 hover:text-gray-900">클라이언트</a>
             <svg class="h-3 w-3 text-gray-300" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 3l3 3-3 3"/></svg>
-            <a class="text-gray-500 hover:text-gray-900">5월 신메뉴 봄나물 코스 런칭</a>
+            <a id="crumb-brand-link" href="03-brand-detail.html" class="text-gray-500 hover:text-gray-900">미옥당 본점</a>
+            <svg class="h-3 w-3 text-gray-300" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 3l3 3-3 3"/></svg>
+            <span id="crumb-campaign" class="text-gray-500 hover:text-gray-900">5월 신메뉴 봄나물 코스 런칭</span>
             <svg class="h-3 w-3 text-gray-300" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 3l3 3-3 3"/></svg>
             <span class="text-gray-900 font-medium">콘텐츠 #C-082</span>
           </div>
@@ -64,9 +66,9 @@
           <div class="flex items-center gap-2 flex-wrap">
             <span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-100"><span class="h-1 w-1 rounded-full bg-amber-500"></span>검토 중</span>
             <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">7개 채널 변환본</span>
-            <span class="text-[10px] text-gray-400">미옥당 본점 · 톤 v3 · 한정식</span>
+            <span id="page-brand-meta" class="text-[10px] text-gray-400">미옥당 본점 · 톤 v3 · 한정식</span>
           </div>
-          <h1 class="mt-2 text-xl font-semibold tracking-tight">5월 봄나물 코스 런칭 — 채널별 콘텐츠</h1>
+          <h1 id="page-heading" class="mt-2 text-xl font-semibold tracking-tight">5월 봄나물 코스 런칭 — 채널별 콘텐츠</h1>
           <div class="mt-2 flex items-center gap-4 text-[11px] text-gray-500 flex-wrap">
             <span>박운영 생성 · 12분 전</span>
             <span class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-violet-500"></span>claude-sonnet-4-6</span>
@@ -580,6 +582,66 @@
 
   <script src="mockup-runtime.js" defer></script>
   <script>
+    // ============================================================
+    // 브랜드 컨텍스트 — 04 페이지에서 ?id=&c= 로 전달받아 헤더 갱신
+    // ============================================================
+    const BRAND_INFO = {
+      'miokdang':           { name: '미옥당 본점',       industry: '한정식',          toneVersion: 'v3' },
+      'luna-hair':          { name: '루나 헤어 강남점',  industry: '미용 · 헤어살롱', toneVersion: 'v5' },
+      'cheongdam-medical':  { name: '청담 메디컬 의원',  industry: '의료 · 피부과',   toneVersion: 'v2', medical: true },
+      'best-eng':           { name: '베스트 영어학원',    industry: '교육 · 학원',     toneVersion: 'v4' },
+      'forum-fashion':      { name: 'FORUM 패션',        industry: '컨템포러리',      toneVersion: 'v6' },
+      'roastery-1985':      { name: '로스터리 1985',     industry: '카페 · 스페셜티', toneVersion: 'v1' },
+    };
+
+    (function applyContextFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      const camp = params.get('c');
+      const brand = id && BRAND_INFO[id];
+      if (!brand && !camp) return; // 컨텍스트 없으면 정적 HTML 그대로
+
+      // 브레드크럼
+      const link = document.getElementById('crumb-brand-link');
+      if (link && brand) {
+        link.textContent = brand.name;
+        link.setAttribute('href', `03-brand-detail.html?id=${encodeURIComponent(id)}`);
+      }
+      const crumbCamp = document.getElementById('crumb-campaign');
+      if (crumbCamp && camp) crumbCamp.textContent = camp;
+
+      // 페이지 헤더
+      if (brand) {
+        const meta = document.getElementById('page-brand-meta');
+        if (meta) meta.textContent = `${brand.name} · 톤 ${brand.toneVersion} · ${brand.industry}`;
+      }
+      const heading = document.getElementById('page-heading');
+      if (heading && camp) heading.textContent = `${camp} — 채널별 콘텐츠`;
+
+      // 타이틀
+      if (brand && camp) document.title = `AdOps AI · ${brand.name} · ${camp}`;
+      else if (brand) document.title = `AdOps AI · ${brand.name} · 콘텐츠 결과`;
+
+      // 미옥당이 아니면 데모 안내 배너 (채널별 본문은 미옥당 샘플로 표시되기 때문)
+      if (id && id !== 'miokdang') {
+        const banner = document.createElement('div');
+        banner.className = 'px-8 py-2.5 bg-indigo-50/60 border-b border-indigo-100 text-[11px] text-indigo-900 flex items-center gap-2';
+        banner.innerHTML = `
+          <svg class="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <span><b>${brand.name}</b> · "${camp || '캠페인'}" 콘텐츠 생성을 시작합니다. 아래 7개 채널 미리보기는 <b>미옥당 본점 봄나물 코스</b> 샘플 — 실제 데이터 연결 시 ${brand.name} 톤으로 자동 재생성됩니다.</span>
+          <button class="ml-auto text-[10px] px-2 py-0.5 rounded border border-indigo-200 hover:bg-white text-indigo-700 font-medium">${brand.name} 톤으로 재생성</button>`;
+        // 페이지 헤더 다음에 삽입
+        const pageHeader = document.querySelector('.px-8.pt-7.pb-5');
+        if (pageHeader && pageHeader.parentNode) {
+          pageHeader.parentNode.insertBefore(banner, pageHeader.nextSibling);
+        }
+        // 재생성 버튼 클릭 → 데모 토스트
+        banner.querySelector('button')?.addEventListener('click', () => {
+          window.mockupToast && window.mockupToast(`${brand.name} 톤으로 7개 채널 재생성 중… (예상 28초)`, 'info');
+        });
+      }
+    })();
+
     // 전체 승인 → 클라이언트 리스트로 (성공 토스트와 함께)
     document.getElementById('approve-all-btn')?.addEventListener('click', () => {
       window.mockupToast && window.mockupToast('7개 채널 콘텐츠 승인 완료 · 검토 큐에서 제거됨', 'success');

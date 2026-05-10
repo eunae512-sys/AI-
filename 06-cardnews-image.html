@@ -197,6 +197,11 @@
               <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10"/></svg>
               전체 재생성
             </button>
+            <button id="upload-all-btn" class="text-xs px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50 inline-flex items-center gap-1.5">
+              <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+              직접 업로드
+            </button>
+            <input type="file" id="upload-all-input" multiple accept="image/*" class="hidden">
             <button class="text-xs px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50 inline-flex items-center gap-1.5">
               <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
               ZIP 일괄 다운로드
@@ -1187,6 +1192,42 @@
           for (let i = 1; i <= 6; i++) await downloadSlide(String(i));
         });
       }
+    });
+
+    // ----- 직접 업로드 (file input + per-slide assignment) -----
+    const uploadBtn = document.getElementById('upload-all-btn');
+    const uploadInput = document.getElementById('upload-all-input');
+    uploadBtn?.addEventListener('click', () => uploadInput?.click());
+    uploadInput?.addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files || []).filter(f => f.type.startsWith('image/'));
+      if (!files.length) return;
+      const slideCount = document.querySelectorAll('[data-slide-id]').length;
+      const useCount = Math.min(files.length, slideCount);
+      toast(`업로드 시작 — ${useCount} / ${slideCount} 슬라이드에 적용 중`, 'info');
+      for (let i = 0; i < useCount; i++) {
+        const file = files[i];
+        const slideId = String(i + 1);
+        const dataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(new Error('파일 읽기 실패'));
+          reader.readAsDataURL(file);
+        });
+        const article = document.querySelector(`[data-slide-id="${slideId}"]`);
+        if (!article) continue;
+        const canvas = article.querySelector('[class*="slide-bg-"]');
+        const meta = {
+          source: 'upload',
+          fileName: file.name,
+          fileSizeKb: Math.round(file.size / 1024),
+          uploadedAt: new Date().toISOString(),
+          costUsd: 0, costKrw: 0,
+        };
+        applySlideImage(article, canvas, slideId, dataUrl, meta);
+        setStatus(slideId, 'done', `업로드 ${meta.fileSizeKb}KB`);
+      }
+      toast(`✓ ${useCount}장 업로드 완료 · 텍스트는 그대로 유지됩니다`, 'success');
+      uploadInput.value = ''; // 같은 파일 재업로드 가능하게 reset
     });
 
     // ----- 키 미설정 사전 점검 (page load 시 health 호출 — 비용 X) -----

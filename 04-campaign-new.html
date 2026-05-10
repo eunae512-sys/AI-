@@ -214,7 +214,7 @@
               <span class="text-[11px] text-gray-500" data-bind="briefSavings">68% 캐시로 약 ₩78 절감 · 4초 단축</span>
               <div class="ml-auto flex items-center gap-2">
                 <button data-mock="이전 단계로 — 다음 페이즈에 위저드 흐름 활성화" class="text-xs font-medium px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50">이전</button>
-                <button data-go="05-content-result.html" class="text-xs font-medium px-3 py-2 rounded-md bg-gray-900 text-white hover:bg-black inline-flex items-center gap-1.5 shadow-sm">
+                <button id="save-and-go-btn" data-go="05-content-result.html" class="text-xs font-medium px-3 py-2 rounded-md bg-gray-900 text-white hover:bg-black inline-flex items-center gap-1.5 shadow-sm">
                   저장하고 콘텐츠 생성
                   <svg class="h-3.5 w-3.5" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 3l3 3-3 3"/></svg>
                 </button>
@@ -433,6 +433,12 @@
       if (c) c.value = b.campaign;
       if (t) t.value = b.target;
       document.title = 'AdOps AI · 새 캠페인 — ' + b.name;
+      // 저장 버튼 → 05 페이지로 brand id + campaign 이름 함께 전달
+      const saveBtn = document.getElementById('save-and-go-btn');
+      if (saveBtn) {
+        const campaignText = (c?.value || b.campaign).trim();
+        saveBtn.dataset.go = `05-content-result.html?id=${encodeURIComponent(b.id)}&c=${encodeURIComponent(campaignText)}`;
+      }
       // 브리프 업데이트
       applyBrief(b);
     }

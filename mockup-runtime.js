@@ -126,6 +126,18 @@
 
   // ============ Fallback: 핸들러 없는 모든 버튼/링크에 mock 토스트 ============
   // 페이지별 inline DOMContentLoaded 가 dataset.mock 등을 추가할 시간을 주기 위해 load 이후 실행
+  // 페이지별 inline 스크립트가 explicit 핸들러를 단 버튼들 — fallback에서 제외
+  const EXPLICIT_HANDLED_IDS = new Set([
+    // 03-brand-detail
+    'manager-jump-btn', 'chat-clear-btn', 'chat-form', 'chat-input',
+    // 04-campaign-new
+    'brief-regen-btn', 'brief-stop-btn', 'brandPickerBtn',
+    // 05-content-result
+    'approve-all-btn',
+    // 06-cardnews-image (opted-out via data-no-mock-fallback이지만 안전상)
+    'upload-all-btn', 'upload-all-input', 'preset-toggle', 'source-toggle', 'add-slide-btn', 'key-banner',
+  ]);
+
   function shouldSkipFallback(el) {
     // 이미 핸들러가 붙은 요소들
     if (el.hasAttribute('data-go')) return true;
@@ -138,14 +150,18 @@
     if (el.hasAttribute('data-brand-id')) return true;
     if (el.hasAttribute('data-bind')) return true;
     if (el.hasAttribute('data-render')) return true;
+    if (el.hasAttribute('data-handled')) return true;
     if (el.hasAttribute('contenteditable')) return true;
-    if (el.id) return true; // 명시적 핸들러 가능성 높음
+    // id가 explicit handler 목록에 있을 때만 skip
+    if (el.id && EXPLICIT_HANDLED_IDS.has(el.id)) return true;
     if (el.type === 'submit') return true;
     if (el.onclick) return true;
     if (el.closest('[data-tabs]')) return true;
     if (el.closest('[data-toggle-group]')) return true;
     if (el.closest('aside nav')) return true; // 사이드바 nav 별도 처리
     if (el.closest('[contenteditable]')) return true;
+    // title="이전" / "다음" — inline 페이지 스크립트가 직접 처리
+    if ((el.getAttribute('title') === '이전' || el.getAttribute('title') === '다음') && el.closest('header')) return true;
     return false;
   }
 
