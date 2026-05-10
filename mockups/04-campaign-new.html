@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AdOps AI · 새 캠페인</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ['"Pretendard Variable"', 'Pretendard', 'system-ui', 'sans-serif'] } } } }</script>
+  <style>
+    body{font-family:'Pretendard Variable',Pretendard,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+    @keyframes blink { 50% { opacity: 0; } }
+    .caret { animation: blink 1s step-end infinite; }
+  </style>
+</head>
+<body class="bg-white text-gray-900">
+  <div class="flex min-h-screen">
+    <!-- Sidebar (compact) -->
+    <aside class="w-60 shrink-0 border-r border-gray-100 bg-gray-50/40 flex flex-col">
+      <div class="px-5 py-5 flex items-center gap-2 border-b border-gray-100">
+        <div class="h-7 w-7 rounded-md bg-gradient-to-br from-indigo-500 to-violet-600 grid place-items-center text-white text-xs font-bold">A</div>
+        <span class="text-sm font-semibold tracking-tight">AdOps <span class="text-indigo-600">AI</span></span>
+      </div>
+      <nav class="flex-1 px-3 py-3 space-y-0.5 mt-3">
+        <a class="block px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:bg-gray-100 cursor-pointer">홈</a>
+        <a class="block px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:bg-gray-100 cursor-pointer">클라이언트</a>
+        <a class="flex items-center px-2.5 py-1.5 rounded-md text-xs font-medium bg-white border border-gray-200 shadow-sm cursor-pointer"><span class="text-indigo-600 mr-1.5">●</span>캠페인</a>
+        <a class="block px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:bg-gray-100 cursor-pointer">콘텐츠</a>
+        <a class="flex items-center px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:bg-gray-100 cursor-pointer">검토 큐 <span class="ml-auto text-[10px] tabular-nums px-1.5 py-px rounded bg-amber-100 text-amber-700">7</span></a>
+      </nav>
+      <div class="border-t border-gray-100 p-3 flex items-center gap-2.5">
+        <div class="h-7 w-7 rounded-full bg-gradient-to-br from-amber-400 to-rose-500"></div>
+        <div class="flex-1 min-w-0"><div class="text-xs font-medium truncate">허은애</div></div>
+      </div>
+    </aside>
+
+    <main class="flex-1 min-w-0">
+      <!-- Topbar -->
+      <header class="border-b border-gray-100 bg-white/70 backdrop-blur sticky top-0 z-10">
+        <div class="px-8 py-3.5 flex items-center gap-4">
+          <div class="flex items-center gap-2 text-xs">
+            <a class="text-gray-500 hover:text-gray-900">캠페인</a>
+            <svg class="h-3 w-3 text-gray-300" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 3l3 3-3 3"/></svg>
+            <span class="text-gray-900 font-medium">새 캠페인</span>
+          </div>
+          <div class="ml-auto flex items-center gap-2">
+            <button class="text-xs px-2.5 py-1.5 rounded-md text-gray-500 hover:text-gray-900">취소</button>
+            <button class="text-xs px-2.5 py-1.5 rounded-md border border-gray-200 hover:bg-gray-50">초안 저장</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Page header + stepper -->
+      <div class="px-8 pt-8 pb-6">
+        <h1 class="text-2xl font-semibold tracking-tight">새 캠페인 만들기</h1>
+        <p class="mt-1 text-sm text-gray-500">클라이언트와 목표를 입력하면 AI가 캠페인 브리프를 초안으로 만들어 드립니다.</p>
+
+        <!-- Stepper -->
+        <ol class="mt-8 flex items-center gap-3">
+          <li class="flex items-center gap-2">
+            <div class="h-6 w-6 rounded-full bg-gray-900 text-white grid place-items-center text-[11px] font-semibold">
+              <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <span class="text-xs font-medium text-gray-900">클라이언트</span>
+          </li>
+          <span class="h-px w-8 bg-gray-300"></span>
+          <li class="flex items-center gap-2">
+            <div class="h-6 w-6 rounded-full bg-gray-900 text-white grid place-items-center text-[11px] font-semibold">
+              <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <span class="text-xs font-medium text-gray-900">목표 / 타겟</span>
+          </li>
+          <span class="h-px w-8 bg-gray-300"></span>
+          <li class="flex items-center gap-2">
+            <div class="h-6 w-6 rounded-full bg-indigo-600 text-white grid place-items-center text-[11px] font-semibold ring-4 ring-indigo-100">3</div>
+            <span class="text-xs font-semibold text-gray-900">브리프 생성</span>
+          </li>
+          <span class="h-px w-8 bg-gray-200"></span>
+          <li class="flex items-center gap-2">
+            <div class="h-6 w-6 rounded-full bg-white border border-gray-300 text-gray-400 grid place-items-center text-[11px] font-medium">4</div>
+            <span class="text-xs text-gray-500">저장</span>
+          </li>
+        </ol>
+      </div>
+
+      <!-- Two columns: input | brief stream -->
+      <div class="px-8 pb-12 grid grid-cols-12 gap-6">
+        <!-- LEFT (5/12): inputs -->
+        <section class="col-span-12 lg:col-span-5 space-y-4">
+          <div class="rounded-xl border border-gray-200 bg-white p-5">
+            <h2 class="text-sm font-semibold tracking-tight">클라이언트</h2>
+            <button class="mt-3 w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-left">
+              <div class="h-8 w-8 rounded-md bg-gradient-to-br from-rose-400 to-orange-400 grid place-items-center text-white text-xs font-bold">미</div>
+              <div class="flex-1">
+                <div class="text-sm font-medium">미옥당 본점</div>
+                <div class="text-[11px] text-gray-500">음식점 · 한정식 · 톤 v3 활성</div>
+              </div>
+              <svg class="h-4 w-4 text-gray-400" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4.5l3 3 3-3"/></svg>
+            </button>
+          </div>
+
+          <div class="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
+            <h2 class="text-sm font-semibold tracking-tight">캠페인 정보</h2>
+            <div>
+              <label class="text-[11px] font-medium text-gray-700">캠페인 이름</label>
+              <input value="5월 신메뉴 봄나물 코스 런칭" class="mt-1.5 w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-gray-900 focus:ring-2 focus:ring-gray-900/5 outline-none" />
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-[11px] font-medium text-gray-700">목표</label>
+                <select class="mt-1.5 w-full rounded-md border border-gray-200 px-3 py-2 text-sm bg-white focus:border-gray-900">
+                  <option>신규 고객 유입</option><option>재방문</option><option>예약 전환</option><option>인지도</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[11px] font-medium text-gray-700">예산 (선택)</label>
+                <input value="₩300,000" class="mt-1.5 w-full rounded-md border border-gray-200 px-3 py-2 text-sm" />
+              </div>
+            </div>
+            <div>
+              <label class="text-[11px] font-medium text-gray-700">타겟</label>
+              <textarea rows="2" class="mt-1.5 w-full rounded-md border border-gray-200 px-3 py-2 text-sm leading-relaxed">30~50대 직장인 + 가족 모임 · 종로/광화문 반경 1km · 평일 점심 회식 결정권자</textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-[11px] font-medium text-gray-700">시작</label>
+                <input value="2026-05-15" class="mt-1.5 w-full rounded-md border border-gray-200 px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label class="text-[11px] font-medium text-gray-700">종료</label>
+                <input value="2026-06-15" class="mt-1.5 w-full rounded-md border border-gray-200 px-3 py-2 text-sm" />
+              </div>
+            </div>
+            <div>
+              <label class="text-[11px] font-medium text-gray-700">참고 자료 (선택)</label>
+              <div class="mt-1.5 flex items-center gap-1.5 flex-wrap">
+                <span class="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded bg-gray-100 text-gray-700">📷 코스사진_5월.jpg <button class="text-gray-400 hover:text-gray-700">×</button></span>
+                <span class="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded bg-gray-100 text-gray-700">📄 메뉴표.pdf <button class="text-gray-400 hover:text-gray-700">×</button></span>
+                <button class="text-[11px] px-2 py-1 rounded border border-dashed border-gray-300 text-gray-500 hover:bg-gray-50">+ 자산 추가</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-xl border border-gray-200 bg-white p-5">
+            <h2 class="text-sm font-semibold tracking-tight">채널 후보 <span class="ml-1 text-[10px] text-gray-400 font-normal">AI가 추천한 믹스 — 편집 가능</span></h2>
+            <div class="mt-3 space-y-2">
+              <label class="flex items-center gap-3 px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50 cursor-pointer">
+                <input type="checkbox" checked class="rounded text-gray-900 focus:ring-0 border-gray-300">
+                <span class="text-sm font-medium flex-1">네이버 플레이스 · 블로그</span>
+                <span class="text-[10px] text-emerald-600 font-medium">▲ 추천</span>
+              </label>
+              <label class="flex items-center gap-3 px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50 cursor-pointer">
+                <input type="checkbox" checked class="rounded text-gray-900 focus:ring-0 border-gray-300">
+                <span class="text-sm font-medium flex-1">인스타그램 (피드 + 릴스)</span>
+                <span class="text-[10px] text-emerald-600 font-medium">▲ 추천</span>
+              </label>
+              <label class="flex items-center gap-3 px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50 cursor-pointer">
+                <input type="checkbox" checked class="rounded text-gray-900 focus:ring-0 border-gray-300">
+                <span class="text-sm font-medium flex-1">카카오 채널 메시지</span>
+                <span class="text-[10px] text-gray-500">표준</span>
+              </label>
+              <label class="flex items-center gap-3 px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50 cursor-pointer">
+                <input type="checkbox" class="rounded text-gray-900 focus:ring-0 border-gray-300">
+                <span class="text-sm font-medium flex-1 text-gray-700">메타 광고 (Facebook / Instagram Ads)</span>
+              </label>
+              <label class="flex items-center gap-3 px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50 cursor-pointer">
+                <input type="checkbox" class="rounded text-gray-900 focus:ring-0 border-gray-300">
+                <span class="text-sm font-medium flex-1 text-gray-700">구글 검색 광고</span>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <!-- RIGHT (7/12): brief stream -->
+        <section class="col-span-12 lg:col-span-7">
+          <div class="rounded-xl border border-gray-200 bg-white overflow-hidden">
+            <!-- header -->
+            <div class="px-5 py-3.5 border-b border-gray-100 flex items-center bg-gradient-to-r from-white to-indigo-50/30">
+              <div class="flex items-center gap-2">
+                <span class="relative flex h-2 w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <h2 class="text-sm font-semibold tracking-tight">AI 브리프 생성 중</h2>
+              </div>
+              <div class="ml-3 flex items-center gap-3 text-[11px] text-gray-500">
+                <span class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-violet-500"></span>claude-sonnet-4-6</span>
+                <span class="inline-flex items-center gap-1.5"><span class="font-mono">cache hit</span><span class="font-medium text-gray-700">68%</span></span>
+                <span class="font-mono tabular-nums">₩28.4 / 12.3s</span>
+              </div>
+              <div class="ml-auto flex items-center gap-2">
+                <button class="text-xs px-2.5 py-1.5 rounded-md border border-gray-200 hover:bg-gray-50">정지</button>
+                <button class="text-xs px-2.5 py-1.5 rounded-md border border-gray-200 hover:bg-gray-50">재생성</button>
+              </div>
+            </div>
+
+            <!-- body -->
+            <div class="p-6 space-y-6 leading-relaxed">
+
+              <!-- Section: 핵심 메시지 -->
+              <div>
+                <div class="text-[10px] uppercase tracking-widest text-indigo-600 font-semibold">핵심 메시지</div>
+                <p class="mt-2 text-base text-gray-900 leading-relaxed">
+                  <span class="bg-yellow-100/40 rounded">5월의 봄나물을 정성껏 한 상에 모았습니다 — 종로 한복판에서, 조용히.</span>
+                </p>
+                <p class="mt-2 text-xs text-gray-500">서브카피: 평일 점심 한정 코스 · 사전 예약 권장 · 단체석 별도 안내</p>
+              </div>
+
+              <!-- Section: 채널 믹스 -->
+              <div>
+                <div class="text-[10px] uppercase tracking-widest text-indigo-600 font-semibold">채널 믹스 & 일정</div>
+                <ul class="mt-3 space-y-2 text-sm">
+                  <li class="flex items-start gap-3">
+                    <span class="shrink-0 inline-flex h-5 px-1.5 items-center rounded text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">네이버 블로그</span>
+                    <span class="text-gray-700">주 2회 장문 포스팅 — 코스 구성 비하인드 + 사장님 인터뷰 톤</span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <span class="shrink-0 inline-flex h-5 px-1.5 items-center rounded text-[10px] font-medium bg-rose-50 text-rose-700 border border-rose-100">인스타 피드</span>
+                    <span class="text-gray-700">코스 사진 + 짧은 캡션 (1~2문장) — 주 3회</span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <span class="shrink-0 inline-flex h-5 px-1.5 items-center rounded text-[10px] font-medium bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-100">인스타 릴스</span>
+                    <span class="text-gray-700">"오늘의 봄나물" 30초 시리즈 — 주 1회</span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <span class="shrink-0 inline-flex h-5 px-1.5 items-center rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-100">카카오 채널</span>
+                    <span class="text-gray-700">단골 손님 대상 주 1회 메시지 — 평일 점심 사전예약 안내</span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Section: KPI -->
+              <div>
+                <div class="text-[10px] uppercase tracking-widest text-indigo-600 font-semibold">성공 지표 (KPI)</div>
+                <div class="mt-3 grid grid-cols-3 gap-3">
+                  <div class="rounded-lg border border-gray-200 p-3">
+                    <div class="text-[10px] text-gray-500">평일 점심 예약</div>
+                    <div class="mt-1 text-lg font-semibold tabular-nums">+30%</div>
+                    <div class="text-[10px] text-gray-400 mt-0.5">전월 대비</div>
+                  </div>
+                  <div class="rounded-lg border border-gray-200 p-3">
+                    <div class="text-[10px] text-gray-500">네이버 플레이스 저장</div>
+                    <div class="mt-1 text-lg font-semibold tabular-nums">+200건</div>
+                    <div class="text-[10px] text-gray-400 mt-0.5">캠페인 기간</div>
+                  </div>
+                  <div class="rounded-lg border border-gray-200 p-3">
+                    <div class="text-[10px] text-gray-500">인스타 도달</div>
+                    <div class="mt-1 text-lg font-semibold tabular-nums">15K</div>
+                    <div class="text-[10px] text-gray-400 mt-0.5">반경 5km 타겟</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Section: 후크 -->
+              <div>
+                <div class="text-[10px] uppercase tracking-widest text-indigo-600 font-semibold">후크 후보</div>
+                <ul class="mt-3 space-y-1.5 text-sm">
+                  <li class="flex items-start gap-2"><span class="text-gray-400 mt-1">▸</span><span class="text-gray-700">"퇴근길 5분, 오늘만큼은 나에게 차린 한 상"</span></li>
+                  <li class="flex items-start gap-2"><span class="text-gray-400 mt-1">▸</span><span class="text-gray-700">"5월의 봄나물, 종로에서 조용히 모시겠습니다"</span></li>
+                  <li class="flex items-start gap-2"><span class="text-gray-400 mt-1">▸</span><span class="text-gray-700">"30년 한정식 사장님이 직접 골라낸 오늘의 시금치"<span class="caret inline-block w-[2px] h-3 bg-gray-900 align-middle ml-0.5"></span></span></li>
+                </ul>
+              </div>
+
+              <!-- Section: 가드레일 -->
+              <div class="rounded-lg border border-amber-100 bg-amber-50/50 px-4 py-3 text-xs text-amber-900">
+                <div class="flex items-start gap-2">
+                  <svg class="h-3.5 w-3.5 mt-0.5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/></svg>
+                  <div class="leading-relaxed">
+                    <span class="font-medium">가드레일</span> · 표시광고법 — "최고/유일/100%" 표현은 system 단계에서 자동 제외됐습니다.
+                    의료 가드레일은 이 클라이언트(음식점)에 비활성.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- footer actions -->
+            <div class="border-t border-gray-100 bg-gray-50/30 px-5 py-3 flex items-center gap-2">
+              <span class="text-[11px] text-gray-500">68% 캐시로 약 ₩78 절감 · 4초 단축</span>
+              <div class="ml-auto flex items-center gap-2">
+                <button class="text-xs font-medium px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50">이전</button>
+                <button class="text-xs font-medium px-3 py-2 rounded-md bg-gray-900 text-white hover:bg-black inline-flex items-center gap-1.5 shadow-sm">
+                  저장하고 콘텐츠 생성
+                  <svg class="h-3.5 w-3.5" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 3l3 3-3 3"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

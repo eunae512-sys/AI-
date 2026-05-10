@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AdOps AI · 클라이언트</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ['"Pretendard Variable"', 'Pretendard', 'system-ui', 'sans-serif'] } } } }</script>
+  <style>body{font-family:'Pretendard Variable',Pretendard,system-ui,sans-serif;-webkit-font-smoothing:antialiased}</style>
+</head>
+<body class="bg-white text-gray-900">
+  <div class="flex min-h-screen">
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="w-60 shrink-0 border-r border-gray-100 bg-gray-50/40 flex flex-col">
+      <div class="px-5 py-5 flex items-center gap-2 border-b border-gray-100">
+        <div class="h-7 w-7 rounded-md bg-gradient-to-br from-indigo-500 to-violet-600 grid place-items-center text-white text-xs font-bold">A</div>
+        <span class="text-sm font-semibold tracking-tight">AdOps <span class="text-indigo-600">AI</span></span>
+      </div>
+
+      <div class="px-3 pt-3">
+        <button class="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-white border border-transparent hover:border-gray-200 transition">
+          <div class="h-6 w-6 rounded bg-gray-900 grid place-items-center text-white text-[10px] font-bold">N</div>
+          <span class="text-xs font-medium text-gray-900 flex-1 text-left truncate">노바 광고대행사</span>
+          <svg class="h-3 w-3 text-gray-400" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4.5l3 3 3-3"/></svg>
+        </button>
+      </div>
+
+      <nav class="flex-1 px-3 py-3 space-y-0.5">
+        <a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:bg-gray-100 transition cursor-pointer">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>
+          <span>홈</span>
+        </a>
+        <a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium bg-white text-gray-900 border border-gray-200 shadow-sm">
+          <svg class="h-4 w-4 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          <span>클라이언트</span>
+          <span class="ml-auto text-[10px] tabular-nums text-gray-400">42</span>
+        </a>
+        <a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:bg-gray-100 transition cursor-pointer">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          <span>캠페인</span>
+        </a>
+        <a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:bg-gray-100 transition cursor-pointer">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+          <span>콘텐츠</span>
+        </a>
+        <a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:bg-gray-100 transition cursor-pointer">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          <span>검토 큐</span>
+          <span class="ml-auto text-[10px] tabular-nums px-1.5 py-px rounded bg-amber-100 text-amber-700">7</span>
+        </a>
+
+        <div class="pt-5 pb-1.5 px-2.5 text-[10px] uppercase tracking-widest text-gray-400 font-semibold">설정</div>
+        <a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:bg-gray-100 cursor-pointer">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          <span>멤버</span>
+        </a>
+        <a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:bg-gray-100 cursor-pointer">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+          <span>AI 비용</span>
+        </a>
+        <a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:bg-gray-100 cursor-pointer">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          <span>워크스페이스</span>
+        </a>
+      </nav>
+
+      <div class="border-t border-gray-100 p-3 flex items-center gap-2.5">
+        <div class="h-7 w-7 rounded-full bg-gradient-to-br from-amber-400 to-rose-500 ring-2 ring-white"></div>
+        <div class="flex-1 min-w-0">
+          <div class="text-xs font-medium truncate">허은애</div>
+          <div class="text-[10px] text-gray-500 truncate">eunae512@gmail.com</div>
+        </div>
+        <button class="h-6 w-6 grid place-items-center rounded hover:bg-gray-100 text-gray-400">⋯</button>
+      </div>
+    </aside>
+
+    <!-- ========== MAIN ========== -->
+    <main class="flex-1 min-w-0">
+      <!-- Topbar -->
+      <header class="border-b border-gray-100 bg-white/70 backdrop-blur sticky top-0 z-10">
+        <div class="px-8 py-3.5 flex items-center gap-4">
+          <div class="flex items-center gap-2 text-xs text-gray-500">
+            <span>워크스페이스</span>
+            <svg class="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 3l3 3-3 3"/></svg>
+            <span class="text-gray-900 font-medium">클라이언트</span>
+          </div>
+          <div class="ml-auto flex items-center gap-2">
+            <div class="relative">
+              <svg class="h-4 w-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              <input placeholder="검색…" class="pl-8 pr-12 py-1.5 w-72 text-xs rounded-md border border-gray-200 bg-white focus:border-gray-900 focus:ring-2 focus:ring-gray-900/5 outline-none transition" />
+              <kbd class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 px-1.5 py-0.5 border border-gray-200 rounded">⌘K</kbd>
+            </div>
+            <button class="text-xs px-2.5 py-1.5 rounded-md border border-gray-200 hover:bg-gray-50">알림</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Page header -->
+      <div class="px-8 pt-8 pb-6">
+        <div class="flex items-end justify-between">
+          <div>
+            <h1 class="text-2xl font-semibold tracking-tight">클라이언트</h1>
+            <p class="mt-1 text-sm text-gray-500">광고주 브랜드 정보, 자산, 톤 프로파일을 관리합니다.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="text-xs font-medium px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50 inline-flex items-center gap-1.5">
+              <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+              내보내기
+            </button>
+            <button class="text-xs font-medium px-3 py-2 rounded-md bg-gray-900 text-white hover:bg-black inline-flex items-center gap-1.5 shadow-sm">
+              <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+              새 클라이언트
+            </button>
+          </div>
+        </div>
+
+        <!-- Stat strip -->
+        <div class="mt-6 grid grid-cols-4 gap-3">
+          <div class="rounded-lg border border-gray-200 bg-white px-4 py-3.5">
+            <div class="text-[11px] text-gray-500">전체 클라이언트</div>
+            <div class="mt-1 flex items-baseline gap-2">
+              <span class="text-xl font-semibold tabular-nums">42</span>
+              <span class="text-[11px] text-emerald-600 font-medium">+3 이번 주</span>
+            </div>
+          </div>
+          <div class="rounded-lg border border-gray-200 bg-white px-4 py-3.5">
+            <div class="text-[11px] text-gray-500">진행 중인 캠페인</div>
+            <div class="mt-1 flex items-baseline gap-2">
+              <span class="text-xl font-semibold tabular-nums">17</span>
+              <span class="text-[11px] text-gray-500">/ 28 전체</span>
+            </div>
+          </div>
+          <div class="rounded-lg border border-gray-200 bg-white px-4 py-3.5">
+            <div class="text-[11px] text-gray-500">검토 대기</div>
+            <div class="mt-1 flex items-baseline gap-2">
+              <span class="text-xl font-semibold tabular-nums text-amber-600">7</span>
+              <span class="text-[11px] text-gray-500">콘텐츠</span>
+            </div>
+          </div>
+          <div class="rounded-lg border border-gray-200 bg-white px-4 py-3.5">
+            <div class="text-[11px] text-gray-500">이번 달 AI 비용</div>
+            <div class="mt-1 flex items-baseline gap-2">
+              <span class="text-xl font-semibold tabular-nums">₩87,420</span>
+              <span class="text-[11px] text-emerald-600 font-medium">cache 73%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="px-8 pb-4 flex items-center gap-2 flex-wrap">
+        <div class="inline-flex p-0.5 bg-gray-100 rounded-md">
+          <button class="text-xs font-medium px-3 py-1.5 rounded bg-white shadow-sm">전체 42</button>
+          <button class="text-xs font-medium px-3 py-1.5 text-gray-600">활성 28</button>
+          <button class="text-xs font-medium px-3 py-1.5 text-gray-600">대기 9</button>
+          <button class="text-xs font-medium px-3 py-1.5 text-gray-600">아카이브 5</button>
+        </div>
+        <span class="h-5 w-px bg-gray-200 mx-1"></span>
+        <button class="text-xs px-2.5 py-1.5 rounded-md border border-dashed border-gray-300 text-gray-600 hover:bg-gray-50 inline-flex items-center gap-1.5">
+          <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>업종
+        </button>
+        <button class="text-xs px-2.5 py-1.5 rounded-md border border-dashed border-gray-300 text-gray-600 hover:bg-gray-50 inline-flex items-center gap-1.5">
+          <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>태그
+        </button>
+        <button class="text-xs px-2.5 py-1.5 rounded-md border border-dashed border-gray-300 text-gray-600 hover:bg-gray-50 inline-flex items-center gap-1.5">
+          <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>담당자
+        </button>
+        <div class="ml-auto inline-flex p-0.5 border border-gray-200 rounded-md">
+          <button class="p-1 rounded bg-gray-100" title="카드 보기">
+            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </button>
+          <button class="p-1 rounded text-gray-500" title="목록 보기">
+            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Cards grid -->
+      <div class="px-8 pb-12 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+
+        <!-- card 1: 음식점 -->
+        <a class="group rounded-xl border border-gray-200 bg-white p-5 hover:border-gray-300 hover:shadow-sm transition cursor-pointer">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-rose-400 to-orange-400 grid place-items-center text-white font-semibold">미</div>
+              <div>
+                <div class="text-sm font-semibold tracking-tight">미옥당 본점</div>
+                <div class="mt-0.5 text-[11px] text-gray-500">음식점 · 한정식</div>
+              </div>
+            </div>
+            <span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100">
+              <span class="h-1 w-1 rounded-full bg-emerald-500"></span> 활성
+            </span>
+          </div>
+          <div class="mt-4 flex items-center gap-1.5 flex-wrap">
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">#점심</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">#회식</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">#한식</span>
+          </div>
+          <div class="mt-5 pt-4 border-t border-gray-100 grid grid-cols-3 gap-2 text-[11px]">
+            <div><div class="text-gray-400">캠페인</div><div class="mt-0.5 font-medium tabular-nums">7</div></div>
+            <div><div class="text-gray-400">검토 대기</div><div class="mt-0.5 font-medium tabular-nums">2</div></div>
+            <div><div class="text-gray-400">최근</div><div class="mt-0.5 font-medium">2일 전</div></div>
+          </div>
+        </a>
+
+        <!-- card 2: 미용 -->
+        <a class="group rounded-xl border border-gray-200 bg-white p-5 hover:border-gray-300 hover:shadow-sm transition cursor-pointer">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-pink-300 to-fuchsia-400 grid place-items-center text-white font-semibold">L</div>
+              <div>
+                <div class="text-sm font-semibold tracking-tight">루나 헤어 강남점</div>
+                <div class="mt-0.5 text-[11px] text-gray-500">미용 · 헤어살롱</div>
+              </div>
+            </div>
+            <span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100">
+              <span class="h-1 w-1 rounded-full bg-emerald-500"></span> 활성
+            </span>
+          </div>
+          <div class="mt-4 flex items-center gap-1.5 flex-wrap">
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">#컬러</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">#펌</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">#감성</span>
+          </div>
+          <div class="mt-5 pt-4 border-t border-gray-100 grid grid-cols-3 gap-2 text-[11px]">
+            <div><div class="text-gray-400">캠페인</div><div class="mt-0.5 font-medium tabular-nums">12</div></div>
+            <div><div class="text-gray-400">검토 대기</div><div class="mt-0.5 font-medium tabular-nums">3</div></div>
+            <div><div class="text-gray-400">최근</div><div class="mt-0.5 font-medium">오늘</div></div>
+          </div>
+        </a>
+
+        <!-- card 3: 의료 (가드레일 표시) -->
+        <a class="group rounded-xl border border-gray-200 bg-white p-5 hover:border-gray-300 hover:shadow-sm transition cursor-pointer relative">
+          <span class="absolute top-3 right-3 inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-100" title="의료광고법 가드레일 active">
+            <svg class="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4M12 17h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> 의료 가드레일
+          </span>
+          <div class="flex items-start gap-3">
+            <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-sky-400 to-cyan-400 grid place-items-center text-white font-semibold">청</div>
+            <div>
+              <div class="text-sm font-semibold tracking-tight">청담 메디컬 의원</div>
+              <div class="mt-0.5 text-[11px] text-gray-500">의료 · 피부과</div>
+            </div>
+          </div>
+          <div class="mt-4 flex items-center gap-1.5 flex-wrap">
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">#피부관리</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">#리프팅</span>
+          </div>
+          <div class="mt-5 pt-4 border-t border-gray-100 grid grid-cols-3 gap-2 text-[11px]">
+            <div><div class="text-gray-400">캠페인</div><div class="mt-0.5 font-medium tabular-nums">4</div></div>
+            <div><div class="text-gray-400">검토 대기</div><div class="mt-0.5 font-medium tabular-nums text-amber-600">1</div></div>
+            <div><div class="text-gray-400">최근</div><div class="mt-0.5 font-medium">5일 전</div></div>
+          </div>
+        </a>
+
+        <!-- card 4: 학원 -->
+        <a class="group rounded-xl border border-gray-200 bg-white p-5 hover:border-gray-300 hover:shadow-sm transition cursor-pointer">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-500 grid place-items-center text-white font-semibold">B</div>
+              <div>
+                <div class="text-sm font-semibold tracking-tight">베스트 영어학원</div>
+                <div class="mt-0.5 text-[11px] text-gray-500">학원 · 어학</div>
+              </div>
+            </div>
+            <span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">
+              <span class="h-1 w-1 rounded-full bg-gray-400"></span> 대기
+            </span>
+          </div>
+          <div class="mt-4 flex items-center gap-1.5 flex-wrap">
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">#초등</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">#회화</span>
+          </div>
+          <div class="mt-5 pt-4 border-t border-gray-100 grid grid-cols-3 gap-2 text-[11px]">
+            <div><div class="text-gray-400">캠페인</div><div class="mt-0.5 font-medium tabular-nums">2</div></div>
+            <div><div class="text-gray-400">검토 대기</div><div class="mt-0.5 font-medium tabular-nums">0</div></div>
+            <div><div class="text-gray-400">최근</div><div class="mt-0.5 font-medium">3주 전</div></div>
+          </div>
+        </a>
+
+        <!-- card 5: 쇼핑몰 -->
+        <a class="group rounded-xl border border-gray-200 bg-white p-5 hover:border-gray-300 hover:shadow-sm transition cursor-pointer">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 grid place-items-center text-white font-semibold">F</div>
+              <div>
+                <div class="text-sm font-semibold tracking-tight">FORUM 패션</div>
+                <div class="mt-0.5 text-[11px] text-gray-500">쇼핑몰 · 여성복</div>
+              </div>
+            </div>
+            <span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100">
+              <span class="h-1 w-1 rounded-full bg-emerald-500"></span> 활성
+            </span>
+          </div>
+          <div class="mt-4 flex items-center gap-1.5 flex-wrap">
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">#스마트스토어</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">#쿠팡</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">#봄신상</span>
+          </div>
+          <div class="mt-5 pt-4 border-t border-gray-100 grid grid-cols-3 gap-2 text-[11px]">
+            <div><div class="text-gray-400">캠페인</div><div class="mt-0.5 font-medium tabular-nums">9</div></div>
+            <div><div class="text-gray-400">검토 대기</div><div class="mt-0.5 font-medium tabular-nums">1</div></div>
+            <div><div class="text-gray-400">최근</div><div class="mt-0.5 font-medium">어제</div></div>
+          </div>
+        </a>
+
+        <!-- card 6: 카페 -->
+        <a class="group rounded-xl border border-gray-200 bg-white p-5 hover:border-gray-300 hover:shadow-sm transition cursor-pointer">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-amber-600 to-orange-700 grid place-items-center text-white font-semibold">로</div>
+              <div>
+                <div class="text-sm font-semibold tracking-tight">로스터리 1985</div>
+                <div class="mt-0.5 text-[11px] text-gray-500">카페 · 스페셜티</div>
+              </div>
+            </div>
+            <span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100">
+              <span class="h-1 w-1 rounded-full bg-emerald-500"></span> 활성
+            </span>
+          </div>
+          <div class="mt-4 flex items-center gap-1.5 flex-wrap">
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">#원두</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">#브런치</span>
+          </div>
+          <div class="mt-5 pt-4 border-t border-gray-100 grid grid-cols-3 gap-2 text-[11px]">
+            <div><div class="text-gray-400">캠페인</div><div class="mt-0.5 font-medium tabular-nums">5</div></div>
+            <div><div class="text-gray-400">검토 대기</div><div class="mt-0.5 font-medium tabular-nums">0</div></div>
+            <div><div class="text-gray-400">최근</div><div class="mt-0.5 font-medium">1주일 전</div></div>
+          </div>
+        </a>
+
+        <!-- New client placeholder -->
+        <button class="rounded-xl border border-dashed border-gray-300 hover:border-gray-400 hover:bg-gray-50 p-5 text-left transition group">
+          <div class="flex items-center gap-3">
+            <div class="h-10 w-10 rounded-lg border border-dashed border-gray-300 grid place-items-center text-gray-400 group-hover:text-gray-600 group-hover:border-gray-400">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 5v14M5 12h14"/></svg>
+            </div>
+            <div>
+              <div class="text-sm font-semibold tracking-tight text-gray-900">새 클라이언트</div>
+              <div class="mt-0.5 text-[11px] text-gray-500">브랜드 정보 + 자산 업로드</div>
+            </div>
+          </div>
+        </button>
+      </div>
+
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AdOps AI · 로그인</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { fontFamily: { sans: ['"Pretendard Variable"', 'Pretendard', 'system-ui', 'sans-serif'] } } }
+    }
+  </script>
+  <style>
+    body { font-family: 'Pretendard Variable', Pretendard, system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+    .grid-pattern { background-image: linear-gradient(to right, rgba(0,0,0,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.04) 1px, transparent 1px); background-size: 32px 32px; }
+  </style>
+</head>
+<body class="min-h-screen bg-white text-gray-900">
+  <div class="grid lg:grid-cols-2 min-h-screen">
+    <!-- LEFT: form -->
+    <div class="flex items-center justify-center px-8 py-12">
+      <div class="w-full max-w-sm">
+        <a class="inline-flex items-center gap-2">
+          <div class="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 grid place-items-center text-white text-sm font-bold">A</div>
+          <span class="text-base font-semibold tracking-tight">AdOps <span class="text-indigo-600">AI</span></span>
+        </a>
+
+        <h1 class="mt-12 text-2xl font-semibold tracking-tight">워크스페이스에 로그인</h1>
+        <p class="mt-2 text-sm text-gray-500">소상공인 광고대행사 운영팀 전용 워크스페이스입니다.</p>
+
+        <form class="mt-10 space-y-5" onsubmit="event.preventDefault()">
+          <div>
+            <label class="text-xs font-medium text-gray-700">업무용 이메일</label>
+            <input type="email" placeholder="hello@adops.kr" class="mt-1.5 w-full rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm placeholder-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/5 outline-none transition" />
+          </div>
+          <div>
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-medium text-gray-700">비밀번호</label>
+              <a class="text-xs text-gray-600 hover:text-gray-900 font-medium">비밀번호 찾기</a>
+            </div>
+            <input type="password" placeholder="••••••••" class="mt-1.5 w-full rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm focus:border-gray-900 focus:ring-2 focus:ring-gray-900/5 outline-none transition" />
+          </div>
+
+          <button class="w-full rounded-lg bg-gray-900 hover:bg-black active:bg-black px-4 py-2.5 text-sm font-medium text-white transition shadow-sm">
+            로그인
+          </button>
+
+          <div class="relative my-6">
+            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-200"></div></div>
+            <div class="relative flex justify-center"><span class="bg-white px-3 text-[11px] text-gray-400 uppercase tracking-widest">또는</span></div>
+          </div>
+
+          <button type="button" class="w-full rounded-lg border border-gray-200 hover:bg-gray-50 px-4 py-2.5 text-sm font-medium text-gray-900 transition flex items-center justify-center gap-2.5">
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.44c-.27 1.4-1.06 2.59-2.26 3.39v2.81h3.66c2.14-1.97 3.39-4.88 3.39-8.44z"/>
+              <path fill="#34A853" d="M12 24c3.05 0 5.6-1.01 7.46-2.74l-3.66-2.81c-1.01.68-2.31 1.08-3.8 1.08-2.92 0-5.4-1.97-6.29-4.61H1.94v2.91A11.99 11.99 0 0 0 12 24z"/>
+              <path fill="#FBBC05" d="M5.71 14.92c-.22-.68-.35-1.4-.35-2.14s.13-1.46.35-2.14V7.73H1.94A11.99 11.99 0 0 0 0 12c0 1.93.46 3.76 1.94 5.27l3.77-2.35z"/>
+              <path fill="#EA4335" d="M12 4.75c1.66 0 3.15.57 4.32 1.69l3.24-3.24C17.59 1.19 15.04 0 12 0 7.31 0 3.26 2.69 1.94 6.73l3.77 2.91C6.6 6.72 9.08 4.75 12 4.75z"/>
+            </svg>
+            Google로 계속하기
+          </button>
+        </form>
+
+        <p class="mt-12 text-xs text-gray-400">
+          가입 전이신가요? <a class="font-medium text-gray-700 hover:text-gray-900">관리자에게 초대 요청</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- RIGHT: feature highlight -->
+    <div class="hidden lg:block relative overflow-hidden bg-gray-50 border-l border-gray-100">
+      <div class="absolute inset-0 grid-pattern opacity-60"></div>
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(99,102,241,0.10),transparent_55%)]"></div>
+
+      <div class="relative h-full flex items-center justify-center p-12">
+        <div class="max-w-md w-full">
+          <p class="text-[11px] uppercase tracking-[0.2em] text-indigo-600 font-semibold">AdOps Workspace</p>
+          <h2 class="mt-3 text-3xl font-semibold tracking-tight leading-tight text-gray-900">
+            광고 기획부터<br>채널별 콘텐츠까지<br>한 사람이 두 사람 몫을.
+          </h2>
+          <p class="mt-4 text-sm text-gray-600 leading-relaxed max-w-sm">
+            10가지 콘텐츠 종류 · 한국어 카피 품질 우선 · 휴먼-인-더-루프 검토 · 의료/금융 광고 가드레일 내장.
+          </p>
+
+          <div class="mt-8 grid grid-cols-3 gap-3">
+            <div class="rounded-lg bg-white border border-gray-200 p-3.5">
+              <div class="text-2xl font-semibold tracking-tight">10×</div>
+              <div class="mt-0.5 text-[11px] text-gray-500">콘텐츠 종류</div>
+            </div>
+            <div class="rounded-lg bg-white border border-gray-200 p-3.5">
+              <div class="text-2xl font-semibold tracking-tight">2×</div>
+              <div class="mt-0.5 text-[11px] text-gray-500">처리량 목표</div>
+            </div>
+            <div class="rounded-lg bg-white border border-gray-200 p-3.5">
+              <div class="text-2xl font-semibold tracking-tight">90%</div>
+              <div class="mt-0.5 text-[11px] text-gray-500">캐시 절감</div>
+            </div>
+          </div>
+
+          <!-- floating brief preview -->
+          <div class="mt-8 rounded-xl border border-gray-200 bg-white shadow-sm p-4">
+            <div class="flex items-center gap-2 text-[11px] text-gray-500">
+              <span class="relative flex h-2 w-2">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span>브리프 생성 중 · gpt-4o</span>
+              <span class="ml-auto font-mono">₩12.4</span>
+            </div>
+            <div class="mt-3 space-y-1.5 text-[12px] text-gray-700 leading-relaxed">
+              <div><span class="text-gray-400 mr-2">▸</span><span class="text-gray-500">목표</span>&nbsp;&nbsp;신규 고객 유입 + 매장 인지도 상승</div>
+              <div><span class="text-gray-400 mr-2">▸</span><span class="text-gray-500">타겟</span>&nbsp;&nbsp;30~40대 직장인 여성 (반경 1km)</div>
+              <div><span class="text-gray-400 mr-2">▸</span><span class="text-gray-500">채널 믹스</span>&nbsp;&nbsp;인스타 · 네이버 플레이스 · 카카오</div>
+              <div>
+                <span class="text-gray-400 mr-2">▸</span><span class="text-gray-500">후크</span>&nbsp;&nbsp;<span class="bg-yellow-100/60 rounded px-0.5">"퇴근길 5분, 오늘만큼은 나에게</span><span class="inline-block w-[1.5px] h-3 bg-gray-900 align-middle animate-pulse ml-0.5"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
