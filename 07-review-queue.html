@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AdOps AI · 검토 큐</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ['"Pretendard Variable"', 'Pretendard', 'system-ui', 'sans-serif'] } } } }</script>
+  <style>
+    body { font-family: 'Pretendard Variable', Pretendard, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    .filter-chip-active { background:#111827 !important; color:#fff !important; border-color:#111827 !important; }
+    .row-fade { animation: fadeOut .35s ease-out forwards; }
+    @keyframes fadeOut { to { opacity: 0; transform: translateX(8px); height: 0; padding: 0; margin: 0; overflow: hidden; } }
+  </style>
+</head>
+<body class="bg-white text-gray-900">
+  <div class="flex min-h-screen">
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="w-60 shrink-0 border-r border-gray-100 bg-gray-50/40 flex flex-col">
+      <div class="px-5 py-5 flex items-center gap-2 border-b border-gray-100">
+        <div class="h-7 w-7 rounded-md bg-gradient-to-br from-indigo-500 to-violet-600 grid place-items-center text-white text-xs font-bold">A</div>
+        <span class="text-sm font-semibold tracking-tight">AdOps <span class="text-indigo-600">AI</span></span>
+      </div>
+      <div class="px-3 pt-3">
+        <button class="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-white border border-transparent hover:border-gray-200 transition">
+          <div class="h-6 w-6 rounded bg-gray-900 grid place-items-center text-white text-[10px] font-bold">N</div>
+          <span class="text-xs font-medium flex-1 text-left truncate">노바 광고대행사</span>
+          <svg class="h-3 w-3 text-gray-400" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4.5l3 3 3-3"/></svg>
+        </button>
+      </div>
+      <nav class="flex-1 px-3 py-3 space-y-0.5">
+        <a href="index.html" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:bg-gray-100">홈</a>
+        <a href="02-clients.html" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:bg-gray-100">클라이언트</a>
+        <a href="04-campaign-new.html" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:bg-gray-100">캠페인</a>
+        <a href="05-content-result.html" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:bg-gray-100">콘텐츠</a>
+        <a class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium bg-white border border-gray-200 shadow-sm cursor-pointer">
+          <span class="text-indigo-600">●</span>
+          <span class="flex-1">검토 큐</span>
+          <span class="text-[10px] tabular-nums px-1.5 py-px rounded bg-amber-100 text-amber-700" id="queue-count-badge">7</span>
+        </a>
+        <div class="pt-4 pb-1.5 px-2.5 text-[10px] uppercase tracking-widest text-gray-400 font-semibold">생성 도구</div>
+        <a href="06-cardnews-image.html" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:bg-gray-100">카드뉴스 이미지</a>
+      </nav>
+      <div class="border-t border-gray-100 p-3 flex items-center gap-2.5">
+        <div class="h-7 w-7 rounded-full bg-gradient-to-br from-amber-400 to-rose-500"></div>
+        <div class="flex-1 min-w-0">
+          <div class="text-xs font-medium truncate">허은애</div>
+          <div class="text-[10px] text-gray-500 truncate">eunae512@gmail.com</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ========== MAIN ========== -->
+    <main class="flex-1 min-w-0">
+      <!-- Topbar -->
+      <header class="border-b border-gray-100 bg-white/70 backdrop-blur sticky top-0 z-10">
+        <div class="px-8 py-3.5 flex items-center gap-4">
+          <div class="flex items-center gap-2 text-xs">
+            <span class="text-gray-500">워크스페이스</span>
+            <svg class="h-3 w-3 text-gray-300" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 3l3 3-3 3"/></svg>
+            <span class="text-gray-900 font-medium">검토 큐</span>
+          </div>
+          <div class="ml-auto flex items-center gap-2">
+            <div class="relative">
+              <svg class="h-4 w-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              <input id="search-input" placeholder="검색…" class="pl-8 pr-12 py-1.5 w-72 text-xs rounded-md border border-gray-200 bg-white focus:border-gray-900 focus:ring-2 focus:ring-gray-900/5 outline-none transition" />
+            </div>
+            <button class="text-xs px-2.5 py-1.5 rounded-md border border-gray-200 hover:bg-gray-50">알림</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Page header -->
+      <div class="px-8 pt-8 pb-5">
+        <div class="flex items-end justify-between flex-wrap gap-4">
+          <div>
+            <h1 class="text-2xl font-semibold tracking-tight">검토 큐</h1>
+            <p class="mt-1 text-sm text-gray-500">출고 전 카피·이미지 검수가 필요한 항목입니다. 의광법 / 톤 위반 / 사실 클레임은 별도 표시.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="text-xs font-medium px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50 inline-flex items-center gap-1.5">
+              <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+              CSV 내보내기
+            </button>
+            <button id="bulk-approve-btn" class="text-xs font-medium px-3 py-2 rounded-md bg-gray-900 text-white hover:bg-black inline-flex items-center gap-1.5 shadow-sm disabled:opacity-40 disabled:cursor-not-allowed" disabled>
+              <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>선택 승인 (<span id="bulk-count">0</span>)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI strip -->
+        <div class="mt-6 grid grid-cols-4 gap-3">
+          <div class="rounded-lg border border-gray-200 bg-white px-4 py-3.5">
+            <div class="text-[11px] text-gray-500">검수 대기</div>
+            <div class="mt-1 flex items-baseline gap-2">
+              <span id="kpi-total" class="text-xl font-semibold tabular-nums">7</span>
+              <span class="text-[11px] text-gray-500">전체</span>
+            </div>
+          </div>
+          <div class="rounded-lg border border-rose-100 bg-rose-50/30 px-4 py-3.5">
+            <div class="text-[11px] text-rose-700">의광법 검수</div>
+            <div class="mt-1 flex items-baseline gap-2">
+              <span id="kpi-medical" class="text-xl font-semibold tabular-nums text-rose-700">3</span>
+              <span class="text-[11px] text-rose-600 font-medium">의무</span>
+            </div>
+          </div>
+          <div class="rounded-lg border border-amber-100 bg-amber-50/30 px-4 py-3.5">
+            <div class="text-[11px] text-amber-800">톤 위반</div>
+            <div class="mt-1 flex items-baseline gap-2">
+              <span id="kpi-tone" class="text-xl font-semibold tabular-nums text-amber-700">2</span>
+              <span class="text-[11px] text-amber-600 font-medium">자동 재작성 권장</span>
+            </div>
+          </div>
+          <div class="rounded-lg border border-gray-200 bg-white px-4 py-3.5">
+            <div class="text-[11px] text-gray-500">사실 클레임</div>
+            <div class="mt-1 flex items-baseline gap-2">
+              <span id="kpi-claim" class="text-xl font-semibold tabular-nums">1</span>
+              <span class="text-[11px] text-gray-500">검토자 확인 필요</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter chips + view -->
+      <div class="px-8 pb-3 flex items-center gap-2 flex-wrap border-b border-gray-100">
+        <div class="inline-flex p-0.5 bg-gray-100 rounded-md" id="status-filter">
+          <button data-filter="all"     class="filter-chip filter-chip-active text-xs font-medium px-3 py-1.5 rounded">전체 <span class="ml-0.5 tabular-nums opacity-70">7</span></button>
+          <button data-filter="medical" class="filter-chip text-xs font-medium px-3 py-1.5 text-gray-600 rounded">의광법 <span class="ml-0.5 tabular-nums opacity-70">3</span></button>
+          <button data-filter="tone"    class="filter-chip text-xs font-medium px-3 py-1.5 text-gray-600 rounded">톤 위반 <span class="ml-0.5 tabular-nums opacity-70">2</span></button>
+          <button data-filter="claim"   class="filter-chip text-xs font-medium px-3 py-1.5 text-gray-600 rounded">사실 클레임 <span class="ml-0.5 tabular-nums opacity-70">1</span></button>
+          <button data-filter="general" class="filter-chip text-xs font-medium px-3 py-1.5 text-gray-600 rounded">단순 검토 <span class="ml-0.5 tabular-nums opacity-70">1</span></button>
+        </div>
+        <span class="h-5 w-px bg-gray-200 mx-1"></span>
+        <button class="text-xs px-2.5 py-1.5 rounded-md border border-dashed border-gray-300 text-gray-600 hover:bg-gray-50 inline-flex items-center gap-1.5">
+          <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          담당자
+        </button>
+        <button class="text-xs px-2.5 py-1.5 rounded-md border border-dashed border-gray-300 text-gray-600 hover:bg-gray-50 inline-flex items-center gap-1.5">
+          <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          채널
+        </button>
+        <button class="text-xs px-2.5 py-1.5 rounded-md border border-dashed border-gray-300 text-gray-600 hover:bg-gray-50 inline-flex items-center gap-1.5">
+          <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          업종
+        </button>
+        <div class="ml-auto flex items-center gap-2 text-[11px] text-gray-500">
+          <label class="inline-flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" id="select-all" class="rounded text-gray-900 focus:ring-0 border-gray-300">
+            <span>전체 선택</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Items list -->
+      <div class="divide-y divide-gray-100" id="queue-list">
+        <!-- 카드 렌더 -->
+      </div>
+
+      <!-- Empty state (필터로 0건) -->
+      <div id="empty-state" class="hidden px-8 py-16 text-center">
+        <div class="text-3xl">🎉</div>
+        <div class="mt-3 text-sm font-medium text-gray-700">선택한 필터 조건에 해당하는 검토 항목이 없습니다.</div>
+        <div class="mt-1 text-xs text-gray-500">전체 보기로 돌아가거나 다른 필터를 선택해 보세요.</div>
+        <button id="reset-filter-btn" class="mt-4 text-xs px-3 py-1.5 rounded-md border border-gray-200 hover:bg-gray-50">전체 보기</button>
+      </div>
+    </main>
+  </div>
+
+  <script src="mockup-runtime.js" defer></script>
+  <script defer>
+    // ============================================================
+    // 검토 큐 데이터 — 7건
+    // ============================================================
+    const QUEUE = [
+      {
+        id: 'q-001',
+        brandId: 'cheongdam-medical', brandName: '청담 메디컬 의원',
+        brandLetter: '청', brandGradient: 'from-sky-400 to-blue-600',
+        type: 'medical',
+        channel: 'blog',
+        title: '봄철 피부 진단, 사전 안내',
+        excerpt: '환절기에는 피부 결이 변하기 쉽습니다. 진단 결과는 의료진이 진료 후 안내드립니다.',
+        reason: '의료광고법 — "효과" 표현 검출',
+        flags: ['의광법 검수 의무', '"개인차" 명시 누락 의심'],
+        assignee: { name: '의료 검수팀', avatarBg: 'bg-rose-100', avatarFg: 'text-rose-700', initial: '검' },
+        ageHours: 2,
+        priority: 'high',
+        toneSeverity: 'high',
+      },
+      {
+        id: 'q-002',
+        brandId: 'cheongdam-medical', brandName: '청담 메디컬 의원',
+        brandLetter: '청', brandGradient: 'from-sky-400 to-blue-600',
+        type: 'medical',
+        channel: 'cardnews',
+        title: '시술 전 알아두면 좋은 5가지 — 카드뉴스 5장',
+        excerpt: '시술 결과는 개인의 피부 상태에 따라 달라질 수 있습니다.',
+        reason: '의료광고법 — 5장 중 1장 "100%" 표현 후보',
+        flags: ['의광법 검수 의무'],
+        assignee: { name: '의료 검수팀', avatarBg: 'bg-rose-100', avatarFg: 'text-rose-700', initial: '검' },
+        ageHours: 5,
+        priority: 'high',
+        toneSeverity: 'high',
+      },
+      {
+        id: 'q-003',
+        brandId: 'cheongdam-medical', brandName: '청담 메디컬 의원',
+        brandLetter: '청', brandGradient: 'from-sky-400 to-blue-600',
+        type: 'medical',
+        channel: 'meta',
+        title: '봄 진단 상담 안내 — Meta 광고',
+        excerpt: '환절기 봄철 피부 결의 변화 — 사전 진단 권장',
+        reason: '의료광고법 사전 검수 통과 필요',
+        flags: ['의광법 검수 의무'],
+        assignee: { name: '김기획', avatarBg: 'bg-indigo-100', avatarFg: 'text-indigo-700', initial: '김' },
+        ageHours: 8,
+        priority: 'high',
+        toneSeverity: 'medium',
+      },
+      {
+        id: 'q-004',
+        brandId: 'luna-hair', brandName: '루나 헤어 강남점',
+        brandLetter: '루', brandGradient: 'from-violet-400 to-fuchsia-500',
+        type: 'tone',
+        channel: 'instagram',
+        title: '5월 컬러 프로모션 — 인스타 캡션',
+        excerpt: '"이번 주만 반값 컬러 프로모션!" — 결을 살리는 한 톤이라며 좋은 기회…',
+        reason: '브랜드 톤 위반 — 가격 강조 ("반값") · 톤 v5 가이드',
+        flags: ['톤 v5 위반', '자동 재작성 가능'],
+        assignee: { name: '이크리에이티브', avatarBg: 'bg-fuchsia-100', avatarFg: 'text-fuchsia-700', initial: '이' },
+        ageHours: 12,
+        priority: 'medium',
+        toneSeverity: 'medium',
+      },
+      {
+        id: 'q-005',
+        brandId: 'best-eng', brandName: '베스트 영어학원',
+        brandLetter: '베', brandGradient: 'from-emerald-400 to-teal-500',
+        type: 'tone',
+        channel: 'blog',
+        title: '여름방학 집중반 — 블로그 도입부',
+        excerpt: '"한 달이면 확실히 1등 가능" 보장 표현. 학부모 친근형 톤에 맞지 않음.',
+        reason: '브랜드 톤 위반 — "1등 / 보장" 검출',
+        flags: ['톤 v4 위반', '재작성 권장'],
+        assignee: { name: '박운영', avatarBg: 'bg-emerald-100', avatarFg: 'text-emerald-700', initial: '박' },
+        ageHours: 18,
+        priority: 'medium',
+        toneSeverity: 'medium',
+      },
+      {
+        id: 'q-006',
+        brandId: 'miokdang', brandName: '미옥당 본점',
+        brandLetter: '미', brandGradient: 'from-rose-400 to-orange-400',
+        type: 'claim',
+        channel: 'reels',
+        title: '"새벽 4시, 시장에서 골라 온" — 릴스 자막',
+        excerpt: '매일 새벽 4시 시장 방문 사실 클레임 — 매일 갱신 가능한 표현인지 확인 필요',
+        reason: '사실 클레임 검토 — 매일 입고 여부 확인',
+        flags: ['검토자 확인 필요', '브랜드킷 일치 확인'],
+        assignee: { name: '김기획', avatarBg: 'bg-indigo-100', avatarFg: 'text-indigo-700', initial: '김' },
+        ageHours: 4,
+        priority: 'medium',
+        toneSeverity: 'low',
+      },
+      {
+        id: 'q-007',
+        brandId: 'forum-fashion', brandName: 'FORUM 패션',
+        brandLetter: 'F', brandGradient: 'from-slate-700 to-zinc-900',
+        type: 'general',
+        channel: 'cardnews',
+        title: '컬러 매칭 #18 — 카드뉴스 5장',
+        excerpt: '도시의 무채색 위에 한 톤의 따뜻함 — 회차 #18 컬러 가이드',
+        reason: '단순 검토 — 디렉터 컨펌 대기',
+        flags: ['금지어 0건', '톤 v6 통과'],
+        assignee: { name: '이크리에이티브', avatarBg: 'bg-zinc-200', avatarFg: 'text-zinc-700', initial: '이' },
+        ageHours: 22,
+        priority: 'low',
+        toneSeverity: 'low',
+      },
+    ];
+
+    const CHANNEL_LABEL = {
+      blog:      { label: '네이버 블로그', dot: 'bg-emerald-500' },
+      instagram: { label: '인스타 피드',   dot: 'bg-rose-500' },
+      reels:     { label: '인스타 릴스',   dot: 'bg-fuchsia-500' },
+      meta:      { label: 'Meta 광고',     dot: 'bg-blue-500' },
+      cardnews:  { label: '카드뉴스',      dot: 'bg-amber-500' },
+      kakao:     { label: '카카오',        dot: 'bg-amber-500' },
+      place:     { label: '플레이스',      dot: 'bg-teal-500' },
+    };
+
+    const TYPE_BADGE = {
+      medical: { cls: 'bg-rose-50 text-rose-700 border border-rose-100',     label: '의광법' },
+      tone:    { cls: 'bg-amber-50 text-amber-700 border border-amber-100', label: '톤 위반' },
+      claim:   { cls: 'bg-indigo-50 text-indigo-700 border border-indigo-100', label: '사실 클레임' },
+      general: { cls: 'bg-gray-100 text-gray-600 border border-gray-200',    label: '단순 검토' },
+    };
+
+    function escapeHtml(s) {
+      return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    }
+
+    function ageText(hours) {
+      if (hours < 1) return '방금 전';
+      if (hours < 24) return `${hours}시간 전`;
+      const d = Math.floor(hours / 24);
+      return `${d}일 전`;
+    }
+
+    function renderRow(item) {
+      const ch = CHANNEL_LABEL[item.channel] || { label: item.channel, dot: 'bg-gray-400' };
+      const tb = TYPE_BADGE[item.type] || TYPE_BADGE.general;
+      const reasonCls = item.toneSeverity === 'high' ? 'text-rose-700'
+                      : item.toneSeverity === 'medium' ? 'text-amber-800'
+                      : 'text-gray-600';
+      return `
+        <div class="px-8 py-4 hover:bg-gray-50/40 transition queue-row" data-id="${item.id}" data-type="${item.type}">
+          <div class="flex items-start gap-4">
+            <input type="checkbox" class="row-check mt-1 rounded text-gray-900 focus:ring-0 border-gray-300" data-id="${item.id}">
+            <a href="03-brand-detail.html?id=${encodeURIComponent(item.brandId)}" class="shrink-0 h-9 w-9 rounded-lg bg-gradient-to-br ${item.brandGradient} grid place-items-center text-white text-sm font-semibold shadow-sm hover:opacity-90 transition" title="${escapeHtml(item.brandName)}">${escapeHtml(item.brandLetter)}</a>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-[11px] text-gray-500">${escapeHtml(item.brandName)}</span>
+                <span class="text-gray-300">·</span>
+                <span class="inline-flex items-center gap-1.5 text-[11px] text-gray-700"><span class="h-1.5 w-1.5 rounded-full ${ch.dot}"></span>${escapeHtml(ch.label)}</span>
+                <span class="inline-flex items-center text-[10px] px-1.5 py-0.5 rounded ${tb.cls}">${escapeHtml(tb.label)}</span>
+                ${item.priority === 'high' ? '<span class="text-[10px] text-rose-700 font-medium">우선</span>' : ''}
+              </div>
+              <div class="mt-1 text-sm font-medium tracking-tight">${escapeHtml(item.title)}</div>
+              <div class="mt-1 text-xs text-gray-500 leading-relaxed truncate">${escapeHtml(item.excerpt)}</div>
+              <div class="mt-2 flex items-center gap-2 flex-wrap">
+                <span class="text-[11px] ${reasonCls} font-medium">${escapeHtml(item.reason)}</span>
+                ${item.flags.map(f => `<span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">${escapeHtml(f)}</span>`).join('')}
+              </div>
+            </div>
+            <div class="hidden md:flex items-center gap-1.5 shrink-0">
+              <div class="h-6 w-6 rounded-full ${item.assignee.avatarBg} ${item.assignee.avatarFg} grid place-items-center text-[10px] font-semibold" title="${escapeHtml(item.assignee.name)}">${escapeHtml(item.assignee.initial)}</div>
+              <span class="text-[11px] text-gray-500">${escapeHtml(item.assignee.name)}</span>
+            </div>
+            <div class="text-[11px] text-gray-400 tabular-nums shrink-0 w-16 text-right">${ageText(item.ageHours)}</div>
+            <div class="flex items-center gap-1 shrink-0">
+              <a href="05-content-result.html?id=${encodeURIComponent(item.brandId)}&c=${encodeURIComponent(item.title)}" class="text-[10px] px-2 py-1 rounded border border-gray-200 hover:bg-white text-gray-700">보기</a>
+              <button class="text-[10px] px-2 py-1 rounded border border-gray-200 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-700 text-gray-700" data-action="reject" data-id="${item.id}">반려</button>
+              <button class="text-[10px] px-2 py-1 rounded bg-gray-900 text-white hover:bg-black" data-action="approve" data-id="${item.id}">승인</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    let CURRENT_FILTER = 'all';
+    let SELECTED = new Set();
+
+    function applyFilter() {
+      const list = document.getElementById('queue-list');
+      const empty = document.getElementById('empty-state');
+      const filtered = QUEUE.filter(it => {
+        if (CURRENT_FILTER === 'all') return true;
+        return it.type === CURRENT_FILTER;
+      });
+      list.innerHTML = filtered.map(renderRow).join('');
+      empty.classList.toggle('hidden', filtered.length > 0);
+      updateBulkBtn();
+    }
+
+    function updateBulkBtn() {
+      const btn = document.getElementById('bulk-approve-btn');
+      const cnt = document.getElementById('bulk-count');
+      btn.disabled = SELECTED.size === 0;
+      cnt.textContent = SELECTED.size;
+    }
+
+    function updateCounts() {
+      const remaining = QUEUE.length;
+      document.getElementById('queue-count-badge').textContent = remaining;
+      document.getElementById('kpi-total').textContent = remaining;
+      document.getElementById('kpi-medical').textContent = QUEUE.filter(q => q.type === 'medical').length;
+      document.getElementById('kpi-tone').textContent = QUEUE.filter(q => q.type === 'tone').length;
+      document.getElementById('kpi-claim').textContent = QUEUE.filter(q => q.type === 'claim').length;
+      // 필터 chip 카운트도 업데이트
+      const counts = {
+        all: QUEUE.length,
+        medical: QUEUE.filter(q => q.type === 'medical').length,
+        tone: QUEUE.filter(q => q.type === 'tone').length,
+        claim: QUEUE.filter(q => q.type === 'claim').length,
+        general: QUEUE.filter(q => q.type === 'general').length,
+      };
+      document.querySelectorAll('[data-filter]').forEach(b => {
+        const cnt = b.querySelector('span');
+        if (cnt) cnt.textContent = counts[b.dataset.filter] ?? 0;
+      });
+    }
+
+    function removeItem(id, action) {
+      const idx = QUEUE.findIndex(q => q.id === id);
+      if (idx < 0) return;
+      const item = QUEUE[idx];
+      // 행 페이드 아웃 → 데이터 제거 → 재렌더
+      const row = document.querySelector(`.queue-row[data-id="${id}"]`);
+      if (row) row.classList.add('row-fade');
+      setTimeout(() => {
+        QUEUE.splice(idx, 1);
+        SELECTED.delete(id);
+        applyFilter();
+        updateCounts();
+        const verb = action === 'approve' ? '승인' : '반려';
+        const tone = action === 'approve' ? 'success' : 'info';
+        window.mockupToast && window.mockupToast(`${item.brandName} · ${verb} 처리됨 (${item.title.slice(0, 24)}…)`, tone);
+        if (QUEUE.length === 0) {
+          document.getElementById('empty-state')?.classList.remove('hidden');
+        }
+      }, 350);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      applyFilter();
+      updateCounts();
+
+      // 필터 chip
+      document.getElementById('status-filter')?.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-filter]');
+        if (!btn) return;
+        document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('filter-chip-active'));
+        btn.classList.add('filter-chip-active');
+        CURRENT_FILTER = btn.dataset.filter;
+        applyFilter();
+      });
+
+      document.getElementById('reset-filter-btn')?.addEventListener('click', () => {
+        document.querySelector('[data-filter="all"]')?.click();
+      });
+
+      // 행 액션
+      document.getElementById('queue-list')?.addEventListener('click', (e) => {
+        const checkBox = e.target.closest('.row-check');
+        if (checkBox) {
+          if (checkBox.checked) SELECTED.add(checkBox.dataset.id);
+          else SELECTED.delete(checkBox.dataset.id);
+          updateBulkBtn();
+          return;
+        }
+        const approve = e.target.closest('[data-action="approve"]');
+        if (approve) { e.preventDefault(); removeItem(approve.dataset.id, 'approve'); return; }
+        const reject = e.target.closest('[data-action="reject"]');
+        if (reject) { e.preventDefault(); removeItem(reject.dataset.id, 'reject'); return; }
+      });
+
+      // 전체 선택
+      document.getElementById('select-all')?.addEventListener('change', (e) => {
+        const checked = e.target.checked;
+        document.querySelectorAll('.row-check').forEach(cb => {
+          cb.checked = checked;
+          if (checked) SELECTED.add(cb.dataset.id);
+          else SELECTED.delete(cb.dataset.id);
+        });
+        updateBulkBtn();
+      });
+
+      // 일괄 승인
+      document.getElementById('bulk-approve-btn')?.addEventListener('click', () => {
+        if (SELECTED.size === 0) return;
+        const count = SELECTED.size;
+        const ids = [...SELECTED];
+        window.mockupToast && window.mockupToast(`${count}건 승인 진행 중…`, 'info');
+        ids.forEach((id, i) => setTimeout(() => removeItem(id, 'approve'), i * 240));
+      });
+
+      // 검색
+      document.getElementById('search-input')?.addEventListener('input', (e) => {
+        const q = e.target.value.trim().toLowerCase();
+        document.querySelectorAll('.queue-row').forEach(row => {
+          const id = row.dataset.id;
+          const item = QUEUE.find(x => x.id === id);
+          if (!item) return;
+          const hay = (item.brandName + ' ' + item.title + ' ' + item.excerpt + ' ' + item.reason).toLowerCase();
+          row.style.display = (!q || hay.includes(q)) ? '' : 'none';
+        });
+      });
+    });
+  </script>
+</body>
+</html>
