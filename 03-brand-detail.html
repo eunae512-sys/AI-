@@ -708,6 +708,11 @@
       const brand = BRANDS[id] || BRANDS['miokdang'];
       applyBrand(brand);
 
+      // "새 캠페인" 버튼이 현재 브랜드 id를 04 페이지로 전달하도록 데이터 갱신
+      document.querySelectorAll('[data-go="04-campaign-new.html"]').forEach(function(b) {
+        b.dataset.go = '04-campaign-new.html?id=' + id;
+      });
+
       // 탭바 (개요/브랜드킷/톤/자산/캠페인/활동 로그) — 시각적 토글만
       const tabNav = document.querySelector('nav.-mb-px');
       if (tabNav) {

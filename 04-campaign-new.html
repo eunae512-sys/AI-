@@ -39,7 +39,9 @@
       <header class="border-b border-gray-100 bg-white/70 backdrop-blur sticky top-0 z-10">
         <div class="px-8 py-3.5 flex items-center gap-4">
           <div class="flex items-center gap-2 text-xs">
-            <a class="text-gray-500 hover:text-gray-900">캠페인</a>
+            <a href="02-clients.html" class="text-gray-500 hover:text-gray-900">캠페인</a>
+            <svg class="h-3 w-3 text-gray-300" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 3l3 3-3 3"/></svg>
+            <span id="crumbBrand" class="text-gray-500 hover:text-gray-900">미옥당 본점</span>
             <svg class="h-3 w-3 text-gray-300" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 3l3 3-3 3"/></svg>
             <span class="text-gray-900 font-medium">새 캠페인</span>
           </div>
@@ -89,21 +91,26 @@
         <section class="col-span-12 lg:col-span-5 space-y-4">
           <div class="rounded-xl border border-gray-200 bg-white p-5">
             <h2 class="text-sm font-semibold tracking-tight">클라이언트</h2>
-            <button class="mt-3 w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-left">
-              <div class="h-8 w-8 rounded-md bg-gradient-to-br from-rose-400 to-orange-400 grid place-items-center text-white text-xs font-bold">미</div>
-              <div class="flex-1">
-                <div class="text-sm font-medium">미옥당 본점</div>
-                <div class="text-[11px] text-gray-500">음식점 · 한정식 · 톤 v3 활성</div>
+            <div class="relative mt-3" id="brandPickerWrap">
+              <button id="brandPickerBtn" type="button" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-left">
+                <div id="brandAvatar" class="h-8 w-8 rounded-md bg-gradient-to-br from-rose-400 to-orange-400 grid place-items-center text-white text-xs font-bold">미</div>
+                <div class="flex-1">
+                  <div id="brandName" class="text-sm font-medium">미옥당 본점</div>
+                  <div id="brandMeta" class="text-[11px] text-gray-500">음식점 · 한정식 · 톤 v3 활성</div>
+                </div>
+                <svg class="h-4 w-4 text-gray-400" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4.5l3 3 3-3"/></svg>
+              </button>
+              <div id="brandPickerMenu" class="hidden absolute z-20 mt-1.5 w-full rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden">
+                <!-- options rendered by JS -->
               </div>
-              <svg class="h-4 w-4 text-gray-400" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4.5l3 3 3-3"/></svg>
-            </button>
+            </div>
           </div>
 
           <div class="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
             <h2 class="text-sm font-semibold tracking-tight">캠페인 정보</h2>
             <div>
               <label class="text-[11px] font-medium text-gray-700">캠페인 이름</label>
-              <input value="5월 신메뉴 봄나물 코스 런칭" class="mt-1.5 w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-gray-900 focus:ring-2 focus:ring-gray-900/5 outline-none" />
+              <input id="campaignName" value="5월 신메뉴 봄나물 코스 런칭" class="mt-1.5 w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-gray-900 focus:ring-2 focus:ring-gray-900/5 outline-none" />
             </div>
             <div class="grid grid-cols-2 gap-3">
               <div>
@@ -119,7 +126,7 @@
             </div>
             <div>
               <label class="text-[11px] font-medium text-gray-700">타겟</label>
-              <textarea rows="2" class="mt-1.5 w-full rounded-md border border-gray-200 px-3 py-2 text-sm leading-relaxed">30~50대 직장인 + 가족 모임 · 종로/광화문 반경 1km · 평일 점심 회식 결정권자</textarea>
+              <textarea id="campaignTarget" rows="2" class="mt-1.5 w-full rounded-md border border-gray-200 px-3 py-2 text-sm leading-relaxed">30~50대 직장인 + 가족 모임 · 종로/광화문 반경 1km · 평일 점심 회식 결정권자</textarea>
             </div>
             <div class="grid grid-cols-2 gap-3">
               <div>
@@ -290,5 +297,94 @@
     </main>
   </div>
   <script src="mockup-runtime.js" defer></script>
+  <script defer>
+    // 브랜드 후보 — 02-clients / 03-brand-detail와 동일 6개
+    const BRANDS = [
+      { id: 'miokdang',           name: '미옥당 본점',         letter: '미', gradient: 'from-rose-400 to-orange-400',    meta: '음식점 · 한정식 · 톤 v3 활성',   campaign: '5월 신메뉴 봄나물 코스 런칭',     target: '30~50대 직장인 + 가족 모임 · 종로/광화문 반경 1km · 평일 점심 회식 결정권자' },
+      { id: 'luna-hair',          name: '루나 헤어 강남점',    letter: '루', gradient: 'from-violet-400 to-fuchsia-500', meta: '미용 · 헤어살롱 · 톤 v5 활성',     campaign: '5월 모카브라운 컬러 프로모션',    target: '20~30대 여성 · 강남역 도보 10분 · 디자이너 지명 예약 결정권자' },
+      { id: 'cheongdam-medical',  name: '청담 메디컬 의원',    letter: '청', gradient: 'from-sky-400 to-blue-600',       meta: '의료 · 피부과 · 의료 가드레일 active', campaign: '봄맞이 피부 진단 상담 캠페인', target: '30~50대 여성 · 청담/압구정 거주 · 피부 시술 사전 상담 의향' },
+      { id: 'best-eng',           name: '베스트 영어학원',      letter: '베', gradient: 'from-emerald-400 to-teal-500',   meta: '교육 · 학원 · 톤 v4 활성',         campaign: '5월 신학기 레벨 테스트 모집',     target: '초·중등 자녀를 둔 30~40대 학부모 · 마포구 거주 · 학습 진단 결정권자' },
+      { id: 'forum-fashion',      name: 'FORUM 패션',          letter: 'F',  gradient: 'from-slate-700 to-zinc-900',     meta: '쇼핑몰 · 컨템포러리 · 톤 v6 활성', campaign: '5월 신상 입고 회차 #18',          target: '20~30대 여성 · 컨템포러리 의류 관심 · 신상 입고 회차 사전 알림 구독자' },
+      { id: 'roastery-1985',      name: '로스터리 1985',       letter: 'R',  gradient: 'from-amber-700 to-stone-800',    meta: '카페 · 스페셜티 · 톤 v1 학습 중',  campaign: '오픈 기념 원두 구독 사전 안내',   target: '20~40대 · 연남/홍대 인근 · 핸드드립·싱글오리진 관심 단골 후보' },
+    ];
+
+    function getBrandIdFromUrl() {
+      const id = new URLSearchParams(window.location.search).get('id');
+      return BRANDS.some(b => b.id === id) ? id : 'miokdang';
+    }
+
+    function applyBrand(b) {
+      const avatar = document.getElementById('brandAvatar');
+      avatar.className = 'h-8 w-8 rounded-md bg-gradient-to-br ' + b.gradient + ' grid place-items-center text-white text-xs font-bold';
+      avatar.textContent = b.letter;
+      document.getElementById('brandName').textContent = b.name;
+      document.getElementById('brandMeta').textContent = b.meta;
+      document.getElementById('crumbBrand').textContent = b.name;
+      const c = document.getElementById('campaignName');
+      const t = document.getElementById('campaignTarget');
+      if (c) c.value = b.campaign;
+      if (t) t.value = b.target;
+      document.title = 'AdOps AI · 새 캠페인 — ' + b.name;
+    }
+
+    function renderBrandMenu(currentId) {
+      const menu = document.getElementById('brandPickerMenu');
+      menu.innerHTML = BRANDS.map(b =>
+        '<button type="button" data-brand-id="' + b.id + '" class="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-gray-50 ' +
+        (b.id === currentId ? 'bg-gray-50' : '') + '">' +
+          '<div class="h-7 w-7 rounded-md bg-gradient-to-br ' + b.gradient + ' grid place-items-center text-white text-[11px] font-bold">' + b.letter + '</div>' +
+          '<div class="flex-1 min-w-0">' +
+            '<div class="text-sm font-medium truncate">' + b.name + '</div>' +
+            '<div class="text-[11px] text-gray-500 truncate">' + b.meta + '</div>' +
+          '</div>' +
+          (b.id === currentId
+            ? '<svg class="h-3.5 w-3.5 text-gray-900 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>'
+            : '') +
+        '</button>'
+      ).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      let currentId = getBrandIdFromUrl();
+      let current = BRANDS.find(b => b.id === currentId) || BRANDS[0];
+      applyBrand(current);
+      renderBrandMenu(currentId);
+
+      const btn = document.getElementById('brandPickerBtn');
+      const menu = document.getElementById('brandPickerMenu');
+      const wrap = document.getElementById('brandPickerWrap');
+
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        menu.classList.toggle('hidden');
+      });
+
+      menu.addEventListener('click', function(e) {
+        const opt = e.target.closest('[data-brand-id]');
+        if (!opt) return;
+        const id = opt.getAttribute('data-brand-id');
+        const next = BRANDS.find(b => b.id === id);
+        if (!next) return;
+        currentId = id;
+        applyBrand(next);
+        renderBrandMenu(id);
+        menu.classList.add('hidden');
+        // URL도 동기화 (선택 사항 — 새로고침 시 유지)
+        const url = new URL(window.location.href);
+        url.searchParams.set('id', id);
+        window.history.replaceState({}, '', url);
+        window.mockupToast && window.mockupToast(next.name + ' 으로 전환됨', 'info');
+      });
+
+      // 바깥 클릭 시 닫기
+      document.addEventListener('click', function(e) {
+        if (!wrap.contains(e.target)) menu.classList.add('hidden');
+      });
+      // ESC 닫기
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') menu.classList.add('hidden');
+      });
+    });
+  </script>
 </body>
 </html>
