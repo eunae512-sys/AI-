@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BRIQ · 요금제</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode:'class', theme:{ extend:{ fontFamily:{ sans:['"Pretendard Variable"','Pretendard','system-ui','sans-serif'] } } } };
+    if (localStorage.getItem('briq-theme') === 'dark') document.documentElement.classList.add('dark');
+  </script>
+  <style>
+    body{font-family:'Pretendard Variable',Pretendard,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+    .gradient-text { background:linear-gradient(135deg,#6366f1,#a855f7 50%,#ec4899); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+    .plan-card { background:#fff; border:1px solid #e5e7eb; border-radius:16px; transition:all .2s; }
+    .dark .plan-card { background:#0f0f12; border-color:#27272a; }
+    .plan-card:hover { transform:translateY(-2px); border-color:#9ca3af; }
+    .plan-card.popular { border:2px solid transparent; background-image:linear-gradient(#fff,#fff),linear-gradient(135deg,#6366f1,#ec4899); background-origin:border-box; background-clip:padding-box,border-box; box-shadow:0 30px 60px -20px rgba(99,102,241,0.35); }
+    .dark .plan-card.popular { background-image:linear-gradient(#0f0f12,#0f0f12),linear-gradient(135deg,#6366f1,#ec4899); }
+    .check { color:#059669; }
+    .dark .check { color:#34d399; }
+    .x-icon { color:#cbd5e1; }
+    .dark .x-icon { color:#3f3f46; }
+    .reveal { opacity:0; transform:translateY(16px); transition:all .7s cubic-bezier(.2,.8,.2,1); }
+    .reveal.in { opacity:1; transform:translateY(0); }
+  </style>
+</head>
+<body class="min-h-screen bg-white dark:bg-[#0a0a0b] text-gray-900 dark:text-zinc-100 transition-colors">
+
+  <!-- Top nav -->
+  <nav class="border-b border-gray-100 dark:border-zinc-900 bg-white/70 dark:bg-[#0a0a0b]/70 backdrop-blur sticky top-0 z-10">
+    <div class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+      <a href="landing.html" class="flex items-center gap-2">
+        <div class="h-7 w-7 rounded-md bg-gradient-to-br from-indigo-500 via-violet-600 to-pink-500 grid place-items-center text-white text-xs font-bold">B</div>
+        <span class="text-sm font-semibold tracking-tight">BRIQ</span>
+      </a>
+      <div class="hidden md:flex items-center gap-7 text-xs font-medium text-gray-600 dark:text-zinc-400">
+        <a href="landing.html#features" class="hover:text-gray-900 dark:hover:text-white">기능</a>
+        <a href="landing.html#cases" class="hover:text-gray-900 dark:hover:text-white">고객사례</a>
+        <a href="pricing.html" class="text-gray-900 dark:text-white">요금제</a>
+        <a href="landing.html#faq" class="hover:text-gray-900 dark:hover:text-white">FAQ</a>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="01-login.html" class="text-xs text-gray-600 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white px-3 py-1.5">로그인</a>
+        <a href="onboarding.html" class="text-xs font-medium px-3.5 py-2 rounded-md bg-gray-900 text-white dark:bg-white dark:text-zinc-900">시작하기</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="pt-20 pb-10 text-center px-6">
+    <div class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold">PRICING</div>
+    <h1 class="mt-3 text-4xl sm:text-5xl font-semibold tracking-tight">소상공인이 부담 없이<br><span class="gradient-text">시작하는 가격</span></h1>
+    <p class="mt-5 text-base text-gray-600 dark:text-zinc-400 max-w-xl mx-auto">광고대행사 월 ₩200~500만원이 부담스러우셨다면. 신용카드 없이 무료로 시작하세요.</p>
+
+    <!-- Billing toggle -->
+    <div class="mt-8 inline-flex items-center bg-gray-100 dark:bg-zinc-900 rounded-full p-1 text-xs font-medium">
+      <button class="px-4 py-1.5 rounded-full bg-white dark:bg-zinc-800 shadow-sm">월 결제</button>
+      <button class="px-4 py-1.5 text-gray-500 dark:text-zinc-400">연 결제 <span class="ml-1 text-emerald-600">-2개월 무료</span></button>
+    </div>
+  </section>
+
+  <!-- 4 Plans -->
+  <section class="px-6">
+    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+
+      <!-- FREE -->
+      <div class="plan-card p-7 reveal">
+        <div class="text-xs font-semibold uppercase tracking-wider text-gray-500">FREE</div>
+        <div class="mt-3"><span class="text-4xl font-semibold tabular-nums">₩0</span><span class="text-sm text-gray-500"> / 월</span></div>
+        <p class="mt-3 text-xs text-gray-500 dark:text-zinc-500 leading-relaxed">처음 BRIQ를 써보시는 분 · 신용카드 없이 시작</p>
+        <a href="onboarding.html" class="mt-6 block text-center text-xs font-medium px-4 py-2.5 rounded-md border border-gray-200 dark:border-zinc-800 hover:border-gray-900 dark:hover:border-white">무료 시작</a>
+        <ul class="mt-7 space-y-2.5 text-xs">
+          <li class="flex gap-2"><span class="check">✓</span><span><b>1 브랜드</b></span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span>월 <b>3건</b> 릴스 자동 생성</span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span>월 <b>10건</b> 카드뉴스</span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span>브랜드 톤 메모리 v1</span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span>AI Assistant <b>30회/월</b></span></li>
+          <li class="flex gap-2"><span class="x-icon">✕</span><span class="text-gray-400 dark:text-zinc-600">예약 발행</span></li>
+          <li class="flex gap-2"><span class="x-icon">✕</span><span class="text-gray-400 dark:text-zinc-600">리뷰 자동 답변</span></li>
+          <li class="flex gap-2"><span class="x-icon">✕</span><span class="text-gray-400 dark:text-zinc-600">성과 분석</span></li>
+        </ul>
+      </div>
+
+      <!-- STARTER -->
+      <div class="plan-card p-7 reveal" style="transition-delay:.05s">
+        <div class="text-xs font-semibold uppercase tracking-wider text-gray-500">STARTER</div>
+        <div class="mt-3"><span class="text-4xl font-semibold tabular-nums">₩19,000</span><span class="text-sm text-gray-500"> / 월</span></div>
+        <p class="mt-3 text-xs text-gray-500 dark:text-zinc-500 leading-relaxed">1인 자영업자 · 카페 · 디저트샵 · 작은 숙소</p>
+        <a href="onboarding.html" class="mt-6 block text-center text-xs font-medium px-4 py-2.5 rounded-md border border-gray-200 dark:border-zinc-800 hover:border-gray-900 dark:hover:border-white">시작하기</a>
+        <ul class="mt-7 space-y-2.5 text-xs">
+          <li class="flex gap-2"><span class="check">✓</span><span><b>1 브랜드</b></span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span>월 <b>30건</b> 릴스</span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span><b>무제한</b> 카드뉴스</span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span>브랜드 톤 메모리 <b>v3</b></span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span>AI Assistant <b>500회/월</b></span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span><b>예약 발행</b> · 인스타+블로그+Threads</span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span><b>콘텐츠 캘린더</b> 자동 추천</span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span>기본 성과 분석 (조회·저장률)</span></li>
+          <li class="flex gap-2"><span class="x-icon">✕</span><span class="text-gray-400 dark:text-zinc-600">리뷰 자동 답변</span></li>
+        </ul>
+      </div>
+
+      <!-- PRO (popular) -->
+      <div class="plan-card popular p-7 reveal relative" style="transition-delay:.1s">
+        <div class="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold px-3 py-1 rounded-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white shadow-lg">가장 인기 ★</div>
+        <div class="text-xs font-semibold uppercase tracking-wider gradient-text">PRO</div>
+        <div class="mt-3"><span class="text-4xl font-semibold tabular-nums">₩49,000</span><span class="text-sm text-gray-500"> / 월</span></div>
+        <p class="mt-3 text-xs text-gray-500 dark:text-zinc-500 leading-relaxed">5인 미만 매장 · 단골 운영 · 모든 기능 무제한</p>
+        <a href="onboarding.html" class="mt-6 block text-center text-xs font-medium px-4 py-2.5 rounded-md bg-gray-900 text-white dark:bg-white dark:text-zinc-900">PRO 시작</a>
+        <ul class="mt-7 space-y-2.5 text-xs">
+          <li class="flex gap-2"><span class="check">✓</span><span><b>3 브랜드</b></span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span><b>무제한</b> 릴스 · 카드뉴스 · 블로그</span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span>브랜드 톤 메모리 <b>버전 진화</b> 무제한</span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span>AI Assistant <b>무제한</b></span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span><b>리뷰 자동 답변</b> · 4채널 (네이버·구글·배민·요기요)</span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span><b>성과 분석 풀</b> · ROI · 경쟁사 비교</span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span><b>지역 트렌드</b> · 1km 반경 분석</span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span><b>자동 브랜드 키트</b></span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span>우선 지원 · 평균 응답 4시간</span></li>
+        </ul>
+      </div>
+
+      <!-- AGENCY -->
+      <div class="plan-card p-7 reveal" style="transition-delay:.15s">
+        <div class="text-xs font-semibold uppercase tracking-wider text-gray-500">AGENCY</div>
+        <div class="mt-3"><span class="text-4xl font-semibold tabular-nums">₩149,000</span><span class="text-sm text-gray-500"> / 월</span></div>
+        <p class="mt-3 text-xs text-gray-500 dark:text-zinc-500 leading-relaxed">광고대행사 · 1인 마케터 · 다 브랜드 운영</p>
+        <a class="mt-6 block text-center text-xs font-medium px-4 py-2.5 rounded-md border border-gray-200 dark:border-zinc-800 hover:border-gray-900 dark:hover:border-white">상담 신청</a>
+        <ul class="mt-7 space-y-2.5 text-xs">
+          <li class="flex gap-2"><span class="check">✓</span><span><b>10 브랜드</b> (이상은 협의)</span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span>모든 PRO 기능 포함</span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span><b>팀 협업</b> · 5인 시트 · 권한 관리</span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span><b>화이트라벨</b> · 자체 브랜드 운영</span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span><b>API 액세스</b> · 자동화 워크플로우</span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span><b>커스텀 톤 학습</b> · 브랜드별 격리</span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span>전담 매니저 · 슬랙 채널</span></li>
+          <li class="flex gap-2"><span class="check">✓</span><span>월간 인사이트 리포트</span></li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Comparison table -->
+  <section class="py-20 px-6">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center reveal">
+        <div class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold">기능 상세 비교</div>
+        <h2 class="mt-3 text-3xl font-semibold tracking-tight">정확히 무엇이 다른가요?</h2>
+      </div>
+      <div class="mt-12 overflow-x-auto reveal">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b-2 border-gray-200 dark:border-zinc-800">
+              <th class="py-4 pr-4 text-left text-[11px] uppercase tracking-widest text-gray-400 font-semibold w-1/3">기능</th>
+              <th class="py-4 px-3 text-center text-xs font-semibold">FREE</th>
+              <th class="py-4 px-3 text-center text-xs font-semibold">STARTER</th>
+              <th class="py-4 px-3 text-center text-xs font-semibold gradient-text">PRO ★</th>
+              <th class="py-4 px-3 text-center text-xs font-semibold">AGENCY</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-zinc-800">
+            <tr><td class="py-3 pr-4 font-medium">브랜드 수</td><td class="text-center text-xs">1</td><td class="text-center text-xs">1</td><td class="text-center text-xs">3</td><td class="text-center text-xs">10</td></tr>
+            <tr><td class="py-3 pr-4 font-medium">릴스 자동 생성</td><td class="text-center text-xs">3 / 월</td><td class="text-center text-xs">30 / 월</td><td class="text-center text-xs gradient-text font-semibold">무제한</td><td class="text-center text-xs">무제한</td></tr>
+            <tr><td class="py-3 pr-4 font-medium">카드뉴스</td><td class="text-center text-xs">10 / 월</td><td class="text-center text-xs">무제한</td><td class="text-center text-xs">무제한</td><td class="text-center text-xs">무제한</td></tr>
+            <tr><td class="py-3 pr-4 font-medium">블로그 자동 작성</td><td class="text-center"><span class="x-icon">—</span></td><td class="text-center text-xs">10 / 월</td><td class="text-center text-xs">무제한</td><td class="text-center text-xs">무제한</td></tr>
+            <tr><td class="py-3 pr-4 font-medium">브랜드 톤 메모리</td><td class="text-center text-xs">v1 (기본)</td><td class="text-center text-xs">v3 (학습)</td><td class="text-center text-xs">진화 무제한</td><td class="text-center text-xs">진화 무제한</td></tr>
+            <tr><td class="py-3 pr-4 font-medium">예약 발행</td><td class="text-center"><span class="x-icon">—</span></td><td class="text-center text-xs">3 채널</td><td class="text-center text-xs">5 채널</td><td class="text-center text-xs">5 채널</td></tr>
+            <tr><td class="py-3 pr-4 font-medium">콘텐츠 캘린더</td><td class="text-center"><span class="x-icon">—</span></td><td class="text-center"><span class="check">✓</span></td><td class="text-center"><span class="check">✓</span></td><td class="text-center"><span class="check">✓</span></td></tr>
+            <tr><td class="py-3 pr-4 font-medium">리뷰 자동 답변</td><td class="text-center"><span class="x-icon">—</span></td><td class="text-center"><span class="x-icon">—</span></td><td class="text-center"><span class="check">✓</span></td><td class="text-center"><span class="check">✓</span></td></tr>
+            <tr><td class="py-3 pr-4 font-medium">성과 분석</td><td class="text-center"><span class="x-icon">—</span></td><td class="text-center text-xs">기본</td><td class="text-center text-xs">풀 + ROI</td><td class="text-center text-xs">풀 + ROI</td></tr>
+            <tr><td class="py-3 pr-4 font-medium">지역 트렌드 분석</td><td class="text-center"><span class="x-icon">—</span></td><td class="text-center"><span class="x-icon">—</span></td><td class="text-center"><span class="check">✓</span></td><td class="text-center"><span class="check">✓</span></td></tr>
+            <tr><td class="py-3 pr-4 font-medium">자동 브랜드 키트</td><td class="text-center text-xs">기본</td><td class="text-center text-xs">기본</td><td class="text-center"><span class="check">✓</span></td><td class="text-center"><span class="check">✓</span></td></tr>
+            <tr><td class="py-3 pr-4 font-medium">AI Assistant</td><td class="text-center text-xs">30 / 월</td><td class="text-center text-xs">500 / 월</td><td class="text-center text-xs gradient-text font-semibold">무제한</td><td class="text-center text-xs">무제한</td></tr>
+            <tr><td class="py-3 pr-4 font-medium">팀 시트</td><td class="text-center text-xs">1</td><td class="text-center text-xs">1</td><td class="text-center text-xs">2</td><td class="text-center text-xs">5</td></tr>
+            <tr><td class="py-3 pr-4 font-medium">API 액세스</td><td class="text-center"><span class="x-icon">—</span></td><td class="text-center"><span class="x-icon">—</span></td><td class="text-center"><span class="x-icon">—</span></td><td class="text-center"><span class="check">✓</span></td></tr>
+            <tr><td class="py-3 pr-4 font-medium">화이트라벨</td><td class="text-center"><span class="x-icon">—</span></td><td class="text-center"><span class="x-icon">—</span></td><td class="text-center"><span class="x-icon">—</span></td><td class="text-center"><span class="check">✓</span></td></tr>
+            <tr><td class="py-3 pr-4 font-medium">지원</td><td class="text-center text-xs">커뮤니티</td><td class="text-center text-xs">이메일</td><td class="text-center text-xs">우선 4h</td><td class="text-center text-xs">전담 매니저</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Add-ons -->
+  <section class="py-12 px-6 bg-gray-50/40 dark:bg-zinc-950/40 border-y border-gray-100 dark:border-zinc-900">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center reveal">
+        <div class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold">애드온</div>
+        <h2 class="mt-3 text-2xl font-semibold tracking-tight">필요할 때만 추가하세요</h2>
+      </div>
+      <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-3 reveal">
+        <div class="rounded-xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-[#0d0d10] p-5">
+          <div class="text-xs font-semibold">+ 브랜드 슬롯</div>
+          <div class="mt-1 text-xl font-semibold tabular-nums">₩9,000<span class="text-xs text-gray-500"> / 월</span></div>
+          <div class="text-[11px] text-gray-500 mt-1">PRO/AGENCY 한도 초과 시 1 브랜드씩</div>
+        </div>
+        <div class="rounded-xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-[#0d0d10] p-5">
+          <div class="text-xs font-semibold">+ 추가 시트</div>
+          <div class="mt-1 text-xl font-semibold tabular-nums">₩7,000<span class="text-xs text-gray-500"> / 월</span></div>
+          <div class="text-[11px] text-gray-500 mt-1">팀원 1명 추가 (PRO 이상)</div>
+        </div>
+        <div class="rounded-xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-[#0d0d10] p-5">
+          <div class="text-xs font-semibold">+ 영상 분량 확장</div>
+          <div class="mt-1 text-xl font-semibold tabular-nums">₩19,000<span class="text-xs text-gray-500"> / 월</span></div>
+          <div class="text-[11px] text-gray-500 mt-1">60초+ 릴스 / 유튜브 쇼츠 자동화</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROI calculator -->
+  <section class="py-20 px-6">
+    <div class="max-w-3xl mx-auto reveal">
+      <div class="rounded-2xl border border-gray-100 dark:border-zinc-800 p-8 text-center">
+        <div class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold">간단 ROI</div>
+        <h3 class="mt-2 text-2xl font-semibold tracking-tight">PRO 가입 시, 매월 절감되는 가치</h3>
+        <div class="mt-6 grid grid-cols-3 gap-4">
+          <div><div class="text-3xl font-semibold tabular-nums text-emerald-600">₩1,400,000</div><div class="text-[11px] text-gray-500 mt-1">광고대행사 외주 절감</div></div>
+          <div><div class="text-3xl font-semibold tabular-nums text-emerald-600">42h</div><div class="text-[11px] text-gray-500 mt-1">사장님 시간 절감</div></div>
+          <div><div class="text-3xl font-semibold tabular-nums text-emerald-600">+147%</div><div class="text-[11px] text-gray-500 mt-1">인스타 도달 평균</div></div>
+        </div>
+        <div class="mt-7 text-xs text-gray-500 dark:text-zinc-500">PRO 월 ₩49,000 → 실 ROI <b>2,857%</b> · 투자한 1원당 28원이 돌아옵니다.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="py-20 px-6 bg-gray-50/40 dark:bg-zinc-950/40 border-t border-gray-100 dark:border-zinc-900">
+    <div class="max-w-3xl mx-auto">
+      <div class="text-center reveal">
+        <div class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold">FAQ</div>
+        <h2 class="mt-3 text-3xl font-semibold tracking-tight">요금 관련 자주 묻는 질문</h2>
+      </div>
+      <div class="mt-12 space-y-3">
+        <details class="group rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-[#0d0d10] reveal">
+          <summary class="cursor-pointer list-none p-5 flex items-center justify-between"><span class="text-sm font-medium">언제든 취소할 수 있나요?</span><span class="text-gray-400 group-open:rotate-45 transition">+</span></summary>
+          <div class="px-5 pb-5 text-sm text-gray-600 dark:text-zinc-400 leading-relaxed">네. 언제든 취소 가능하며, 다음 결제일까지는 모든 기능을 사용하실 수 있습니다. 환불은 7일 이내 무조건 가능합니다.</div>
+        </details>
+        <details class="group rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-[#0d0d10] reveal">
+          <summary class="cursor-pointer list-none p-5 flex items-center justify-between"><span class="text-sm font-medium">FREE에서 PRO로 바꾸면 데이터는 유지되나요?</span><span class="text-gray-400 group-open:rotate-45 transition">+</span></summary>
+          <div class="px-5 pb-5 text-sm text-gray-600 dark:text-zinc-400 leading-relaxed">모든 브랜드 톤 메모리·콘텐츠·예약 큐가 그대로 유지됩니다. 업그레이드 즉시 추가 기능이 활성화됩니다.</div>
+        </details>
+        <details class="group rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-[#0d0d10] reveal">
+          <summary class="cursor-pointer list-none p-5 flex items-center justify-between"><span class="text-sm font-medium">연 결제 할인은 어떻게 적용되나요?</span><span class="text-gray-400 group-open:rotate-45 transition">+</span></summary>
+          <div class="px-5 pb-5 text-sm text-gray-600 dark:text-zinc-400 leading-relaxed">연 결제 시 2개월 무료. PRO 기준 월 ₩49,000 × 12 = ₩588,000 → 연 결제 시 ₩490,000 (₩98,000 절감).</div>
+        </details>
+        <details class="group rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-[#0d0d10] reveal">
+          <summary class="cursor-pointer list-none p-5 flex items-center justify-between"><span class="text-sm font-medium">소상공인 / 청년창업 할인은 있나요?</span><span class="text-gray-400 group-open:rotate-45 transition">+</span></summary>
+          <div class="px-5 pb-5 text-sm text-gray-600 dark:text-zinc-400 leading-relaxed">사업자등록증 제출 시 STARTER 첫 3개월 50% 할인. 청년창업자(만39세 이하)에겐 PRO 첫 6개월 30% 할인. 상담 신청해 주세요.</div>
+        </details>
+        <details class="group rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-[#0d0d10] reveal">
+          <summary class="cursor-pointer list-none p-5 flex items-center justify-between"><span class="text-sm font-medium">결제 수단은 무엇이 가능한가요?</span><span class="text-gray-400 group-open:rotate-45 transition">+</span></summary>
+          <div class="px-5 pb-5 text-sm text-gray-600 dark:text-zinc-400 leading-relaxed">국내 모든 신용·체크카드, 카카오페이, 네이버페이, 토스페이. 사업자 계산서 발행 가능합니다.</div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-24 px-6 text-center">
+    <h2 class="text-3xl sm:text-4xl font-semibold tracking-tight">오늘부터 BRIQ를<br><span class="gradient-text">사장님의 디지털 매니저로</span></h2>
+    <div class="mt-8 flex items-center justify-center gap-3 flex-wrap">
+      <a href="onboarding.html" class="text-sm font-medium px-6 py-3 rounded-md bg-gray-900 text-white dark:bg-white dark:text-zinc-900">무료로 시작 →</a>
+      <a class="text-sm font-medium px-6 py-3 rounded-md border border-gray-200 dark:border-zinc-800 hover:border-gray-900 dark:hover:border-white">에이전시 상담</a>
+    </div>
+  </section>
+
+  <footer class="border-t border-gray-100 dark:border-zinc-900 py-8 text-center text-[11px] text-gray-400">
+    © 2026 BRIQ Inc. · made with ❤ in Seoul
+  </footer>
+
+  <script>
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  </script>
+</body>
+</html>

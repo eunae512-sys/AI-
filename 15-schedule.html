@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BRIQ · 업로드 예약</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode:'class', theme:{ extend:{ fontFamily:{ sans:['"Pretendard Variable"','Pretendard','system-ui','sans-serif'] } } } };
+    if (localStorage.getItem('briq-theme') === 'dark') document.documentElement.classList.add('dark');
+  </script>
+  <style>
+    body{font-family:'Pretendard Variable',Pretendard,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+    .nav-item { display:flex; align-items:center; padding:7px 10px; border-radius:6px; font-size:12px; font-weight:500; color:#4b5563; gap:6px; transition:all .12s; }
+    .nav-item:hover { background:#f3f4f6; color:#111827; }
+    .nav-item.nav-active { background:#fff; border:1px solid #e5e7eb; color:#111827; box-shadow:0 1px 2px rgba(0,0,0,0.04); }
+    .dark .nav-item { color:#a1a1aa; } .dark .nav-item:hover { background:#27272a; color:#fafafa; }
+    .dark .nav-item.nav-active { background:#18181b; border:1px solid #3f3f46; color:#fff; }
+    .nav-group { padding:14px 10px 5px; font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:#9ca3af; font-weight:600; }
+    .dark .nav-group { color:#71717a; }
+    .nav-badge { margin-left:auto; font-size:10px; font-variant-numeric:tabular-nums; padding:1px 6px; border-radius:4px; font-weight:500; }
+    .card { background:#fff; border:1px solid #e5e7eb; border-radius:14px; }
+    .dark .card { background:#0f0f12; border-color:#27272a; }
+    .fade-in { animation:fadeIn .4s cubic-bezier(.2,.8,.2,1) both }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(6px) } to { opacity:1; transform:translateY(0) } }
+    .queue-row { transition:all .15s; }
+    .queue-row:hover { background:#fafafa; }
+    .dark .queue-row:hover { background:#16161a; }
+    .channel-pill { font-size:9px; font-weight:600; padding:2px 6px; border-radius:4px; }
+  </style>
+</head>
+<body class="min-h-screen bg-white dark:bg-zinc-950 text-gray-900 dark:text-zinc-100 transition-colors">
+<div class="flex min-h-screen">
+  <aside class="w-60 shrink-0 border-r border-gray-100 dark:border-zinc-800 bg-gray-50/40 dark:bg-zinc-900/40 flex flex-col">
+    <div class="px-5 py-5 flex items-center gap-2 border-b border-gray-100 dark:border-zinc-800">
+      <div class="h-7 w-7 rounded-md bg-gradient-to-br from-indigo-500 to-violet-600 grid place-items-center text-white text-xs font-bold">B</div>
+      <span class="text-sm font-semibold tracking-tight">BRIQ</span>
+      <span class="ml-auto text-[10px] px-1.5 py-px rounded bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400">v0.3</span>
+    </div>
+    <nav class="flex-1 px-3 py-3 overflow-y-auto">
+      <a href="index.html" class="nav-item">홈</a>
+      <a href="02-clients.html" class="nav-item">클라이언트</a>
+      <a href="04-campaign-new.html" class="nav-item">캠페인</a>
+      <div class="nav-group">AI 콘텐츠</div>
+      <a href="06-cardnews-image.html" class="nav-item">카드뉴스</a>
+      <a href="08-reels-studio.html" class="nav-item">릴스 스튜디오</a>
+      <a href="05-content-result.html" class="nav-item">콘텐츠 결과</a>
+      <a href="11-calendar.html" class="nav-item">콘텐츠 캘린더</a>
+      <div class="nav-group">자동화</div>
+      <a href="07-review-queue.html" class="nav-item">검토 큐<span class="nav-badge bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">7</span></a>
+      <a href="10-reviews.html" class="nav-item">리뷰 답변<span class="nav-badge bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400">3</span></a>
+      <a href="15-schedule.html" class="nav-item nav-active">업로드 예약<span class="nav-badge bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400">12</span></a>
+      <div class="nav-group">인사이트</div>
+      <a href="12-analytics.html" class="nav-item">성과 분석</a>
+      <a href="14-trends.html" class="nav-item">지역 트렌드</a>
+      <div class="nav-group">브랜드</div>
+      <a href="09-brand-memory.html" class="nav-item">브랜드 톤</a>
+      <a href="13-brand-kit.html" class="nav-item">브랜드 키트</a>
+    </nav>
+    <div class="border-t border-gray-100 dark:border-zinc-800 p-3 flex items-center gap-2.5">
+      <div class="h-7 w-7 rounded-full bg-gradient-to-br from-amber-400 to-rose-500 shrink-0"></div>
+      <div class="flex-1 min-w-0"><div class="text-xs font-medium truncate">허은애</div><div class="text-[10px] text-gray-500 dark:text-zinc-500 truncate">미옥당 외 5</div></div>
+      <button id="theme-toggle" class="text-gray-400 hover:text-gray-700 dark:hover:text-zinc-200 p-1.5 rounded hover:bg-gray-100 dark:hover:bg-zinc-800">
+        <svg class="h-4 w-4 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="h-4 w-4 hidden dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <main class="flex-1 min-w-0">
+    <header class="border-b border-gray-100 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/70 backdrop-blur sticky top-0 z-10">
+      <div class="px-6 h-14 flex items-center gap-4">
+        <h1 class="text-sm font-semibold tracking-tight">업로드 예약</h1>
+        <span class="text-[11px] text-gray-400 dark:text-zinc-600">/</span>
+        <span class="text-xs text-gray-500 dark:text-zinc-400">큐 · 12건 대기</span>
+        <div class="ml-auto flex items-center gap-2">
+          <button id="ai-assistant-toggle" class="text-xs px-3 py-1.5 rounded-md bg-gray-900 text-white dark:bg-white dark:text-zinc-900 hover:opacity-90 inline-flex items-center gap-1.5 font-medium">
+            <span style="background:linear-gradient(135deg,#a78bfa,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent">✦</span> Assistant
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <section class="px-6 pt-7 pb-3 fade-in">
+      <div class="flex items-end justify-between gap-4 flex-wrap">
+        <div>
+          <div class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold">UPLOAD QUEUE</div>
+          <h2 class="mt-1 text-2xl font-semibold tracking-tight">예약 업로드 큐</h2>
+          <p class="mt-1 text-sm text-gray-600 dark:text-zinc-400 max-w-2xl">인스타 · 블로그 · 카카오 · Threads 동시 예약. BRIQ가 최적 시간을 자동 추천하고 1인 운영이라도 끊김 없이 발행합니다.</p>
+        </div>
+        <button class="text-xs px-3.5 py-2 rounded-md bg-gray-900 text-white dark:bg-white dark:text-zinc-900 font-medium">+ 콘텐츠 예약</button>
+      </div>
+    </section>
+
+    <!-- Channel status -->
+    <section class="px-6">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="card p-4 flex items-center gap-3">
+          <div class="h-9 w-9 rounded-lg bg-gradient-to-br from-fuchsia-500 to-orange-400 grid place-items-center text-white font-bold text-sm">IG</div>
+          <div class="flex-1 min-w-0"><div class="text-xs font-medium">인스타그램</div><div class="text-[11px] text-emerald-600">● 연결 · 4 계정</div></div>
+          <div class="text-xs tabular-nums font-semibold">7</div>
+        </div>
+        <div class="card p-4 flex items-center gap-3">
+          <div class="h-9 w-9 rounded-lg bg-emerald-600 grid place-items-center text-white font-bold text-sm">N</div>
+          <div class="flex-1 min-w-0"><div class="text-xs font-medium">네이버 블로그</div><div class="text-[11px] text-emerald-600">● 연결 · 3 계정</div></div>
+          <div class="text-xs tabular-nums font-semibold">3</div>
+        </div>
+        <div class="card p-4 flex items-center gap-3">
+          <div class="h-9 w-9 rounded-lg bg-yellow-400 grid place-items-center text-stone-900 font-bold text-sm">K</div>
+          <div class="flex-1 min-w-0"><div class="text-xs font-medium">카카오 채널</div><div class="text-[11px] text-amber-600">● 부분 · 2/4</div></div>
+          <div class="text-xs tabular-nums font-semibold">1</div>
+        </div>
+        <div class="card p-4 flex items-center gap-3">
+          <div class="h-9 w-9 rounded-lg bg-zinc-900 grid place-items-center text-white font-bold text-sm">@</div>
+          <div class="flex-1 min-w-0"><div class="text-xs font-medium">Threads</div><div class="text-[11px] text-emerald-600">● 연결 · 2 계정</div></div>
+          <div class="text-xs tabular-nums font-semibold">1</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Queue list -->
+    <section class="px-6 py-5 grid grid-cols-1 lg:grid-cols-3 gap-3">
+
+      <!-- Queue -->
+      <div class="card lg:col-span-2 fade-in overflow-hidden">
+        <div class="px-5 py-3 border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between">
+          <h3 class="text-sm font-semibold">큐 (12건)</h3>
+          <div class="flex items-center gap-2 text-[11px]">
+            <button class="text-gray-500 hover:text-gray-900 dark:hover:text-white">시간순</button>
+            <span class="text-gray-300">·</span>
+            <button class="text-gray-500 hover:text-gray-900 dark:hover:text-white">브랜드순</button>
+            <span class="text-gray-300">·</span>
+            <button class="text-gray-500 hover:text-gray-900 dark:hover:text-white">전체 일시정지</button>
+          </div>
+        </div>
+        <ul class="divide-y divide-gray-100 dark:divide-zinc-800">
+
+          <li class="queue-row p-4 flex items-center gap-4">
+            <div class="text-xs font-semibold tabular-nums w-14 text-emerald-600">11:30<div class="text-[10px] font-normal text-gray-500">오늘</div></div>
+            <div class="h-12 w-12 rounded-md bg-gradient-to-br from-amber-200 via-rose-300 to-amber-400 shrink-0"></div>
+            <div class="flex-1 min-w-0">
+              <div class="text-xs font-medium">미옥당 · 새벽 4시 시장 릴스</div>
+              <div class="text-[11px] text-gray-500 dark:text-zinc-500 mt-0.5">9:16 · 8컷 · 후크 "비 오는 날엔"</div>
+              <div class="mt-1.5 flex items-center gap-1"><span class="channel-pill bg-fuchsia-500/10 text-fuchsia-700 dark:text-fuchsia-300">IG 릴스</span><span class="channel-pill bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">네이버</span><span class="channel-pill bg-zinc-500/10 text-zinc-700 dark:text-zinc-300">Threads</span></div>
+            </div>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300 font-medium">최적시간 ★</span>
+            <div class="flex items-center gap-1">
+              <button class="text-gray-400 hover:text-gray-900 dark:hover:text-white p-1.5">⏸</button>
+              <button class="text-gray-400 hover:text-gray-900 dark:hover:text-white p-1.5">⋯</button>
+            </div>
+          </li>
+
+          <li class="queue-row p-4 flex items-center gap-4">
+            <div class="text-xs font-semibold tabular-nums w-14">19:45<div class="text-[10px] font-normal text-gray-500">오늘</div></div>
+            <div class="h-12 w-12 rounded-md bg-gradient-to-br from-zinc-700 via-zinc-900 to-stone-800 shrink-0"></div>
+            <div class="flex-1 min-w-0">
+              <div class="text-xs font-medium">루나헤어 · 결이 살아요 카드뉴스</div>
+              <div class="text-[11px] text-gray-500 dark:text-zinc-500 mt-0.5">4:5 · 6장 · 톤 v5</div>
+              <div class="mt-1.5 flex items-center gap-1"><span class="channel-pill bg-fuchsia-500/10 text-fuchsia-700 dark:text-fuchsia-300">IG 피드</span><span class="channel-pill bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">네이버</span></div>
+            </div>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300 font-medium">최적시간 ★</span>
+            <div class="flex items-center gap-1"><button class="text-gray-400 hover:text-gray-900 dark:hover:text-white p-1.5">⏸</button><button class="text-gray-400 hover:text-gray-900 dark:hover:text-white p-1.5">⋯</button></div>
+          </li>
+
+          <li class="queue-row p-4 flex items-center gap-4">
+            <div class="text-xs font-semibold tabular-nums w-14">21:10<div class="text-[10px] font-normal text-gray-500">오늘</div></div>
+            <div class="h-12 w-12 rounded-md bg-gradient-to-br from-sky-200 via-slate-200 to-blue-300 shrink-0"></div>
+            <div class="flex-1 min-w-0">
+              <div class="text-xs font-medium">청담의료 · 환절기 스킨 가이드 블로그</div>
+              <div class="text-[11px] text-gray-500 dark:text-zinc-500 mt-0.5">2,140자 · 의광법 검수 ✓</div>
+              <div class="mt-1.5 flex items-center gap-1"><span class="channel-pill bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">네이버</span><span class="channel-pill bg-sky-500/10 text-sky-700 dark:text-sky-300">플레이스</span></div>
+            </div>
+            <span class="text-[10px] text-gray-500">+1.6x</span>
+            <div class="flex items-center gap-1"><button class="text-gray-400 hover:text-gray-900 dark:hover:text-white p-1.5">⏸</button><button class="text-gray-400 hover:text-gray-900 dark:hover:text-white p-1.5">⋯</button></div>
+          </li>
+
+          <li class="queue-row p-4 flex items-center gap-4">
+            <div class="text-xs font-semibold tabular-nums w-14">08:30<div class="text-[10px] font-normal text-gray-500">5/12</div></div>
+            <div class="h-12 w-12 rounded-md bg-gradient-to-br from-amber-700 to-stone-800 shrink-0"></div>
+            <div class="flex-1 min-w-0">
+              <div class="text-xs font-medium">로스터리 1985 · 콜드브루 신메뉴</div>
+              <div class="text-[11px] text-gray-500 dark:text-zinc-500 mt-0.5">카드뉴스 5장 · 폭염 대응</div>
+              <div class="mt-1.5 flex items-center gap-1"><span class="channel-pill bg-fuchsia-500/10 text-fuchsia-700 dark:text-fuchsia-300">IG 피드</span></div>
+            </div>
+            <span class="text-[10px] text-gray-500">검토 중</span>
+            <div class="flex items-center gap-1"><button class="text-gray-400 hover:text-gray-900 dark:hover:text-white p-1.5">⋯</button></div>
+          </li>
+
+          <li class="queue-row p-4 flex items-center gap-4">
+            <div class="text-xs font-semibold tabular-nums w-14">12:00<div class="text-[10px] font-normal text-gray-500">5/12</div></div>
+            <div class="h-12 w-12 rounded-md bg-gradient-to-br from-emerald-300 to-teal-500 shrink-0"></div>
+            <div class="flex-1 min-w-0">
+              <div class="text-xs font-medium">베스트영어 · 학부모 향 V-log</div>
+              <div class="text-[11px] text-gray-500 dark:text-zinc-500 mt-0.5">9:16 · 7컷 · 학부모 톤 v4</div>
+              <div class="mt-1.5 flex items-center gap-1"><span class="channel-pill bg-fuchsia-500/10 text-fuchsia-700 dark:text-fuchsia-300">IG 릴스</span></div>
+            </div>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300 font-medium">사장님 검토 대기</span>
+            <div class="flex items-center gap-1"><button class="text-gray-400 hover:text-gray-900 dark:hover:text-white p-1.5">⋯</button></div>
+          </li>
+
+          <li class="queue-row p-4 flex items-center gap-4">
+            <div class="text-xs font-semibold tabular-nums w-14">19:00<div class="text-[10px] font-normal text-gray-500">5/12</div></div>
+            <div class="h-12 w-12 rounded-md bg-gradient-to-br from-slate-700 to-zinc-900 shrink-0"></div>
+            <div class="flex-1 min-w-0">
+              <div class="text-xs font-medium">FORUM · 5월 룩북 카드뉴스</div>
+              <div class="text-[11px] text-gray-500 dark:text-zinc-500 mt-0.5">에디토리얼 톤 v6</div>
+              <div class="mt-1.5 flex items-center gap-1"><span class="channel-pill bg-fuchsia-500/10 text-fuchsia-700 dark:text-fuchsia-300">IG 피드</span><span class="channel-pill bg-zinc-500/10 text-zinc-700 dark:text-zinc-300">Threads</span></div>
+            </div>
+            <span class="text-[10px] text-gray-500">+2.4x</span>
+            <div class="flex items-center gap-1"><button class="text-gray-400 hover:text-gray-900 dark:hover:text-white p-1.5">⋯</button></div>
+          </li>
+
+          <li class="queue-row p-4 flex items-center gap-4 opacity-70">
+            <div class="text-xs font-semibold tabular-nums w-14 text-gray-400">11:00<div class="text-[10px] font-normal text-gray-400">5/13</div></div>
+            <div class="h-12 w-12 rounded-md bg-gradient-to-br from-rose-200 to-rose-400 shrink-0"></div>
+            <div class="flex-1 min-w-0">
+              <div class="text-xs font-medium">미옥당 · 비 오는 날 한정식 릴스</div>
+              <div class="text-[11px] text-gray-500 dark:text-zinc-500 mt-0.5">장마 시즌 자동 추천</div>
+              <div class="mt-1.5 flex items-center gap-1"><span class="channel-pill bg-fuchsia-500/10 text-fuchsia-700 dark:text-fuchsia-300">IG 릴스</span><span class="channel-pill bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">네이버</span></div>
+            </div>
+            <span class="text-[10px] text-gray-500">자동 생성 예정</span>
+            <div class="flex items-center gap-1"><button class="text-gray-400 hover:text-gray-900 dark:hover:text-white p-1.5">⋯</button></div>
+          </li>
+
+        </ul>
+        <div class="px-5 py-3 text-center border-t border-gray-100 dark:border-zinc-800">
+          <button class="text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white">+ 5건 더 보기</button>
+        </div>
+      </div>
+
+      <!-- Best time chart -->
+      <div class="card p-5 fade-in" style="animation-delay:.05s">
+        <h3 class="text-sm font-semibold mb-1">시간대별 최적 발행 시간</h3>
+        <p class="text-[11px] text-gray-500 dark:text-zinc-400 mb-4">미옥당 · 90일 학습 기준</p>
+        <div class="space-y-2">
+          <div class="flex items-center gap-2"><span class="text-[10px] tabular-nums w-10 text-gray-500">07-09</span><div class="flex-1 h-2 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden"><div class="h-full bg-gray-300 dark:bg-zinc-700" style="width:18%"></div></div><span class="text-[10px] text-gray-500 tabular-nums">18%</span></div>
+          <div class="flex items-center gap-2"><span class="text-[10px] tabular-nums w-10 text-gray-500">09-11</span><div class="flex-1 h-2 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden"><div class="h-full bg-gray-300 dark:bg-zinc-700" style="width:34%"></div></div><span class="text-[10px] text-gray-500 tabular-nums">34%</span></div>
+          <div class="flex items-center gap-2"><span class="text-[10px] tabular-nums w-10 text-emerald-600 font-bold">11-13</span><div class="flex-1 h-2 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden"><div class="h-full bg-emerald-500" style="width:88%"></div></div><span class="text-[10px] text-emerald-600 font-bold tabular-nums">88%</span></div>
+          <div class="flex items-center gap-2"><span class="text-[10px] tabular-nums w-10 text-gray-500">13-17</span><div class="flex-1 h-2 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden"><div class="h-full bg-gray-400 dark:bg-zinc-600" style="width:42%"></div></div><span class="text-[10px] text-gray-500 tabular-nums">42%</span></div>
+          <div class="flex items-center gap-2"><span class="text-[10px] tabular-nums w-10 text-gray-500">17-19</span><div class="flex-1 h-2 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden"><div class="h-full bg-gray-400 dark:bg-zinc-600" style="width:54%"></div></div><span class="text-[10px] text-gray-500 tabular-nums">54%</span></div>
+          <div class="flex items-center gap-2"><span class="text-[10px] tabular-nums w-10 text-emerald-600 font-bold">19-21</span><div class="flex-1 h-2 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden"><div class="h-full bg-emerald-500" style="width:92%"></div></div><span class="text-[10px] text-emerald-600 font-bold tabular-nums">92%</span></div>
+          <div class="flex items-center gap-2"><span class="text-[10px] tabular-nums w-10 text-gray-500">21-23</span><div class="flex-1 h-2 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden"><div class="h-full bg-gray-400 dark:bg-zinc-600" style="width:64%"></div></div><span class="text-[10px] text-gray-500 tabular-nums">64%</span></div>
+        </div>
+        <div class="mt-4 pt-4 border-t border-gray-100 dark:border-zinc-800">
+          <div class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold mb-1.5">자동 보정 규칙</div>
+          <ul class="text-[11px] space-y-1 text-gray-600 dark:text-zinc-400">
+            <li>· 11:00~13:00 점심 직전 (외식 업종)</li>
+            <li>· 19:00~21:00 퇴근 후 (전 업종)</li>
+            <li>· 비 오는 날 +30분 앞당김</li>
+            <li>· 공휴일 -2시간 (가족 동반 시간)</li>
+          </ul>
+        </div>
+      </div>
+
+    </section>
+  </main>
+</div>
+<script src="mockup-runtime.js"></script>
+</body>
+</html>

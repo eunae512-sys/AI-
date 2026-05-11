@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BRIQ · 브랜드 톤 메모리</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode:'class', theme:{ extend:{ fontFamily:{ sans:['"Pretendard Variable"','Pretendard','system-ui','sans-serif'] } } } };
+    if (localStorage.getItem('briq-theme') === 'dark') document.documentElement.classList.add('dark');
+  </script>
+  <style>
+    body{font-family:'Pretendard Variable',Pretendard,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+    .nav-item { display:flex; align-items:center; padding:7px 10px; border-radius:6px; font-size:12px; font-weight:500; color:#4b5563; gap:6px; transition:all .12s; }
+    .nav-item:hover { background:#f3f4f6; color:#111827; }
+    .nav-item.nav-active { background:#fff; border:1px solid #e5e7eb; color:#111827; box-shadow:0 1px 2px rgba(0,0,0,0.04); }
+    .dark .nav-item { color:#a1a1aa; }
+    .dark .nav-item:hover { background:#27272a; color:#fafafa; }
+    .dark .nav-item.nav-active { background:#18181b; border:1px solid #3f3f46; color:#fff; }
+    .nav-group { padding:14px 10px 5px; font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:#9ca3af; font-weight:600; }
+    .dark .nav-group { color:#71717a; }
+    .nav-badge { margin-left:auto; font-size:10px; font-variant-numeric:tabular-nums; padding:1px 6px; border-radius:4px; font-weight:500; }
+    .card { background:#fff; border:1px solid #e5e7eb; border-radius:14px; }
+    .dark .card { background:#0f0f12; border-color:#27272a; }
+    .fade-in { animation:fadeIn .4s cubic-bezier(.2,.8,.2,1) both }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(6px) } to { opacity:1; transform:translateY(0) } }
+    .chip { display:inline-flex; align-items:center; gap:4px; font-size:11px; padding:3px 8px; border-radius:9999px; font-weight:500; }
+    .pill { font-size:10px; padding:2px 8px; border-radius:9999px; font-weight:500; }
+    .brand-tab { padding:10px 14px; font-size:12px; font-weight:500; color:#6b7280; border-bottom:2px solid transparent; cursor:pointer; }
+    .brand-tab.active { color:#111827; border-bottom-color:#111827; }
+    .dark .brand-tab { color:#a1a1aa; }
+    .dark .brand-tab.active { color:#fff; border-bottom-color:#fff; }
+    .swatch { width:18px; height:18px; border-radius:4px; border:1px solid rgba(0,0,0,0.06); }
+    .knob { display:flex; align-items:center; gap:8px; padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px; background:#fff; }
+    .dark .knob { background:#0f0f12; border-color:#27272a; }
+  </style>
+</head>
+<body class="min-h-screen bg-white dark:bg-zinc-950 text-gray-900 dark:text-zinc-100 transition-colors">
+<div class="flex min-h-screen">
+  <aside class="w-60 shrink-0 border-r border-gray-100 dark:border-zinc-800 bg-gray-50/40 dark:bg-zinc-900/40 flex flex-col">
+    <div class="px-5 py-5 flex items-center gap-2 border-b border-gray-100 dark:border-zinc-800">
+      <div class="h-7 w-7 rounded-md bg-gradient-to-br from-indigo-500 to-violet-600 grid place-items-center text-white text-xs font-bold">B</div>
+      <span class="text-sm font-semibold tracking-tight">BRIQ</span>
+      <span class="ml-auto text-[10px] px-1.5 py-px rounded bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400">v0.3</span>
+    </div>
+    <nav class="flex-1 px-3 py-3 overflow-y-auto">
+      <a href="index.html" class="nav-item">홈</a>
+      <a href="02-clients.html" class="nav-item">클라이언트</a>
+      <a href="04-campaign-new.html" class="nav-item">캠페인</a>
+      <div class="nav-group">AI 콘텐츠</div>
+      <a href="06-cardnews-image.html" class="nav-item">카드뉴스</a>
+      <a href="08-reels-studio.html" class="nav-item">릴스 스튜디오</a>
+      <a href="05-content-result.html" class="nav-item">콘텐츠 결과</a>
+      <a href="11-calendar.html" class="nav-item">콘텐츠 캘린더</a>
+      <div class="nav-group">자동화</div>
+      <a href="07-review-queue.html" class="nav-item">검토 큐<span class="nav-badge bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">7</span></a>
+      <a href="10-reviews.html" class="nav-item">리뷰 답변<span class="nav-badge bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400">3</span></a>
+      <a href="15-schedule.html" class="nav-item">업로드 예약<span class="nav-badge bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400">12</span></a>
+      <div class="nav-group">인사이트</div>
+      <a href="12-analytics.html" class="nav-item">성과 분석</a>
+      <a href="14-trends.html" class="nav-item">지역 트렌드</a>
+      <div class="nav-group">브랜드</div>
+      <a href="09-brand-memory.html" class="nav-item nav-active">브랜드 톤</a>
+      <a href="13-brand-kit.html" class="nav-item">브랜드 키트</a>
+    </nav>
+    <div class="border-t border-gray-100 dark:border-zinc-800 p-3 flex items-center gap-2.5">
+      <div class="h-7 w-7 rounded-full bg-gradient-to-br from-amber-400 to-rose-500 shrink-0"></div>
+      <div class="flex-1 min-w-0"><div class="text-xs font-medium truncate">허은애</div><div class="text-[10px] text-gray-500 dark:text-zinc-500 truncate">미옥당 외 5</div></div>
+      <button id="theme-toggle" class="text-gray-400 hover:text-gray-700 dark:hover:text-zinc-200 p-1.5 rounded hover:bg-gray-100 dark:hover:bg-zinc-800" title="다크모드">
+        <svg class="h-4 w-4 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="h-4 w-4 hidden dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <main class="flex-1 min-w-0">
+    <header class="border-b border-gray-100 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/70 backdrop-blur sticky top-0 z-10">
+      <div class="px-6 h-14 flex items-center gap-4">
+        <h1 class="text-sm font-semibold tracking-tight">브랜드 톤 메모리</h1>
+        <span class="text-[11px] text-gray-400 dark:text-zinc-600">/</span>
+        <span class="text-xs text-gray-500 dark:text-zinc-400">미옥당 본점 · v3</span>
+        <div class="ml-auto flex items-center gap-2">
+          <button id="ai-assistant-toggle" class="text-xs px-3 py-1.5 rounded-md bg-gray-900 text-white dark:bg-white dark:text-zinc-900 hover:opacity-90 inline-flex items-center gap-1.5 font-medium">
+            <span style="background:linear-gradient(135deg,#a78bfa,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent">✦</span> Assistant
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <section class="px-6 pt-7 pb-2 fade-in">
+      <div class="flex items-end justify-between gap-4 flex-wrap">
+        <div>
+          <div class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold">BRAND VOICE MEMORY</div>
+          <h2 class="mt-1 text-2xl font-semibold tracking-tight">브랜드별 말투를 기억합니다</h2>
+          <p class="mt-1 text-sm text-gray-600 dark:text-zinc-400 max-w-2xl">감성 · 톤 · 금지어 · 자주 쓰는 표현 · 업종별 가이드. 모든 콘텐츠는 발행 전 브랜드 톤 일관성 검사를 거칩니다.</p>
+        </div>
+        <button class="text-xs px-3.5 py-2 rounded-md bg-gray-900 text-white dark:bg-white dark:text-zinc-900 font-medium">+ 새 브랜드 톤 학습</button>
+      </div>
+    </section>
+
+    <!-- Brand picker tabs -->
+    <section class="px-6 pt-4 border-b border-gray-100 dark:border-zinc-800">
+      <nav class="flex items-center gap-1 overflow-x-auto" data-toggle-group>
+        <button data-toggle class="brand-tab active" data-brand="miokdang">
+          <span class="inline-flex items-center gap-2">
+            <span class="h-4 w-4 rounded bg-gradient-to-br from-rose-400 to-orange-400 text-[8px] grid place-items-center text-white font-bold">미</span>
+            미옥당 본점 <span class="text-gray-400 ml-1">v3</span>
+          </span>
+        </button>
+        <button data-toggle class="brand-tab" data-brand="cheongdam-medical">
+          <span class="inline-flex items-center gap-2">
+            <span class="h-4 w-4 rounded bg-gradient-to-br from-sky-400 to-blue-600 text-[8px] grid place-items-center text-white font-bold">청</span>
+            청담 메디컬 <span class="text-gray-400 ml-1">v2</span>
+          </span>
+        </button>
+        <button data-toggle class="brand-tab" data-brand="luna-hair">
+          <span class="inline-flex items-center gap-2">
+            <span class="h-4 w-4 rounded bg-gradient-to-br from-violet-400 to-fuchsia-500 text-[8px] grid place-items-center text-white font-bold">루</span>
+            루나 헤어 <span class="text-gray-400 ml-1">v5</span>
+          </span>
+        </button>
+        <button data-toggle class="brand-tab" data-brand="best-eng">
+          <span class="inline-flex items-center gap-2">
+            <span class="h-4 w-4 rounded bg-gradient-to-br from-emerald-400 to-teal-500 text-[8px] grid place-items-center text-white font-bold">베</span>
+            베스트영어학원 <span class="text-gray-400 ml-1">v4</span>
+          </span>
+        </button>
+        <button data-toggle class="brand-tab" data-brand="forum-fashion">
+          <span class="inline-flex items-center gap-2">
+            <span class="h-4 w-4 rounded bg-gradient-to-br from-slate-700 to-zinc-900 text-[8px] grid place-items-center text-white font-bold">F</span>
+            FORUM <span class="text-gray-400 ml-1">v6</span>
+          </span>
+        </button>
+        <button data-toggle class="brand-tab" data-brand="roastery-1985">
+          <span class="inline-flex items-center gap-2">
+            <span class="h-4 w-4 rounded bg-gradient-to-br from-amber-700 to-stone-800 text-[8px] grid place-items-center text-white font-bold">R</span>
+            로스터리 1985 <span class="text-gray-400 ml-1">v1</span>
+          </span>
+        </button>
+      </nav>
+    </section>
+
+    <!-- Memory grid -->
+    <section class="px-6 py-6 grid grid-cols-1 lg:grid-cols-3 gap-3">
+
+      <!-- Tone profile -->
+      <div class="card p-5 lg:col-span-2 fade-in">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-sm font-semibold">톤 프로파일</h3>
+            <p class="text-[11px] text-gray-500 dark:text-zinc-400 mt-0.5">미옥당 본점 · 한정식 · 5점 척도로 학습된 5개 축</p>
+          </div>
+          <button class="text-[11px] text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white">자동 재학습 ↻</button>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <div class="flex items-center justify-between mb-1.5"><span class="text-xs font-medium">단정함 ↔ 친근함</span><span class="text-[11px] text-gray-500">단정 우세 · 4.1 / 5</span></div>
+            <div class="relative h-2 bg-gray-100 dark:bg-zinc-800 rounded-full">
+              <div class="absolute h-2 w-1 bg-gray-900 dark:bg-white rounded-full" style="left:18%"></div>
+              <div class="absolute -top-1 h-4 w-4 rounded-full bg-white dark:bg-zinc-100 border-2 border-gray-900 dark:border-white shadow" style="left:calc(18% - 8px)"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1.5"><span class="text-xs font-medium">전통 ↔ 모던</span><span class="text-[11px] text-gray-500">전통 우세 · 3.8 / 5</span></div>
+            <div class="relative h-2 bg-gray-100 dark:bg-zinc-800 rounded-full">
+              <div class="absolute -top-1 h-4 w-4 rounded-full bg-white dark:bg-zinc-100 border-2 border-gray-900 dark:border-white shadow" style="left:calc(24% - 8px)"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1.5"><span class="text-xs font-medium">감성적 ↔ 정보형</span><span class="text-[11px] text-gray-500">감성 우세 · 4.5 / 5</span></div>
+            <div class="relative h-2 bg-gray-100 dark:bg-zinc-800 rounded-full">
+              <div class="absolute -top-1 h-4 w-4 rounded-full bg-white dark:bg-zinc-100 border-2 border-gray-900 dark:border-white shadow" style="left:calc(10% - 8px)"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1.5"><span class="text-xs font-medium">짧고 임팩트 ↔ 길고 설명형</span><span class="text-[11px] text-gray-500">중립 · 3.0 / 5</span></div>
+            <div class="relative h-2 bg-gray-100 dark:bg-zinc-800 rounded-full">
+              <div class="absolute -top-1 h-4 w-4 rounded-full bg-white dark:bg-zinc-100 border-2 border-gray-900 dark:border-white shadow" style="left:calc(50% - 8px)"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1.5"><span class="text-xs font-medium">존댓말 ↔ 반말</span><span class="text-[11px] text-gray-500">존댓말 100%</span></div>
+            <div class="relative h-2 bg-gray-100 dark:bg-zinc-800 rounded-full">
+              <div class="absolute -top-1 h-4 w-4 rounded-full bg-white dark:bg-zinc-100 border-2 border-gray-900 dark:border-white shadow" style="left:calc(0% + 0px)"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 pt-5 border-t border-gray-100 dark:border-zinc-800">
+          <div class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold mb-2">한 줄 요약 (AI 자동 학습)</div>
+          <p class="text-sm leading-relaxed text-gray-700 dark:text-zinc-300 italic">"단정한 존댓말로 한식의 정성과 새벽 시장의 발걸음을 담는 에디토리얼 톤. 직설적 칭찬보다 풍경·계절·재료의 시간을 짧게 끊어 보여준다."</p>
+        </div>
+      </div>
+
+      <!-- Trained from -->
+      <div class="card p-5 fade-in" style="animation-delay:.05s">
+        <h3 class="text-sm font-semibold mb-1">학습 자료</h3>
+        <p class="text-[11px] text-gray-500 dark:text-zinc-400 mb-4">BRIQ가 학습한 미옥당 자산 · 총 47건</p>
+        <ul class="space-y-3 text-xs">
+          <li class="flex items-start gap-2.5">
+            <div class="h-7 w-7 rounded bg-gray-100 dark:bg-zinc-800 grid place-items-center text-[10px] font-medium shrink-0">📷</div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium">인스타 캡션 23개</div>
+              <div class="text-[11px] text-gray-500 dark:text-zinc-500">2024.10 ~ 2026.04 · 평균 87자</div>
+            </div>
+          </li>
+          <li class="flex items-start gap-2.5">
+            <div class="h-7 w-7 rounded bg-gray-100 dark:bg-zinc-800 grid place-items-center text-[10px] shrink-0">📝</div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium">네이버 블로그 12편</div>
+              <div class="text-[11px] text-gray-500 dark:text-zinc-500">2025.01 ~ 04 · 평균 1,840자</div>
+            </div>
+          </li>
+          <li class="flex items-start gap-2.5">
+            <div class="h-7 w-7 rounded bg-gray-100 dark:bg-zinc-800 grid place-items-center text-[10px] shrink-0">🍽️</div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium">메뉴 설명 9개</div>
+              <div class="text-[11px] text-gray-500 dark:text-zinc-500">정식 6종 + 단품 3종</div>
+            </div>
+          </li>
+          <li class="flex items-start gap-2.5">
+            <div class="h-7 w-7 rounded bg-gray-100 dark:bg-zinc-800 grid place-items-center text-[10px] shrink-0">💬</div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium">사장님 인터뷰 3회</div>
+              <div class="text-[11px] text-gray-500 dark:text-zinc-500">총 1시간 14분 · STT 자동 추출</div>
+            </div>
+          </li>
+        </ul>
+        <button class="mt-5 w-full text-xs px-3 py-2 rounded-md border border-gray-200 dark:border-zinc-800 hover:border-gray-900 dark:hover:border-white font-medium">+ 자료 업로드</button>
+      </div>
+
+      <!-- Forbidden words -->
+      <div class="card p-5 fade-in" style="animation-delay:.1s">
+        <h3 class="text-sm font-semibold mb-1">🚫 금지어 / 회피 표현</h3>
+        <p class="text-[11px] text-gray-500 dark:text-zinc-400 mb-4">발행 전 자동 차단 · 가이드라인 + 사장님 직접 등록</p>
+        <div class="flex flex-wrap gap-1.5">
+          <span class="chip bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">최고의</span>
+          <span class="chip bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">단연 1위</span>
+          <span class="chip bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">100%</span>
+          <span class="chip bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">대박</span>
+          <span class="chip bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">미친 가성비</span>
+          <span class="chip bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">완벽한</span>
+          <span class="chip bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">신박한</span>
+          <span class="chip bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">갓성비</span>
+          <span class="chip bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">탁월한 (AI 인공)</span>
+          <span class="chip bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">선사합니다 (AI 인공)</span>
+        </div>
+        <div class="mt-4">
+          <div class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold mb-2">자주 쓰는 좋은 표현</div>
+          <div class="flex flex-wrap gap-1.5">
+            <span class="chip bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">한 입에 봄이</span>
+            <span class="chip bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">새벽 4시 시장</span>
+            <span class="chip bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">단정한 정성</span>
+            <span class="chip bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">계절을 담아</span>
+            <span class="chip bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">한 그릇의 시간</span>
+            <span class="chip bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">조용히 데워둔</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Industry guidelines -->
+      <div class="card p-5 lg:col-span-2 fade-in" style="animation-delay:.15s">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h3 class="text-sm font-semibold">업종 가이드라인 — 한정식</h3>
+            <p class="text-[11px] text-gray-500 dark:text-zinc-400 mt-0.5">BRIQ가 한정식 업종 234개 클라이언트 학습 · 미옥당에 자동 적용된 13개 규칙</p>
+          </div>
+          <button class="text-[11px] text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white">규칙 편집</button>
+        </div>
+        <ul class="space-y-2.5">
+          <li class="flex items-start gap-3 px-3 py-2.5 rounded-lg bg-gray-50/50 dark:bg-zinc-900/30 border border-gray-100 dark:border-zinc-800">
+            <span class="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 mt-0.5">DO</span>
+            <div class="flex-1 text-xs leading-relaxed">계절 재료(봄나물·전복·송이·곶감)와 시간(새벽·점심·해질녘)을 함께 묶어 표현</div>
+          </li>
+          <li class="flex items-start gap-3 px-3 py-2.5 rounded-lg bg-gray-50/50 dark:bg-zinc-900/30 border border-gray-100 dark:border-zinc-800">
+            <span class="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 mt-0.5">DO</span>
+            <div class="flex-1 text-xs leading-relaxed">사장님 1인칭 ("저희가 직접 담그는") · 식재료 산지 1개 이상 명시</div>
+          </li>
+          <li class="flex items-start gap-3 px-3 py-2.5 rounded-lg bg-gray-50/50 dark:bg-zinc-900/30 border border-gray-100 dark:border-zinc-800">
+            <span class="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 mt-0.5">DO</span>
+            <div class="flex-1 text-xs leading-relaxed">정식 코스명은 한자 노출 (한정식 · 봄정식 · 여정식)</div>
+          </li>
+          <li class="flex items-start gap-3 px-3 py-2.5 rounded-lg bg-rose-50/40 dark:bg-rose-500/5 border border-rose-100 dark:border-rose-900/40">
+            <span class="text-[10px] font-bold text-rose-700 dark:text-rose-400 mt-0.5">DON'T</span>
+            <div class="flex-1 text-xs leading-relaxed">"가성비"·"혜자"·"미친" 등 직설적 가격 강조 표현 (단정함과 충돌)</div>
+          </li>
+          <li class="flex items-start gap-3 px-3 py-2.5 rounded-lg bg-rose-50/40 dark:bg-rose-500/5 border border-rose-100 dark:border-rose-900/40">
+            <span class="text-[10px] font-bold text-rose-700 dark:text-rose-400 mt-0.5">DON'T</span>
+            <div class="flex-1 text-xs leading-relaxed">이모지 3개 이상 사용 · 정성/감사/하트 이모지 남발</div>
+          </li>
+          <li class="flex items-start gap-3 px-3 py-2.5 rounded-lg bg-rose-50/40 dark:bg-rose-500/5 border border-rose-100 dark:border-rose-900/40">
+            <span class="text-[10px] font-bold text-rose-700 dark:text-rose-400 mt-0.5">DON'T</span>
+            <div class="flex-1 text-xs leading-relaxed">영어 외래어 (delicate · seasonal · curated) — 미옥당 톤에서 이질적</div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Live preview (before / after AI sanitize) -->
+      <div class="card p-5 fade-in" style="animation-delay:.2s">
+        <h3 class="text-sm font-semibold mb-1">자동 자연화 데모</h3>
+        <p class="text-[11px] text-gray-500 dark:text-zinc-400 mb-4">AI가 쓴 평범한 문장 → 미옥당 톤 메모리 적용</p>
+        <div class="space-y-3">
+          <div class="rounded-lg border border-gray-100 dark:border-zinc-800 p-3">
+            <div class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold mb-1">BEFORE · GPT 기본 출력</div>
+            <p class="text-xs leading-relaxed text-gray-600 dark:text-zinc-400 line-through">탁월한 풍미를 선사하는 미옥당의 봄나물 정식, 신선한 재료로 완벽하게 준비됩니다.</p>
+          </div>
+          <div class="text-center text-gray-400 text-xs">↓ 톤 메모리 자동 적용</div>
+          <div class="rounded-lg border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/30 dark:bg-emerald-500/5 p-3">
+            <div class="text-[10px] uppercase tracking-widest text-emerald-700 dark:text-emerald-400 font-semibold mb-1">AFTER · 미옥당 톤 v3</div>
+            <p class="text-xs leading-relaxed">한 입에 봄이 옵니다. 새벽 4시 양평 시장에서 직접 담아 온 두릅 · 머위 · 곰취. 한 그릇의 시간이 짧습니다.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tone version history -->
+      <div class="card p-5 lg:col-span-3 fade-in" style="animation-delay:.25s">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-sm font-semibold">톤 버전 히스토리</h3>
+            <p class="text-[11px] text-gray-500 dark:text-zinc-400 mt-0.5">사장님 피드백 + 성과 데이터로 자동 진화</p>
+          </div>
+        </div>
+        <div class="overflow-x-auto -mx-5 px-5">
+          <table class="w-full text-xs">
+            <thead class="text-left text-[10px] uppercase tracking-widest text-gray-400 font-semibold border-b border-gray-100 dark:border-zinc-800">
+              <tr>
+                <th class="py-2 pr-4">버전</th><th class="py-2 pr-4">학습 자료</th><th class="py-2 pr-4">변경점</th><th class="py-2 pr-4">평균 저장률</th><th class="py-2 pr-4">사장님 평가</th><th class="py-2 pr-4">상태</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-zinc-800">
+              <tr>
+                <td class="py-3 pr-4 font-medium">v3</td>
+                <td class="py-3 pr-4 text-gray-600 dark:text-zinc-400">+ 봄나물 코스 인터뷰 (2026.05)</td>
+                <td class="py-3 pr-4">감성↑ · 한자 노출 추가 · 외래어 규칙 강화</td>
+                <td class="py-3 pr-4 tabular-nums font-medium text-emerald-600">5.4%</td>
+                <td class="py-3 pr-4">★★★★★ "딱 우리 가게 톤이에요"</td>
+                <td class="py-3 pr-4"><span class="pill bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">현재</span></td>
+              </tr>
+              <tr>
+                <td class="py-3 pr-4 font-medium text-gray-500">v2</td>
+                <td class="py-3 pr-4 text-gray-600 dark:text-zinc-400">+ 블로그 12편</td>
+                <td class="py-3 pr-4">단정함↑ · "정성" 단어 빈도 -40%</td>
+                <td class="py-3 pr-4 tabular-nums">4.1%</td>
+                <td class="py-3 pr-4 text-gray-500">★★★★ "조금 더 따뜻하면"</td>
+                <td class="py-3 pr-4 text-gray-400">아카이브</td>
+              </tr>
+              <tr>
+                <td class="py-3 pr-4 font-medium text-gray-500">v1</td>
+                <td class="py-3 pr-4 text-gray-600 dark:text-zinc-400">초기 인스타 23개만</td>
+                <td class="py-3 pr-4">기본 한정식 업종 가이드</td>
+                <td class="py-3 pr-4 tabular-nums">2.8%</td>
+                <td class="py-3 pr-4 text-gray-500">★★★ "AI 같다"</td>
+                <td class="py-3 pr-4 text-gray-400">아카이브</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+  </main>
+</div>
+<script src="mockup-runtime.js"></script>
+<script>
+  // 브랜드 탭 클릭 — 토픽바 브레드크럼 + 토스트
+  const BRAND_LABELS = {
+    'miokdang': { name: '미옥당 본점', tone: 'v3 · 한정식 · 단정/감성' },
+    'cheongdam-medical': { name: '청담 메디컬 의원', tone: 'v2 · 의료 · 안전/정보' },
+    'luna-hair': { name: '루나 헤어 강남점', tone: 'v5 · 미용 · 친근/감각' },
+    'best-eng': { name: '베스트 영어학원', tone: 'v4 · 학원 · 학부모 친근' },
+    'forum-fashion': { name: 'FORUM 패션', tone: 'v6 · 컨템포러리 · 에디토리얼' },
+    'roastery-1985': { name: '로스터리 1985', tone: 'v1 · 카페 · 바리스타 친근' },
+  };
+  document.querySelectorAll('[data-brand]').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const id = tab.dataset.brand;
+      const meta = BRAND_LABELS[id];
+      if (!meta) return;
+      const breadcrumb = document.querySelector('header .text-xs.text-gray-500');
+      if (breadcrumb) breadcrumb.textContent = `${meta.name} · ${meta.tone.split(' · ')[0]}`;
+      window.mockupToast && window.mockupToast(`${meta.name} 톤 메모리 로드 — ${meta.tone}`, 'info');
+    });
+  });
+</script>
+</body>
+</html>

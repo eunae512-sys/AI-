@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BRIQ · 지역 트렌드</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode:'class', theme:{ extend:{ fontFamily:{ sans:['"Pretendard Variable"','Pretendard','system-ui','sans-serif'] } } } };
+    if (localStorage.getItem('briq-theme') === 'dark') document.documentElement.classList.add('dark');
+  </script>
+  <style>
+    body{font-family:'Pretendard Variable',Pretendard,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+    .nav-item { display:flex; align-items:center; padding:7px 10px; border-radius:6px; font-size:12px; font-weight:500; color:#4b5563; gap:6px; transition:all .12s; }
+    .nav-item:hover { background:#f3f4f6; color:#111827; }
+    .nav-item.nav-active { background:#fff; border:1px solid #e5e7eb; color:#111827; box-shadow:0 1px 2px rgba(0,0,0,0.04); }
+    .dark .nav-item { color:#a1a1aa; } .dark .nav-item:hover { background:#27272a; color:#fafafa; }
+    .dark .nav-item.nav-active { background:#18181b; border:1px solid #3f3f46; color:#fff; }
+    .nav-group { padding:14px 10px 5px; font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:#9ca3af; font-weight:600; }
+    .dark .nav-group { color:#71717a; }
+    .nav-badge { margin-left:auto; font-size:10px; font-variant-numeric:tabular-nums; padding:1px 6px; border-radius:4px; font-weight:500; }
+    .card { background:#fff; border:1px solid #e5e7eb; border-radius:14px; }
+    .dark .card { background:#0f0f12; border-color:#27272a; }
+    .fade-in { animation:fadeIn .4s cubic-bezier(.2,.8,.2,1) both }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(6px) } to { opacity:1; transform:translateY(0) } }
+  </style>
+</head>
+<body class="min-h-screen bg-white dark:bg-zinc-950 text-gray-900 dark:text-zinc-100 transition-colors">
+<div class="flex min-h-screen">
+  <aside class="w-60 shrink-0 border-r border-gray-100 dark:border-zinc-800 bg-gray-50/40 dark:bg-zinc-900/40 flex flex-col">
+    <div class="px-5 py-5 flex items-center gap-2 border-b border-gray-100 dark:border-zinc-800">
+      <div class="h-7 w-7 rounded-md bg-gradient-to-br from-indigo-500 to-violet-600 grid place-items-center text-white text-xs font-bold">B</div>
+      <span class="text-sm font-semibold tracking-tight">BRIQ</span>
+      <span class="ml-auto text-[10px] px-1.5 py-px rounded bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400">v0.3</span>
+    </div>
+    <nav class="flex-1 px-3 py-3 overflow-y-auto">
+      <a href="index.html" class="nav-item">홈</a>
+      <a href="02-clients.html" class="nav-item">클라이언트</a>
+      <a href="04-campaign-new.html" class="nav-item">캠페인</a>
+      <div class="nav-group">AI 콘텐츠</div>
+      <a href="06-cardnews-image.html" class="nav-item">카드뉴스</a>
+      <a href="08-reels-studio.html" class="nav-item">릴스 스튜디오</a>
+      <a href="05-content-result.html" class="nav-item">콘텐츠 결과</a>
+      <a href="11-calendar.html" class="nav-item">콘텐츠 캘린더</a>
+      <div class="nav-group">자동화</div>
+      <a href="07-review-queue.html" class="nav-item">검토 큐<span class="nav-badge bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">7</span></a>
+      <a href="10-reviews.html" class="nav-item">리뷰 답변<span class="nav-badge bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400">3</span></a>
+      <a href="15-schedule.html" class="nav-item">업로드 예약<span class="nav-badge bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400">12</span></a>
+      <div class="nav-group">인사이트</div>
+      <a href="12-analytics.html" class="nav-item">성과 분석</a>
+      <a href="14-trends.html" class="nav-item nav-active">지역 트렌드</a>
+      <div class="nav-group">브랜드</div>
+      <a href="09-brand-memory.html" class="nav-item">브랜드 톤</a>
+      <a href="13-brand-kit.html" class="nav-item">브랜드 키트</a>
+    </nav>
+    <div class="border-t border-gray-100 dark:border-zinc-800 p-3 flex items-center gap-2.5">
+      <div class="h-7 w-7 rounded-full bg-gradient-to-br from-amber-400 to-rose-500 shrink-0"></div>
+      <div class="flex-1 min-w-0"><div class="text-xs font-medium truncate">허은애</div><div class="text-[10px] text-gray-500 dark:text-zinc-500 truncate">미옥당 외 5</div></div>
+      <button id="theme-toggle" class="text-gray-400 hover:text-gray-700 dark:hover:text-zinc-200 p-1.5 rounded hover:bg-gray-100 dark:hover:bg-zinc-800">
+        <svg class="h-4 w-4 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="h-4 w-4 hidden dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <main class="flex-1 min-w-0">
+    <header class="border-b border-gray-100 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/70 backdrop-blur sticky top-0 z-10">
+      <div class="px-6 h-14 flex items-center gap-4">
+        <h1 class="text-sm font-semibold tracking-tight">지역 트렌드</h1>
+        <span class="text-[11px] text-gray-400 dark:text-zinc-600">/</span>
+        <span class="text-xs text-gray-500 dark:text-zinc-400">강남구 · 외식+뷰티+의료</span>
+        <div class="ml-auto flex items-center gap-2">
+          <button id="ai-assistant-toggle" class="text-xs px-3 py-1.5 rounded-md bg-gray-900 text-white dark:bg-white dark:text-zinc-900 hover:opacity-90 inline-flex items-center gap-1.5 font-medium">
+            <span style="background:linear-gradient(135deg,#a78bfa,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent">✦</span> Assistant
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <section class="px-6 pt-7 pb-3 fade-in">
+      <div class="flex items-end justify-between gap-4 flex-wrap">
+        <div>
+          <div class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold">LOCAL TREND RADAR</div>
+          <h2 class="mt-1 text-2xl font-semibold tracking-tight">우리 동네는 이게 잘 돼요</h2>
+          <p class="mt-1 text-sm text-gray-600 dark:text-zinc-400 max-w-2xl">강남구 1km 반경 · 외식/뷰티/의료 1,247개 릴스 분석. 저장률 높은 포맷·키워드·전환 효과를 실시간으로.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <select class="text-xs px-3 py-2 rounded-md border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+            <option>강남구 · 1km</option><option>강남구 · 5km</option><option>서울 전역</option>
+          </select>
+          <select class="text-xs px-3 py-2 rounded-md border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+            <option>최근 7일</option><option>최근 30일</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Top trending styles -->
+    <section class="px-6 pt-3">
+      <div class="card p-5 fade-in">
+        <div class="flex items-center justify-between mb-3">
+          <div><h3 class="text-sm font-semibold">저장률 폭증 릴스 스타일 TOP 4</h3><p class="text-[11px] text-gray-500 dark:text-zinc-400 mt-0.5">전주 대비 저장률 변화율 기준</p></div>
+          <span class="text-[11px] text-gray-500">실시간 · 5분 전 갱신</span>
+        </div>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div class="rounded-xl overflow-hidden border border-gray-100 dark:border-zinc-800">
+            <div class="aspect-[9/16] bg-gradient-to-br from-amber-200 via-rose-300 to-amber-400 relative">
+              <div class="absolute inset-0 flex items-end p-3"><div class="text-white text-xs font-semibold drop-shadow">새벽 4시 시장</div></div>
+              <div class="absolute top-2 left-2 text-[9px] font-bold bg-emerald-500 text-white px-1.5 py-0.5 rounded">+312%</div>
+              <div class="absolute top-2 right-2 text-[9px] bg-black/40 text-white px-1.5 py-0.5 rounded">9:16 · 6컷</div>
+            </div>
+            <div class="p-3">
+              <div class="text-xs font-semibold">시간순 다큐 컷</div>
+              <div class="text-[11px] text-gray-500 dark:text-zinc-400 mt-0.5">한정식 · 평균 8.1% 저장</div>
+              <div class="mt-2 flex items-center gap-1.5 flex-wrap">
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-zinc-800">새벽</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-zinc-800">시장</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-zinc-800">정성</span>
+              </div>
+              <a href="08-reels-studio.html" class="mt-2 block text-[11px] text-gray-900 dark:text-white font-medium">미옥당에 적용 →</a>
+            </div>
+          </div>
+          <div class="rounded-xl overflow-hidden border border-gray-100 dark:border-zinc-800">
+            <div class="aspect-[9/16] bg-gradient-to-br from-zinc-700 via-zinc-900 to-stone-800 relative">
+              <div class="absolute inset-0 flex items-end p-3"><div class="text-white text-xs font-semibold">결이 살아요</div></div>
+              <div class="absolute top-2 left-2 text-[9px] font-bold bg-emerald-500 text-white px-1.5 py-0.5 rounded">+248%</div>
+              <div class="absolute top-2 right-2 text-[9px] bg-black/40 text-white px-1.5 py-0.5 rounded">9:16 · 8컷</div>
+            </div>
+            <div class="p-3">
+              <div class="text-xs font-semibold">ASMR 시술 컷</div>
+              <div class="text-[11px] text-gray-500 dark:text-zinc-400 mt-0.5">미용 · 평균 6.4% 저장</div>
+              <div class="mt-2 flex items-center gap-1.5 flex-wrap">
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-zinc-800">결</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-zinc-800">광택</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-zinc-800">5초</span>
+              </div>
+              <a href="08-reels-studio.html" class="mt-2 block text-[11px] text-gray-900 dark:text-white font-medium">루나헤어에 적용 →</a>
+            </div>
+          </div>
+          <div class="rounded-xl overflow-hidden border border-gray-100 dark:border-zinc-800">
+            <div class="aspect-[9/16] bg-gradient-to-br from-sky-100 via-slate-200 to-blue-300 relative">
+              <div class="absolute inset-0 flex items-end p-3"><div class="text-slate-900 text-xs font-semibold">5분 만에 안내</div></div>
+              <div class="absolute top-2 left-2 text-[9px] font-bold bg-emerald-500 text-white px-1.5 py-0.5 rounded">+189%</div>
+              <div class="absolute top-2 right-2 text-[9px] bg-black/40 text-white px-1.5 py-0.5 rounded">9:16 · 5컷</div>
+            </div>
+            <div class="p-3">
+              <div class="text-xs font-semibold">정보형 카드</div>
+              <div class="text-[11px] text-gray-500 dark:text-zinc-400 mt-0.5">의료 · 평균 4.7% 저장</div>
+              <div class="mt-2 flex items-center gap-1.5 flex-wrap">
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-zinc-800">진단</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-zinc-800">안내</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-zinc-800">D+7</span>
+              </div>
+              <a href="08-reels-studio.html" class="mt-2 block text-[11px] text-gray-900 dark:text-white font-medium">청담의료 적용 →</a>
+            </div>
+          </div>
+          <div class="rounded-xl overflow-hidden border border-gray-100 dark:border-zinc-800">
+            <div class="aspect-[9/16] bg-gradient-to-br from-emerald-200 via-teal-300 to-amber-200 relative">
+              <div class="absolute inset-0 flex items-end p-3"><div class="text-emerald-900 text-xs font-semibold">학생 일상</div></div>
+              <div class="absolute top-2 left-2 text-[9px] font-bold bg-emerald-500 text-white px-1.5 py-0.5 rounded">+156%</div>
+              <div class="absolute top-2 right-2 text-[9px] bg-black/40 text-white px-1.5 py-0.5 rounded">9:16 · 7컷</div>
+            </div>
+            <div class="p-3">
+              <div class="text-xs font-semibold">학생 V-log</div>
+              <div class="text-[11px] text-gray-500 dark:text-zinc-400 mt-0.5">학원 · 평균 4.2% 저장</div>
+              <div class="mt-2 flex items-center gap-1.5 flex-wrap">
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-zinc-800">한 학기</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-zinc-800">루틴</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-zinc-800">D-7</span>
+              </div>
+              <a href="08-reels-studio.html" class="mt-2 block text-[11px] text-gray-900 dark:text-white font-medium">베스트영어 적용 →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Keywords + Competitors -->
+    <section class="px-6 pt-3 pb-10 grid grid-cols-1 lg:grid-cols-3 gap-3">
+
+      <!-- Keywords -->
+      <div class="card p-5 fade-in">
+        <h3 class="text-sm font-semibold">강남 인기 키워드</h3>
+        <p class="text-[11px] text-gray-500 dark:text-zinc-400 mb-4">검색량 기준 · 7일 변화율</p>
+        <ul class="space-y-2.5 text-xs">
+          <li class="flex items-center gap-2"><span class="font-medium flex-1">강남 한정식</span><span class="text-gray-500 tabular-nums">8,420</span><span class="ml-2 text-emerald-600 text-[11px]">+34%</span></li>
+          <li class="flex items-center gap-2"><span class="font-medium flex-1">강남 미용실</span><span class="text-gray-500 tabular-nums">12,140</span><span class="ml-2 text-emerald-600 text-[11px]">+18%</span></li>
+          <li class="flex items-center gap-2"><span class="font-medium flex-1">청담 피부과</span><span class="text-gray-500 tabular-nums">5,820</span><span class="ml-2 text-emerald-600 text-[11px]">+47%</span></li>
+          <li class="flex items-center gap-2"><span class="font-medium flex-1">강남 카페 신상</span><span class="text-gray-500 tabular-nums">9,310</span><span class="ml-2 text-emerald-600 text-[11px]">+22%</span></li>
+          <li class="flex items-center gap-2"><span class="font-medium flex-1">강남 가정의 달</span><span class="text-gray-500 tabular-nums">3,440</span><span class="ml-2 text-emerald-600 text-[11px]">+128%</span></li>
+          <li class="flex items-center gap-2"><span class="font-medium flex-1">중간고사 학원</span><span class="text-gray-500 tabular-nums">2,810</span><span class="ml-2 text-amber-600 text-[11px]">+8%</span></li>
+          <li class="flex items-center gap-2"><span class="font-medium flex-1">수국축제</span><span class="text-gray-500 tabular-nums">1,940</span><span class="ml-2 text-emerald-600 text-[11px]">+340%</span></li>
+        </ul>
+      </div>
+
+      <!-- Competitors -->
+      <div class="card p-5 lg:col-span-2 fade-in" style="animation-delay:.05s">
+        <div class="flex items-center justify-between mb-3"><h3 class="text-sm font-semibold">경쟁업체 콘텐츠 분석</h3><span class="text-[11px] text-gray-500">강남 한정식 14개 업체</span></div>
+        <div class="overflow-x-auto -mx-5 px-5">
+          <table class="w-full text-xs">
+            <thead class="text-left text-[10px] uppercase tracking-widest text-gray-400 font-semibold border-b border-gray-100 dark:border-zinc-800">
+              <tr><th class="py-2 pr-3">업체</th><th class="py-2 pr-3">팔로워</th><th class="py-2 pr-3">발행 빈도</th><th class="py-2 pr-3">저장률</th><th class="py-2 pr-3">시그니처 포맷</th><th class="py-2 pr-3">강점</th></tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-zinc-800">
+              <tr class="bg-emerald-50/30 dark:bg-emerald-500/5">
+                <td class="py-3 pr-3 font-medium">미옥당 (우리)</td>
+                <td class="py-3 pr-3 tabular-nums">12.4K</td>
+                <td class="py-3 pr-3">주 4.2회</td>
+                <td class="py-3 pr-3 tabular-nums text-emerald-600 font-medium">5.4%</td>
+                <td class="py-3 pr-3">시간순 다큐 / 명조 카드</td>
+                <td class="py-3 pr-3 text-emerald-700 dark:text-emerald-400">★ 톤 일관성</td>
+              </tr>
+              <tr><td class="py-3 pr-3 font-medium">○○당</td><td class="py-3 pr-3 tabular-nums">38.2K</td><td class="py-3 pr-3">주 3.1회</td><td class="py-3 pr-3 tabular-nums">3.8%</td><td class="py-3 pr-3">셰프 인터뷰</td><td class="py-3 pr-3 text-gray-500">팔로워 · 권위</td></tr>
+              <tr><td class="py-3 pr-3 font-medium">○○골</td><td class="py-3 pr-3 tabular-nums">22.8K</td><td class="py-3 pr-3">주 5.8회</td><td class="py-3 pr-3 tabular-nums">4.1%</td><td class="py-3 pr-3">정식 컷 변형 시리즈</td><td class="py-3 pr-3 text-gray-500">발행 빈도</td></tr>
+              <tr><td class="py-3 pr-3 font-medium">○○가</td><td class="py-3 pr-3 tabular-nums">8.4K</td><td class="py-3 pr-3">주 2.4회</td><td class="py-3 pr-3 tabular-nums">2.9%</td><td class="py-3 pr-3">사장님 V-log</td><td class="py-3 pr-3 text-gray-500">친근감</td></tr>
+              <tr><td class="py-3 pr-3 font-medium">○○담</td><td class="py-3 pr-3 tabular-nums">4.2K</td><td class="py-3 pr-3">주 1.8회</td><td class="py-3 pr-3 tabular-nums">1.4%</td><td class="py-3 pr-3">메뉴 사진</td><td class="py-3 pr-3 text-gray-500">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="mt-4 pt-3 border-t border-gray-100 dark:border-zinc-800 text-xs">
+          <div class="text-[10px] uppercase tracking-widest text-indigo-600 dark:text-indigo-400 font-semibold mb-1">BRIQ 인사이트</div>
+          미옥당은 저장률 1위. 발행 빈도를 주 5.5회로 +30% 늘리면 도달이 +42% 증가 예상. 사장님 1인칭 V-log 1편/주 추가 권장 (○○가 패턴 학습).
+        </div>
+      </div>
+
+    </section>
+  </main>
+</div>
+<script src="mockup-runtime.js"></script>
+</body>
+</html>

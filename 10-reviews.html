@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BRIQ · 리뷰 자동 답변</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode:'class', theme:{ extend:{ fontFamily:{ sans:['"Pretendard Variable"','Pretendard','system-ui','sans-serif'] } } } };
+    if (localStorage.getItem('briq-theme') === 'dark') document.documentElement.classList.add('dark');
+  </script>
+  <style>
+    body{font-family:'Pretendard Variable',Pretendard,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+    .nav-item { display:flex; align-items:center; padding:7px 10px; border-radius:6px; font-size:12px; font-weight:500; color:#4b5563; gap:6px; transition:all .12s; }
+    .nav-item:hover { background:#f3f4f6; color:#111827; }
+    .nav-item.nav-active { background:#fff; border:1px solid #e5e7eb; color:#111827; box-shadow:0 1px 2px rgba(0,0,0,0.04); }
+    .dark .nav-item { color:#a1a1aa; }
+    .dark .nav-item:hover { background:#27272a; color:#fafafa; }
+    .dark .nav-item.nav-active { background:#18181b; border:1px solid #3f3f46; color:#fff; }
+    .nav-group { padding:14px 10px 5px; font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:#9ca3af; font-weight:600; }
+    .dark .nav-group { color:#71717a; }
+    .nav-badge { margin-left:auto; font-size:10px; font-variant-numeric:tabular-nums; padding:1px 6px; border-radius:4px; font-weight:500; }
+    .card { background:#fff; border:1px solid #e5e7eb; border-radius:14px; }
+    .dark .card { background:#0f0f12; border-color:#27272a; }
+    .fade-in { animation:fadeIn .4s cubic-bezier(.2,.8,.2,1) both }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(6px) } to { opacity:1; transform:translateY(0) } }
+    .star { color:#f59e0b; }
+    .platform-naver { background:#03c75a; color:#fff; }
+    .platform-google { background:#fff; color:#1a73e8; border:1px solid #e0e0e0; }
+    .platform-coupang { background:#cb002b; color:#fff; }
+    .platform-baemin { background:#2ac1bc; color:#fff; }
+    .platform-yogiyo { background:#fa0050; color:#fff; }
+    .review-row { transition:all .15s; }
+    .review-row:hover { background:#fafafa; }
+    .dark .review-row:hover { background:#16161a; }
+    .filter-chip { font-size:11px; padding:5px 10px; border-radius:9999px; border:1px solid #e5e7eb; cursor:pointer; transition:all .12s; }
+    .filter-chip:hover { border-color:#111827; }
+    .filter-chip.active { background:#111827; color:#fff; border-color:#111827; }
+    .dark .filter-chip { border-color:#27272a; }
+    .dark .filter-chip:hover { border-color:#fff; }
+    .dark .filter-chip.active { background:#fff; color:#111827; border-color:#fff; }
+  </style>
+</head>
+<body class="min-h-screen bg-white dark:bg-zinc-950 text-gray-900 dark:text-zinc-100 transition-colors">
+<div class="flex min-h-screen">
+  <aside class="w-60 shrink-0 border-r border-gray-100 dark:border-zinc-800 bg-gray-50/40 dark:bg-zinc-900/40 flex flex-col">
+    <div class="px-5 py-5 flex items-center gap-2 border-b border-gray-100 dark:border-zinc-800">
+      <div class="h-7 w-7 rounded-md bg-gradient-to-br from-indigo-500 to-violet-600 grid place-items-center text-white text-xs font-bold">B</div>
+      <span class="text-sm font-semibold tracking-tight">BRIQ</span>
+      <span class="ml-auto text-[10px] px-1.5 py-px rounded bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400">v0.3</span>
+    </div>
+    <nav class="flex-1 px-3 py-3 overflow-y-auto">
+      <a href="index.html" class="nav-item">홈</a>
+      <a href="02-clients.html" class="nav-item">클라이언트</a>
+      <a href="04-campaign-new.html" class="nav-item">캠페인</a>
+      <div class="nav-group">AI 콘텐츠</div>
+      <a href="06-cardnews-image.html" class="nav-item">카드뉴스</a>
+      <a href="08-reels-studio.html" class="nav-item">릴스 스튜디오</a>
+      <a href="05-content-result.html" class="nav-item">콘텐츠 결과</a>
+      <a href="11-calendar.html" class="nav-item">콘텐츠 캘린더</a>
+      <div class="nav-group">자동화</div>
+      <a href="07-review-queue.html" class="nav-item">검토 큐<span class="nav-badge bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">7</span></a>
+      <a href="10-reviews.html" class="nav-item nav-active">리뷰 답변<span class="nav-badge bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400">3</span></a>
+      <a href="15-schedule.html" class="nav-item">업로드 예약<span class="nav-badge bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400">12</span></a>
+      <div class="nav-group">인사이트</div>
+      <a href="12-analytics.html" class="nav-item">성과 분석</a>
+      <a href="14-trends.html" class="nav-item">지역 트렌드</a>
+      <div class="nav-group">브랜드</div>
+      <a href="09-brand-memory.html" class="nav-item">브랜드 톤</a>
+      <a href="13-brand-kit.html" class="nav-item">브랜드 키트</a>
+    </nav>
+    <div class="border-t border-gray-100 dark:border-zinc-800 p-3 flex items-center gap-2.5">
+      <div class="h-7 w-7 rounded-full bg-gradient-to-br from-amber-400 to-rose-500 shrink-0"></div>
+      <div class="flex-1 min-w-0"><div class="text-xs font-medium truncate">허은애</div><div class="text-[10px] text-gray-500 dark:text-zinc-500 truncate">미옥당 외 5</div></div>
+      <button id="theme-toggle" class="text-gray-400 hover:text-gray-700 dark:hover:text-zinc-200 p-1.5 rounded hover:bg-gray-100 dark:hover:bg-zinc-800">
+        <svg class="h-4 w-4 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="h-4 w-4 hidden dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <main class="flex-1 min-w-0">
+    <header class="border-b border-gray-100 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/70 backdrop-blur sticky top-0 z-10">
+      <div class="px-6 h-14 flex items-center gap-4">
+        <h1 class="text-sm font-semibold tracking-tight">리뷰 자동 답변</h1>
+        <span class="text-[11px] text-gray-400 dark:text-zinc-600">/</span>
+        <span class="text-xs text-gray-500 dark:text-zinc-400">전 채널 통합</span>
+        <div class="ml-auto flex items-center gap-2">
+          <button id="ai-assistant-toggle" class="text-xs px-3 py-1.5 rounded-md bg-gray-900 text-white dark:bg-white dark:text-zinc-900 hover:opacity-90 inline-flex items-center gap-1.5 font-medium">
+            <span style="background:linear-gradient(135deg,#a78bfa,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent">✦</span> Assistant
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <section class="px-6 pt-7 pb-3 fade-in">
+      <div class="flex items-end justify-between gap-4 flex-wrap">
+        <div>
+          <div class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold">REVIEW AUTO-RESPONSE</div>
+          <h2 class="mt-1 text-2xl font-semibold tracking-tight">리뷰 자동 답변</h2>
+          <p class="mt-1 text-sm text-gray-600 dark:text-zinc-400 max-w-2xl">네이버 · 구글 · 카카오 · 배민 · 요기요 후기를 한 곳에서. 브랜드 톤 메모리로 답변하고 진상/단골 자동 분류합니다.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="text-xs px-3.5 py-2 rounded-md border border-gray-200 dark:border-zinc-800 hover:border-gray-900 dark:hover:border-white font-medium">템플릿 관리</button>
+          <button class="text-xs px-3.5 py-2 rounded-md bg-gray-900 text-white dark:bg-white dark:text-zinc-900 font-medium">전체 자동 답변</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- KPI -->
+    <section class="px-6">
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <div class="card p-4">
+          <div class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">이번달 리뷰</div>
+          <div class="mt-1.5 flex items-baseline gap-2"><div class="text-xl font-semibold tabular-nums">147</div><div class="text-[11px] text-emerald-600">+34%</div></div>
+        </div>
+        <div class="card p-4">
+          <div class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">자동 답변</div>
+          <div class="mt-1.5 flex items-baseline gap-2"><div class="text-xl font-semibold tabular-nums">132</div><div class="text-[11px] text-gray-500">90%</div></div>
+        </div>
+        <div class="card p-4">
+          <div class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">평균 별점</div>
+          <div class="mt-1.5 flex items-baseline gap-2"><div class="text-xl font-semibold tabular-nums">4.7<span class="text-sm text-gray-400">/5</span></div><div class="star text-xs">★★★★★</div></div>
+        </div>
+        <div class="card p-4">
+          <div class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">검토 대기</div>
+          <div class="mt-1.5 flex items-baseline gap-2"><div class="text-xl font-semibold tabular-nums text-rose-600">3</div><div class="text-[11px] text-rose-600">진상 의심</div></div>
+        </div>
+        <div class="card p-4">
+          <div class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">평균 답변 시간</div>
+          <div class="mt-1.5 flex items-baseline gap-2"><div class="text-xl font-semibold tabular-nums">2.4<span class="text-sm text-gray-400">m</span></div><div class="text-[11px] text-emerald-600">↓ 87%</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="px-6 pt-5 flex items-center gap-2 flex-wrap">
+      <div data-toggle-group class="flex items-center gap-1.5">
+        <button data-toggle class="filter-chip active">전체 (147)</button>
+        <button data-toggle class="filter-chip">진상 의심 (3)</button>
+        <button data-toggle class="filter-chip">단골 (28)</button>
+        <button data-toggle class="filter-chip">신규 (84)</button>
+        <button data-toggle class="filter-chip">★★★★★ (98)</button>
+        <button data-toggle class="filter-chip">★1~2 (5)</button>
+      </div>
+      <div class="ml-auto flex items-center gap-2 text-[11px] text-gray-500">
+        <span class="inline-flex items-center gap-1.5"><span class="h-3 w-3 rounded platform-naver inline-grid place-items-center text-[8px] font-bold">N</span>네이버 62</span>
+        <span>·</span>
+        <span class="inline-flex items-center gap-1.5"><span class="h-3 w-3 rounded platform-google inline-grid place-items-center text-[8px] font-bold">G</span>구글 38</span>
+        <span>·</span>
+        <span class="inline-flex items-center gap-1.5"><span class="h-3 w-3 rounded platform-baemin inline-grid place-items-center text-[8px] font-bold">배</span>배민 31</span>
+        <span>·</span>
+        <span class="inline-flex items-center gap-1.5"><span class="h-3 w-3 rounded platform-yogiyo inline-grid place-items-center text-[8px] font-bold">요</span>요기요 16</span>
+      </div>
+    </section>
+
+    <!-- Reviews list -->
+    <section class="px-6 py-5 grid grid-cols-1 lg:grid-cols-3 gap-3">
+
+      <!-- Review feed -->
+      <div class="card lg:col-span-2 fade-in overflow-hidden">
+        <div class="px-5 py-3 border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between">
+          <h3 class="text-sm font-semibold">최근 리뷰</h3>
+          <span class="text-[11px] text-gray-500">실시간 폴링 · 5초 간격</span>
+        </div>
+        <ul class="divide-y divide-gray-100 dark:divide-zinc-800">
+
+          <!-- 1: 진상 의심 -->
+          <li class="review-row p-5">
+            <div class="flex items-start gap-3">
+              <div class="h-8 w-8 rounded-full bg-gradient-to-br from-rose-300 to-rose-500 grid place-items-center text-white text-[11px] font-bold shrink-0">정</div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-sm font-medium">정**</span>
+                  <span class="platform-naver text-[10px] font-bold px-1.5 py-0.5 rounded">네이버</span>
+                  <span class="text-amber-500 text-xs">★★☆☆☆</span>
+                  <span class="text-[11px] text-gray-500">2시간 전 · 미옥당 본점</span>
+                  <span class="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300 font-medium">⚠ 진상 의심 92%</span>
+                </div>
+                <p class="mt-2 text-sm leading-relaxed text-gray-700 dark:text-zinc-300">맛은 그럭저럭인데 가격이 너무 비싸요. 8만원이면 호텔뷔페 가지 왜 여기 와요? 직원도 무뚝뚝하고 다신 안갈듯</p>
+                <div class="mt-3 rounded-lg border border-rose-100 dark:border-rose-900/40 bg-rose-50/30 dark:bg-rose-500/5 p-3">
+                  <div class="text-[10px] uppercase tracking-widest text-rose-700 dark:text-rose-400 font-semibold mb-1">BRIQ 자동 답변 · 진상 대응 템플릿 v2</div>
+                  <p class="text-xs leading-relaxed">정 고객님, 미옥당 허은애입니다. 저희 한정식이 기대에 못 미치셨다니 정중히 사과드립니다. 8만원 코스는 9가지 요리와 직접 담근 장 · 새벽 시장 식재료 비용으로 책정되었음을 양해 부탁드립니다. 가능하시면 010-XXXX-XXXX 로 연락 부탁드리며, 다음 방문 시 직접 정성껏 모시겠습니다.</p>
+                  <div class="mt-2 flex items-center gap-2">
+                    <button class="text-[11px] px-2.5 py-1 rounded bg-gray-900 text-white dark:bg-white dark:text-zinc-900 font-medium">승인 후 발송</button>
+                    <button class="text-[11px] px-2.5 py-1 rounded border border-gray-200 dark:border-zinc-700">다시 생성</button>
+                    <button class="text-[11px] px-2.5 py-1 rounded text-rose-700 dark:text-rose-400">사장님 직접 답변</button>
+                    <span class="ml-auto text-[10px] text-gray-500">예상 별점 회복 +0.3</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </li>
+
+          <!-- 2: 단골 -->
+          <li class="review-row p-5">
+            <div class="flex items-start gap-3">
+              <div class="h-8 w-8 rounded-full bg-gradient-to-br from-emerald-300 to-emerald-500 grid place-items-center text-white text-[11px] font-bold shrink-0">김</div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-sm font-medium">김**</span>
+                  <span class="platform-naver text-[10px] font-bold px-1.5 py-0.5 rounded">네이버</span>
+                  <span class="text-amber-500 text-xs">★★★★★</span>
+                  <span class="text-[11px] text-gray-500">5시간 전 · 미옥당 본점</span>
+                  <span class="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300 font-medium">★ 단골 8회 방문</span>
+                </div>
+                <p class="mt-2 text-sm leading-relaxed text-gray-700 dark:text-zinc-300">봄정식 또 먹고 갑니다. 두릅무침 진심 최고예요. 어머니랑 분기마다 들르는데 매번 계절 메뉴가 새로워서 좋아요. 사장님 항상 친절하시고 ❤️</p>
+                <div class="mt-3 rounded-lg border border-emerald-100 dark:border-emerald-900/40 bg-emerald-50/30 dark:bg-emerald-500/5 p-3">
+                  <div class="text-[10px] uppercase tracking-widest text-emerald-700 dark:text-emerald-400 font-semibold mb-1">BRIQ 자동 답변 · 단골 감사 톤</div>
+                  <p class="text-xs leading-relaxed">김 고객님, 늘 어머님과 함께 찾아주셔서 감사합니다. 두릅무침은 양평 시장에서 새벽에 골라온 것이라 더 마음이 갑니다. 다음달엔 여름 정식이 시작되니, 그때 또 모시고 싶어요. 한 그릇의 시간 함께해주셔서 감사합니다 — 미옥당 허은애 드림</p>
+                  <div class="mt-2 flex items-center gap-2">
+                    <button class="text-[11px] px-2.5 py-1 rounded bg-emerald-600 text-white font-medium">바로 발송</button>
+                    <button class="text-[11px] px-2.5 py-1 rounded border border-gray-200 dark:border-zinc-700">검토</button>
+                    <span class="ml-auto text-[10px] text-emerald-700 dark:text-emerald-400">8회 방문 인지 · 어머님 동반 기억</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </li>
+
+          <!-- 3: 신규 긍정 -->
+          <li class="review-row p-5">
+            <div class="flex items-start gap-3">
+              <div class="h-8 w-8 rounded-full bg-gradient-to-br from-sky-300 to-blue-500 grid place-items-center text-white text-[11px] font-bold shrink-0">박</div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-sm font-medium">박**</span>
+                  <span class="platform-google text-[10px] font-bold px-1.5 py-0.5 rounded">구글</span>
+                  <span class="text-amber-500 text-xs">★★★★★</span>
+                  <span class="text-[11px] text-gray-500">어제 · 미옥당 본점</span>
+                  <span class="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300 font-medium">신규 · 외국인 동반</span>
+                </div>
+                <p class="mt-2 text-sm leading-relaxed text-gray-700 dark:text-zinc-300">My friend from Tokyo loved this place! The hanjeongsik was authentic and the staff was kind. Highly recommend.</p>
+                <div class="mt-3 rounded-lg border border-sky-100 dark:border-sky-900/40 bg-sky-50/30 dark:bg-sky-500/5 p-3">
+                  <div class="text-[10px] uppercase tracking-widest text-sky-700 dark:text-sky-400 font-semibold mb-1">BRIQ 자동 답변 · 한/영 듀얼 톤</div>
+                  <p class="text-xs leading-relaxed">박 고객님, Tokyo 친구분과 함께 미옥당을 찾아주셔서 감사드립니다. 한정식의 단정함이 잘 전해졌다니 기쁩니다. <br>Thank you for visiting MIOKDANG. We're delighted your friend enjoyed the seasonal hanjeongsik. Please come again — we'll have a new summer course next month.</p>
+                  <div class="mt-2 flex items-center gap-2">
+                    <button class="text-[11px] px-2.5 py-1 rounded bg-gray-900 text-white dark:bg-white dark:text-zinc-900 font-medium">바로 발송</button>
+                    <button class="text-[11px] px-2.5 py-1 rounded border border-gray-200 dark:border-zinc-700">검토</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </li>
+
+          <!-- 4: 배민 -->
+          <li class="review-row p-5">
+            <div class="flex items-start gap-3">
+              <div class="h-8 w-8 rounded-full bg-gradient-to-br from-violet-300 to-violet-500 grid place-items-center text-white text-[11px] font-bold shrink-0">이</div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-sm font-medium">이**</span>
+                  <span class="platform-baemin text-[10px] font-bold px-1.5 py-0.5 rounded">배민</span>
+                  <span class="text-amber-500 text-xs">★★★★☆</span>
+                  <span class="text-[11px] text-gray-500">어제 · 루나헤어</span>
+                  <span class="ml-auto text-[10px] text-emerald-600 font-medium">✓ 자동 발송됨</span>
+                </div>
+                <p class="mt-2 text-sm leading-relaxed text-gray-700 dark:text-zinc-300">머리결 진짜 부드러워졌어요. 컬도 잘 잡히고. 다만 예약 시간보다 20분 늦게 시작해서 별 4개.</p>
+                <div class="mt-2 rounded-lg bg-gray-50 dark:bg-zinc-900/50 p-3">
+                  <p class="text-xs leading-relaxed text-gray-600 dark:text-zinc-400">이 고객님, 결이 잘 살아났다니 다행이에요. 시작이 늦어진 점 정말 죄송합니다. 다음 예약 때는 5분 일찍 안내해드리고, 대기하시는 동안 차 한 잔 준비해두겠습니다 — 루나 강남점</p>
+                  <div class="mt-1.5 text-[10px] text-gray-500">3시간 전 자동 발송 · 0건 수정</div>
+                </div>
+              </div>
+            </div>
+          </li>
+
+          <!-- 5: ★1 진상 -->
+          <li class="review-row p-5">
+            <div class="flex items-start gap-3">
+              <div class="h-8 w-8 rounded-full bg-gradient-to-br from-zinc-400 to-zinc-600 grid place-items-center text-white text-[11px] font-bold shrink-0">최</div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-sm font-medium">최**</span>
+                  <span class="platform-yogiyo text-[10px] font-bold px-1.5 py-0.5 rounded">요기요</span>
+                  <span class="text-amber-500 text-xs">★☆☆☆☆</span>
+                  <span class="text-[11px] text-gray-500">2일 전 · 미옥당 본점</span>
+                  <span class="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300 font-medium">⚠ 진상 의심 86%</span>
+                </div>
+                <p class="mt-2 text-sm leading-relaxed text-gray-700 dark:text-zinc-300">재료 안 신선함. 뭐 이런 가격에 이런 양을. 노쇼 안 한게 다행. 강추 X</p>
+                <div class="mt-2 flex items-center gap-2">
+                  <span class="text-[11px] px-2 py-1 rounded bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300 font-medium">사장님 검토 대기</span>
+                  <button class="text-[11px] text-gray-500 hover:text-gray-900 dark:hover:text-white">답변 자동 생성</button>
+                </div>
+              </div>
+            </div>
+          </li>
+
+        </ul>
+        <div class="px-5 py-3 text-center border-t border-gray-100 dark:border-zinc-800">
+          <button class="text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white">+ 142건 더 보기</button>
+        </div>
+      </div>
+
+      <!-- Templates -->
+      <div class="space-y-3 fade-in" style="animation-delay:.05s">
+        <div class="card p-5">
+          <h3 class="text-sm font-semibold mb-1">자동 답변 템플릿</h3>
+          <p class="text-[11px] text-gray-500 dark:text-zinc-400 mb-4">브랜드 톤 메모리 + 상황별 6개</p>
+          <ul class="space-y-2 text-xs">
+            <li class="flex items-start gap-2.5 p-2.5 rounded-lg border border-emerald-100 dark:border-emerald-900/40 bg-emerald-50/30 dark:bg-emerald-500/5">
+              <span class="text-base">⭐</span>
+              <div class="flex-1 min-w-0">
+                <div class="font-medium">단골 감사</div>
+                <div class="text-[11px] text-gray-500 dark:text-zinc-500">방문 3회+ 자동 인지 · 메뉴 기억</div>
+              </div>
+              <span class="text-[10px] text-gray-500">28회 사용</span>
+            </li>
+            <li class="flex items-start gap-2.5 p-2.5 rounded-lg border border-sky-100 dark:border-sky-900/40 bg-sky-50/30 dark:bg-sky-500/5">
+              <span class="text-base">👋</span>
+              <div class="flex-1 min-w-0">
+                <div class="font-medium">신규 환영</div>
+                <div class="text-[11px] text-gray-500 dark:text-zinc-500">첫 방문 · 다음 방문 유도</div>
+              </div>
+              <span class="text-[10px] text-gray-500">84회</span>
+            </li>
+            <li class="flex items-start gap-2.5 p-2.5 rounded-lg border border-rose-100 dark:border-rose-900/40 bg-rose-50/30 dark:bg-rose-500/5">
+              <span class="text-base">🛡️</span>
+              <div class="flex-1 min-w-0">
+                <div class="font-medium">진상 대응</div>
+                <div class="text-[11px] text-gray-500 dark:text-zinc-500">정중·구체·연락유도 · 사장님 승인 후</div>
+              </div>
+              <span class="text-[10px] text-gray-500">7회</span>
+            </li>
+            <li class="flex items-start gap-2.5 p-2.5 rounded-lg border border-amber-100 dark:border-amber-900/40 bg-amber-50/30 dark:bg-amber-500/5">
+              <span class="text-base">⚠️</span>
+              <div class="flex-1 min-w-0">
+                <div class="font-medium">불만 사과</div>
+                <div class="text-[11px] text-gray-500 dark:text-zinc-500">★1~3 · 구체 사과 + 보상 제안</div>
+              </div>
+              <span class="text-[10px] text-gray-500">12회</span>
+            </li>
+            <li class="flex items-start gap-2.5 p-2.5 rounded-lg border border-violet-100 dark:border-violet-900/40 bg-violet-50/30 dark:bg-violet-500/5">
+              <span class="text-base">🌐</span>
+              <div class="flex-1 min-w-0">
+                <div class="font-medium">외국어 (한/영/일)</div>
+                <div class="text-[11px] text-gray-500 dark:text-zinc-500">자동 언어 감지 + 듀얼 답변</div>
+              </div>
+              <span class="text-[10px] text-gray-500">9회</span>
+            </li>
+            <li class="flex items-start gap-2.5 p-2.5 rounded-lg border border-gray-100 dark:border-zinc-800">
+              <span class="text-base">+</span>
+              <div class="flex-1 min-w-0 text-gray-500">새 템플릿 만들기</div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Sentiment trend -->
+        <div class="card p-5">
+          <h3 class="text-sm font-semibold mb-1">감성 트렌드</h3>
+          <p class="text-[11px] text-gray-500 dark:text-zinc-400 mb-4">미옥당 · 최근 30일</p>
+          <div class="flex items-end gap-1 h-16">
+            <div class="flex-1 bg-emerald-200 dark:bg-emerald-500/40 rounded-t" style="height:60%" title="긍정 60%"></div>
+            <div class="flex-1 bg-emerald-300 dark:bg-emerald-500/50 rounded-t" style="height:65%"></div>
+            <div class="flex-1 bg-emerald-300 dark:bg-emerald-500/50 rounded-t" style="height:70%"></div>
+            <div class="flex-1 bg-emerald-400 dark:bg-emerald-500/60 rounded-t" style="height:80%"></div>
+            <div class="flex-1 bg-emerald-400 dark:bg-emerald-500/60 rounded-t" style="height:85%"></div>
+            <div class="flex-1 bg-emerald-500 dark:bg-emerald-500/70 rounded-t" style="height:88%"></div>
+            <div class="flex-1 bg-emerald-500 dark:bg-emerald-500/70 rounded-t" style="height:92%"></div>
+          </div>
+          <div class="mt-3 flex items-center justify-between text-[11px] text-gray-500">
+            <span>4월 11일</span><span>오늘</span>
+          </div>
+          <div class="mt-3 pt-3 border-t border-gray-100 dark:border-zinc-800 space-y-1.5 text-xs">
+            <div class="flex items-center justify-between"><span>긍정 키워드</span><span class="text-gray-500">"두릅" "결" "정성" "어머니"</span></div>
+            <div class="flex items-center justify-between"><span>부정 키워드</span><span class="text-gray-500">"늦게" "비싸" "주차"</span></div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+</div>
+<script src="mockup-runtime.js"></script>
+</body>
+</html>

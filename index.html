@@ -3,151 +3,427 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AdOps AI · UI 목업</title>
+  <title>BRIQ · 오늘의 추천</title>
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ['"Pretendard Variable"', 'Pretendard', 'system-ui', 'sans-serif'] } } } }</script>
-  <style>body{font-family:'Pretendard Variable',Pretendard,system-ui,sans-serif;-webkit-font-smoothing:antialiased}</style>
+  <script>
+    tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['"Pretendard Variable"','Pretendard','system-ui','sans-serif'] } } } };
+    if (localStorage.getItem('briq-theme') === 'dark') document.documentElement.classList.add('dark');
+  </script>
+  <style>
+    body{font-family:'Pretendard Variable',Pretendard,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+    .nav-item { display:flex; align-items:center; padding:7px 10px; border-radius:6px; font-size:12px; font-weight:500; color:#4b5563; gap:6px; transition:all .12s; }
+    .nav-item:hover { background:#f3f4f6; color:#111827; }
+    .nav-item.nav-active { background:#fff; border:1px solid #e5e7eb; color:#111827; box-shadow:0 1px 2px rgba(0,0,0,0.04); }
+    .dark .nav-item { color:#a1a1aa; }
+    .dark .nav-item:hover { background:#27272a; color:#fafafa; }
+    .dark .nav-item.nav-active { background:#18181b; border:1px solid #3f3f46; color:#fff; }
+    .nav-group { padding:14px 10px 5px; font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:#9ca3af; font-weight:600; }
+    .dark .nav-group { color:#71717a; }
+    .nav-badge { margin-left:auto; font-size:10px; font-variant-numeric:tabular-nums; padding:1px 6px; border-radius:4px; font-weight:500; }
+    .card { background:#fff; border:1px solid #e5e7eb; border-radius:14px; }
+    .dark .card { background:#0f0f12; border-color:#27272a; }
+    .card:hover { transition:border-color .15s; }
+    .fade-in { animation: fadeIn .4s cubic-bezier(.2,.8,.2,1) both; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    .gradient-text { background:linear-gradient(135deg,#6366f1,#a855f7,#ec4899); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .shimmer { background: linear-gradient(110deg, transparent 30%, rgba(99,102,241,0.08) 50%, transparent 70%); background-size:200% 100%; animation: shimmer 2.5s infinite; }
+    @keyframes shimmer { 0% { background-position:-200% 0; } 100% { background-position:200% 0; } }
+    .rec-card { transition:all .2s cubic-bezier(.2,.8,.2,1); }
+    .rec-card:hover { transform:translateY(-2px); border-color:#111827; }
+    .dark .rec-card:hover { border-color:#fafafa; }
+    .pulse-dot { position:relative; }
+    .pulse-dot::after { content:''; position:absolute; inset:-2px; border-radius:9999px; border:1.5px solid currentColor; opacity:0.4; animation:pulse 1.6s infinite; }
+    @keyframes pulse { 0% { transform:scale(1); opacity:0.4; } 100% { transform:scale(1.6); opacity:0; } }
+    /* mobile responsive */
+    @media (max-width: 768px) {
+      aside.briq-sidebar { display:none; }
+      .briq-mobile-header { display:flex !important; }
+    }
+    .briq-mobile-header { display:none; }
+  </style>
 </head>
-<body class="min-h-screen bg-white text-gray-900">
-  <div class="max-w-5xl mx-auto px-8 py-16">
-    <div class="flex items-center gap-2.5">
-      <div class="h-9 w-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 grid place-items-center text-white font-bold">A</div>
-      <span class="text-lg font-semibold tracking-tight">AdOps <span class="text-indigo-600">AI</span></span>
-      <span class="ml-2 text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 border border-gray-200">UI Mockups · v0.1</span>
-    </div>
+<body class="min-h-screen bg-white dark:bg-zinc-950 text-gray-900 dark:text-zinc-100 transition-colors">
+  <div class="flex min-h-screen">
 
-    <h1 class="mt-12 text-4xl font-semibold tracking-tight">관리자 대시보드 목업</h1>
-    <p class="mt-3 text-base text-gray-600 leading-relaxed max-w-2xl">
-      Notion · Stripe · Linear의 미니멀한 분위기를 한국 광고대행사 SaaS 컨텍스트로 재해석한 5개 페이지.
-      Tailwind CSS + Pretendard · 단일 HTML 파일 · 브라우저에서 바로 미리볼 수 있습니다.
-    </p>
-
-    <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-3">
-      <a href="01-login.html" class="group rounded-xl border border-gray-200 bg-white p-5 hover:border-gray-300 hover:shadow-sm transition">
-        <div class="flex items-start justify-between">
-          <span class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">01</span>
-          <span class="text-[11px] text-gray-500 group-hover:text-gray-900">→</span>
-        </div>
-        <h2 class="mt-3 text-base font-semibold tracking-tight">로그인</h2>
-        <p class="mt-1 text-xs text-gray-500 leading-relaxed">
-          좌: 폼 / 우: 브랜드 하이라이트 + 라이브 브리프 미리보기. Google OAuth 옵션 포함.
-        </p>
-      </a>
-      <a href="02-clients.html" class="group rounded-xl border border-gray-200 bg-white p-5 hover:border-gray-300 hover:shadow-sm transition">
-        <div class="flex items-start justify-between">
-          <span class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">02</span>
-          <span class="text-[11px] text-gray-500 group-hover:text-gray-900">→</span>
-        </div>
-        <h2 class="mt-3 text-base font-semibold tracking-tight">클라이언트 목록</h2>
-        <p class="mt-1 text-xs text-gray-500 leading-relaxed">
-          사이드바 + 통계 스트립 + 카드 그리드. 활성/대기 탭, 업종/태그 필터, 의료 가드레일 배지.
-        </p>
-      </a>
-      <a href="03-brand-detail.html" class="group rounded-xl border border-gray-200 bg-white p-5 hover:border-gray-300 hover:shadow-sm transition">
-        <div class="flex items-start justify-between">
-          <span class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">03</span>
-          <span class="text-[11px] text-gray-500 group-hover:text-gray-900">→</span>
-        </div>
-        <h2 class="mt-3 text-base font-semibold tracking-tight">브랜드 상세</h2>
-        <p class="mt-1 text-xs text-gray-500 leading-relaxed">
-          히어로 + 탭(개요/브랜드킷/톤/자산/캠페인) + 톤 프로파일 카드 + 최근 캠페인 표 + 활동 로그.
-        </p>
-      </a>
-      <a href="04-campaign-new.html" class="group rounded-xl border border-gray-200 bg-white p-5 hover:border-gray-300 hover:shadow-sm transition">
-        <div class="flex items-start justify-between">
-          <span class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">04</span>
-          <span class="text-[11px] text-gray-500 group-hover:text-gray-900">→</span>
-        </div>
-        <h2 class="mt-3 text-base font-semibold tracking-tight">캠페인 생성</h2>
-        <p class="mt-1 text-xs text-gray-500 leading-relaxed">
-          4-step 위저드 · 좌: 입력 / 우: AI 브리프 토큰 스트리밍. 채널 추천, 가드레일 메모, 비용 라이브 표시.
-        </p>
-      </a>
-      <a href="06-cardnews-image.html" class="group rounded-xl border border-gray-200 bg-white p-5 hover:border-gray-300 hover:shadow-sm transition">
-        <div class="flex items-start justify-between">
-          <span class="text-[10px] uppercase tracking-widest text-indigo-600 font-semibold">06 · NEW</span>
-          <span class="text-[11px] text-gray-500 group-hover:text-gray-900">→</span>
-        </div>
-        <h2 class="mt-3 text-base font-semibold tracking-tight">카드뉴스 AI 이미지 <span class="ml-1 text-[10px] text-indigo-700 bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 rounded">gpt-image-1</span></h2>
-        <p class="mt-1 text-xs text-gray-500 leading-relaxed">
-          F10 카드뉴스 텍스트 → 슬라이드별 배경 이미지 자동 생성 → 한글 Canvas 오버레이.
-          6장 동일 시드 · 브랜드 컬러 자동 · ZIP/인스타 캐러셀 export.
-        </p>
-      </a>
-      <a href="05-content-result.html" class="group rounded-xl border border-gray-200 bg-white p-5 hover:border-gray-300 hover:shadow-sm transition">
-        <div class="flex items-start justify-between">
-          <span class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">05</span>
-          <span class="text-[11px] text-gray-500 group-hover:text-gray-900">→</span>
-        </div>
-        <h2 class="mt-3 text-base font-semibold tracking-tight">생성 결과 페이지 <span class="ml-1 text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded">7-channel · live</span></h2>
-        <p class="mt-1 text-xs text-gray-500 leading-relaxed">
-          미옥당 본점 <strong>"5월 봄나물 코스"</strong> 실제 캠페인 콘텐츠 7종 — 인스타 / 릴스 / Meta / 블로그 / 플레이스 / 문자 / 상세페이지.
-          <span class="text-gray-700 font-medium">탭 클릭으로 전환</span> · 우측 클레임·가드레일·비용·코멘트 패널 공유.
-        </p>
-      </a>
-      <a href="07-review-queue.html" class="group rounded-xl border border-gray-200 bg-white p-5 hover:border-gray-300 hover:shadow-sm transition">
-        <div class="flex items-start justify-between">
-          <span class="text-[10px] uppercase tracking-widest text-amber-600 font-semibold">07 · NEW</span>
-          <span class="text-[11px] text-gray-500 group-hover:text-gray-900">→</span>
-        </div>
-        <h2 class="mt-3 text-base font-semibold tracking-tight">검토 큐 <span class="ml-1 text-[10px] text-amber-700 bg-amber-50 border border-amber-100 px-1.5 py-0.5 rounded">7건 대기</span></h2>
-        <p class="mt-1 text-xs text-gray-500 leading-relaxed">
-          출고 전 검수 항목 — <strong>의광법 3 · 톤 위반 2 · 사실 클레임 1 · 단순 검토 1</strong>.
-          필터 · 일괄 승인 · 행 단위 승인/반려 · 페이드아웃 + 토스트 · 카운트 자동 갱신.
-        </p>
-      </a>
-      <a href="08-reels-studio.html" class="group rounded-xl border border-gray-200 bg-white p-5 hover:border-gray-300 hover:shadow-sm transition">
-        <div class="flex items-start justify-between">
-          <span class="text-[10px] uppercase tracking-widest text-indigo-600 font-semibold">08 · NEW</span>
-          <span class="text-[11px] text-gray-500 group-hover:text-gray-900">→</span>
-        </div>
-        <h2 class="mt-3 text-base font-semibold tracking-tight">AI 릴스 스튜디오 <span class="ml-1 text-[10px] text-indigo-700 bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 rounded">9:16 자동 편집</span></h2>
-        <p class="mt-1 text-xs text-gray-500 leading-relaxed">
-          사진 3~8장 → 30초 릴스 자동 완성. 4 업종 템플릿 · 컷 분할 · 자막 · 후크 · BGM 추천 · 썸네일 3장 · <strong>9:16 폰 미리보기</strong> + 타임라인 + 자막 AI 재작성.
-        </p>
-      </a>
-    </div>
-
-    <!-- Design tokens -->
-    <div class="mt-16 rounded-xl border border-gray-200 bg-gray-50/40 p-6">
-      <h3 class="text-sm font-semibold tracking-tight">디자인 토큰</h3>
-      <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-[11px]">
-        <div>
-          <div class="text-gray-500 uppercase tracking-widest text-[10px] font-semibold">Background</div>
-          <div class="mt-2 flex items-center gap-2"><div class="h-5 w-5 rounded border border-gray-200 bg-white"></div><span class="font-mono">#ffffff</span></div>
-          <div class="mt-1.5 flex items-center gap-2"><div class="h-5 w-5 rounded border border-gray-200 bg-gray-50"></div><span class="font-mono">gray-50</span></div>
-        </div>
-        <div>
-          <div class="text-gray-500 uppercase tracking-widest text-[10px] font-semibold">Text</div>
-          <div class="mt-2 flex items-center gap-2"><div class="h-5 w-5 rounded border border-gray-200 bg-gray-900"></div><span class="font-mono">gray-900</span></div>
-          <div class="mt-1.5 flex items-center gap-2"><div class="h-5 w-5 rounded border border-gray-200 bg-gray-500"></div><span class="font-mono">gray-500</span></div>
-        </div>
-        <div>
-          <div class="text-gray-500 uppercase tracking-widest text-[10px] font-semibold">Accent</div>
-          <div class="mt-2 flex items-center gap-2"><div class="h-5 w-5 rounded border border-gray-200 bg-indigo-600"></div><span class="font-mono">indigo-600</span></div>
-          <div class="mt-1.5 flex items-center gap-2"><div class="h-5 w-5 rounded border border-gray-200 bg-emerald-500"></div><span class="font-mono">emerald-500</span></div>
-        </div>
-        <div>
-          <div class="text-gray-500 uppercase tracking-widest text-[10px] font-semibold">Type</div>
-          <div class="mt-2 text-sm">Pretendard Variable</div>
-          <div class="mt-1 text-[11px] text-gray-500">tracking-tight on headings</div>
-        </div>
+    <!-- Sidebar -->
+    <aside class="briq-sidebar w-60 shrink-0 border-r border-gray-100 dark:border-zinc-800 bg-gray-50/40 dark:bg-zinc-900/40 flex flex-col">
+      <div class="px-5 py-5 flex items-center gap-2 border-b border-gray-100 dark:border-zinc-800">
+        <div class="h-7 w-7 rounded-md bg-gradient-to-br from-indigo-500 to-violet-600 grid place-items-center text-white text-xs font-bold">B</div>
+        <span class="text-sm font-semibold tracking-tight">BRIQ</span>
+        <span class="ml-auto text-[10px] px-1.5 py-px rounded bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400">v0.3</span>
       </div>
-    </div>
+      <nav class="flex-1 px-3 py-3 overflow-y-auto">
+        <a href="index.html" class="nav-item nav-active">홈</a>
+        <a href="02-clients.html" class="nav-item">클라이언트</a>
+        <a href="04-campaign-new.html" class="nav-item">캠페인</a>
+        <div class="nav-group">AI 콘텐츠</div>
+        <a href="06-cardnews-image.html" class="nav-item">카드뉴스</a>
+        <a href="08-reels-studio.html" class="nav-item">릴스 스튜디오</a>
+        <a href="05-content-result.html" class="nav-item">콘텐츠 결과</a>
+        <a href="11-calendar.html" class="nav-item">콘텐츠 캘린더</a>
+        <div class="nav-group">자동화</div>
+        <a href="07-review-queue.html" class="nav-item">검토 큐<span class="nav-badge bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">7</span></a>
+        <a href="10-reviews.html" class="nav-item">리뷰 답변<span class="nav-badge bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400">3</span></a>
+        <a href="15-schedule.html" class="nav-item">업로드 예약<span class="nav-badge bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400">12</span></a>
+        <div class="nav-group">인사이트</div>
+        <a href="12-analytics.html" class="nav-item">성과 분석</a>
+        <a href="14-trends.html" class="nav-item">지역 트렌드</a>
+        <div class="nav-group">브랜드</div>
+        <a href="09-brand-memory.html" class="nav-item">브랜드 톤</a>
+        <a href="13-brand-kit.html" class="nav-item">브랜드 키트</a>
+      </nav>
+      <div class="border-t border-gray-100 dark:border-zinc-800 p-3 flex items-center gap-2.5">
+        <div class="h-7 w-7 rounded-full bg-gradient-to-br from-amber-400 to-rose-500 shrink-0"></div>
+        <div class="flex-1 min-w-0">
+          <div class="text-xs font-medium truncate">허은애</div>
+          <div class="text-[10px] text-gray-500 dark:text-zinc-500 truncate">미옥당 외 5</div>
+        </div>
+        <button id="theme-toggle" class="text-gray-400 hover:text-gray-700 dark:hover:text-zinc-200 p-1.5 rounded hover:bg-gray-100 dark:hover:bg-zinc-800" title="다크모드">
+          <svg class="h-4 w-4 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="h-4 w-4 hidden dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>
+      </div>
+    </aside>
 
-    <!-- Preview instructions -->
-    <div class="mt-8 rounded-xl border border-gray-200 bg-white p-6">
-      <h3 class="text-sm font-semibold tracking-tight">미리보기 방법</h3>
-      <ol class="mt-3 text-xs text-gray-700 space-y-1.5 leading-relaxed list-decimal pl-4">
-        <li>이 디렉토리 (<code class="text-[11px] bg-gray-100 px-1 rounded">mockups/</code>) 의 <code class="text-[11px] bg-gray-100 px-1 rounded">index.html</code> 을 브라우저로 열기</li>
-        <li>또는 터미널에서 <code class="text-[11px] bg-gray-100 px-1 rounded">open mockups/index.html</code></li>
-        <li>각 파일은 standalone — Tailwind CDN + Pretendard CDN 외 의존성 없음</li>
-      </ol>
-      <div class="mt-4 text-[11px] text-gray-500">실제 Next.js + Supabase 코드로 옮길 때는 Phase 1 (Foundation) 진입 시 컴포넌트 단위로 리팩터링됩니다.</div>
-    </div>
+    <!-- Main -->
+    <main class="flex-1 min-w-0">
+      <!-- Topbar -->
+      <header class="border-b border-gray-100 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/70 backdrop-blur sticky top-0 z-10">
+        <div class="px-6 h-14 flex items-center gap-4">
+          <h1 class="text-sm font-semibold tracking-tight">홈</h1>
+          <span class="text-[11px] text-gray-400 dark:text-zinc-600">/</span>
+          <span class="text-xs text-gray-500 dark:text-zinc-400">오늘의 추천</span>
+          <div class="ml-auto flex items-center gap-2">
+            <input type="search" class="px-3 py-1.5 text-xs rounded-md bg-gray-100 dark:bg-zinc-900 border border-transparent focus:border-gray-300 dark:focus:border-zinc-700 outline-none w-56 placeholder-gray-400 dark:placeholder-zinc-500" placeholder="⌘K · 검색 / 명령" />
+            <button id="ai-assistant-toggle" class="text-xs px-3 py-1.5 rounded-md bg-gray-900 text-white dark:bg-white dark:text-zinc-900 hover:opacity-90 inline-flex items-center gap-1.5 font-medium">
+              <span style="background:linear-gradient(135deg,#a78bfa,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent">✦</span> Assistant
+            </button>
+          </div>
+        </div>
+      </header>
 
-    <p class="mt-12 text-[11px] text-gray-400">© AdOps AI · Mockup v0.1 · 2026-05-10</p>
+      <!-- Hero strip -->
+      <section class="px-6 pt-8 pb-4 fade-in">
+        <div class="flex items-end justify-between gap-6 flex-wrap">
+          <div>
+            <div class="text-[11px] font-medium text-gray-500 dark:text-zinc-400 mb-1">2026년 5월 11일 · 월요일 · ☁️ 24°C 흐림</div>
+            <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight">
+              안녕하세요, 허은애 님 <span class="gradient-text">✦</span>
+            </h1>
+            <p class="mt-2 text-sm text-gray-600 dark:text-zinc-400 max-w-2xl">
+              오늘 BRIQ가 6개 클라이언트를 대신 운영합니다. <span class="text-gray-900 dark:text-white font-medium">3건 검토 대기</span> · <span class="text-gray-900 dark:text-white font-medium">12건 예약 발행 예정</span> · <span class="text-rose-600 dark:text-rose-400 font-medium">2건 톤 경고</span>
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button data-asst-open class="text-xs px-3.5 py-2 rounded-md border border-gray-200 dark:border-zinc-800 hover:border-gray-900 dark:hover:border-white inline-flex items-center gap-1.5 font-medium transition">
+              <span class="gradient-text">✦</span> AI 빠른 실행
+            </button>
+            <a href="04-campaign-new.html" class="text-xs px-3.5 py-2 rounded-md bg-gray-900 text-white dark:bg-white dark:text-zinc-900 hover:opacity-90 font-medium">새 캠페인</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- KPI strip -->
+      <section class="px-6 pb-2">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div class="card p-4">
+            <div class="text-[10px] uppercase tracking-widest text-gray-400 dark:text-zinc-500 font-semibold">관리 클라이언트</div>
+            <div class="mt-2 flex items-baseline gap-2">
+              <div class="text-2xl font-semibold tabular-nums">6</div>
+              <div class="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">+2 이번달</div>
+            </div>
+            <div class="mt-1 text-[11px] text-gray-500 dark:text-zinc-500">미옥당 · 청담의료 · 루나헤어 외 3</div>
+          </div>
+          <div class="card p-4">
+            <div class="text-[10px] uppercase tracking-widest text-gray-400 dark:text-zinc-500 font-semibold">이번주 발행</div>
+            <div class="mt-2 flex items-baseline gap-2">
+              <div class="text-2xl font-semibold tabular-nums">28</div>
+              <div class="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">+47%</div>
+            </div>
+            <div class="mt-1 text-[11px] text-gray-500 dark:text-zinc-500">인스타 12 · 블로그 8 · 릴스 6</div>
+          </div>
+          <div class="card p-4">
+            <div class="text-[10px] uppercase tracking-widest text-gray-400 dark:text-zinc-500 font-semibold">평균 저장률</div>
+            <div class="mt-2 flex items-baseline gap-2">
+              <div class="text-2xl font-semibold tabular-nums">4.2<span class="text-base text-gray-400">%</span></div>
+              <div class="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">↑ 1.1%p</div>
+            </div>
+            <div class="mt-1 text-[11px] text-gray-500 dark:text-zinc-500">업종 평균 2.3% 대비 ★1.8x</div>
+          </div>
+          <div class="card p-4">
+            <div class="text-[10px] uppercase tracking-widest text-gray-400 dark:text-zinc-500 font-semibold">절감 시간</div>
+            <div class="mt-2 flex items-baseline gap-2">
+              <div class="text-2xl font-semibold tabular-nums">42<span class="text-base text-gray-400">h</span></div>
+              <div class="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium">≈ ₩1.4M</div>
+            </div>
+            <div class="mt-1 text-[11px] text-gray-500 dark:text-zinc-500">이번달 BRIQ 자동화 누적</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Today's recommendations -->
+      <section class="px-6 pt-8">
+        <div class="flex items-end justify-between mb-3">
+          <div>
+            <h2 class="text-lg font-semibold tracking-tight">오늘의 추천 콘텐츠</h2>
+            <p class="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">날씨 · 시즌 · 지역 트렌드 · 브랜드 톤 메모리 기반 자동 추천</p>
+          </div>
+          <a href="11-calendar.html" class="text-xs text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white">전체 보기 →</a>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+
+          <a href="08-reels-studio.html" class="card rec-card p-5 block fade-in">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] uppercase tracking-wider text-rose-600 dark:text-rose-400 font-semibold">시즌 · 추천 #1</span>
+              <span class="text-[10px] text-gray-400">2시간 전 분석</span>
+            </div>
+            <div class="mt-3 text-sm font-semibold leading-snug">장마 감성 릴스 · 비 오는 날 메뉴 후크</div>
+            <div class="mt-1.5 text-xs text-gray-500 dark:text-zinc-400 leading-relaxed">
+              5월 13일 장마 시작 예보 · 미옥당 · "비 오는 날엔 따뜻한 한정식" 후크 + 김치찌개·가마솥 컷 자동 분할
+            </div>
+            <div class="mt-4 flex items-center gap-2 text-[11px]">
+              <span class="px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">미옥당</span>
+              <span class="text-gray-400">·</span>
+              <span class="text-gray-500 dark:text-zinc-500">예상 저장률 5.8%</span>
+              <span class="ml-auto text-gray-900 dark:text-white font-medium">시작 →</span>
+            </div>
+          </a>
+
+          <a href="11-calendar.html" class="card rec-card p-5 block fade-in" style="animation-delay:.05s">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] uppercase tracking-wider text-amber-600 dark:text-amber-400 font-semibold">시즌 · 추천 #2</span>
+              <span class="text-[10px] text-gray-400">오늘 오전 8:14</span>
+            </div>
+            <div class="mt-3 text-sm font-semibold leading-snug">가정의 달 마감 임박 · 효도 이벤트</div>
+            <div class="mt-1.5 text-xs text-gray-500 dark:text-zinc-400 leading-relaxed">
+              5월 8~21일 · 청담 메디컬 · "어머니께 드리는 연-끝 이벤트" 카드뉴스 5장 + 카톡플러스 친구 발송 1,240명
+            </div>
+            <div class="mt-4 flex items-center gap-2 text-[11px]">
+              <span class="px-1.5 py-0.5 rounded bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">청담의료</span>
+              <span class="text-gray-400">·</span>
+              <span class="text-gray-500 dark:text-zinc-500">예상 예약 +18건</span>
+              <span class="ml-auto text-gray-900 dark:text-white font-medium">시작 →</span>
+            </div>
+          </a>
+
+          <a href="14-trends.html" class="card rec-card p-5 block fade-in" style="animation-delay:.1s">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] uppercase tracking-wider text-indigo-600 dark:text-indigo-400 font-semibold">지역 · 추천 #3</span>
+              <span class="text-[10px] text-gray-400">실시간</span>
+            </div>
+            <div class="mt-3 text-sm font-semibold leading-snug">강남 미용 · ASMR 시술 컷 +312% 저장률</div>
+            <div class="mt-1.5 text-xs text-gray-500 dark:text-zinc-400 leading-relaxed">
+              루나헤어 · 강남 시장 평균 대비 ASMR 컷 인기 폭증 · 5초 결 살리기 후크 자동 작성됨
+            </div>
+            <div class="mt-4 flex items-center gap-2 text-[11px]">
+              <span class="px-1.5 py-0.5 rounded bg-fuchsia-50 text-fuchsia-700 dark:bg-fuchsia-500/10 dark:text-fuchsia-300">루나헤어</span>
+              <span class="text-gray-400">·</span>
+              <span class="text-gray-500 dark:text-zinc-500">강남 1km · 14개 경쟁사 분석</span>
+              <span class="ml-auto text-gray-900 dark:text-white font-medium">시작 →</span>
+            </div>
+          </a>
+
+        </div>
+      </section>
+
+      <!-- Two-column: alerts + best time -->
+      <section class="px-6 pt-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+
+          <!-- Brand tone alerts -->
+          <div class="card p-5 lg:col-span-2 fade-in">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <h3 class="text-sm font-semibold">브랜드 톤 경고</h3>
+                <p class="text-[11px] text-gray-500 dark:text-zinc-400 mt-0.5">BRIQ가 발행 전 자동 검수 · AI 같은 표현 / 금지어 / 가이드 일관성</p>
+              </div>
+              <a href="09-brand-memory.html" class="text-[11px] text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white">톤 메모리 →</a>
+            </div>
+            <ul class="space-y-2">
+              <li class="flex items-start gap-3 px-3 py-2.5 rounded-lg border border-rose-100 dark:border-rose-900/40 bg-rose-50/40 dark:bg-rose-500/5">
+                <span class="dot pulse-dot mt-1.5 w-1.5 h-1.5 rounded-full bg-rose-500 text-rose-500"></span>
+                <div class="flex-1 min-w-0">
+                  <div class="text-xs font-medium text-rose-900 dark:text-rose-200">청담 메디컬 · "효과 100%" 의광법 위반 가능</div>
+                  <div class="text-[11px] text-rose-700/80 dark:text-rose-300/70 mt-0.5">5월 11일 카드뉴스 슬라이드 1 · "환절기 사전 진단 안내" 톤으로 자동 제안</div>
+                </div>
+                <a href="07-review-queue.html" class="text-[11px] px-2 py-1 rounded bg-white dark:bg-zinc-900 border border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 font-medium hover:bg-rose-50">검토 →</a>
+              </li>
+              <li class="flex items-start gap-3 px-3 py-2.5 rounded-lg border border-amber-100 dark:border-amber-900/40 bg-amber-50/30 dark:bg-amber-500/5">
+                <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-amber-500 inline-block"></span>
+                <div class="flex-1 min-w-0">
+                  <div class="text-xs font-medium text-amber-900 dark:text-amber-200">베스트 영어학원 · "꾸준히" 가이드 어긋남</div>
+                  <div class="text-[11px] text-amber-700/80 dark:text-amber-300/70 mt-0.5">"한 학기 만에" 표현 → 학부모 친근형 톤 v4 가이드와 불일치</div>
+                </div>
+                <a href="07-review-queue.html" class="text-[11px] px-2 py-1 rounded bg-white dark:bg-zinc-900 border border-amber-200 dark:border-amber-900/60 text-amber-700 dark:text-amber-300 font-medium">수정 →</a>
+              </li>
+              <li class="flex items-start gap-3 px-3 py-2.5 rounded-lg border border-gray-100 dark:border-zinc-800 bg-gray-50/30 dark:bg-zinc-900/30">
+                <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span>
+                <div class="flex-1 min-w-0">
+                  <div class="text-xs font-medium">미옥당 · AI 인공 표현 감지 (1건)</div>
+                  <div class="text-[11px] text-gray-500 dark:text-zinc-500 mt-0.5">"탁월한 풍미를 선사합니다" → "한 입에 봄이 옵니다" 로 자동 자연화</div>
+                </div>
+                <span class="text-[11px] px-2 py-1 rounded bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-medium">자동 수정됨</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Best upload time -->
+          <div class="card p-5 fade-in" style="animation-delay:.05s">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-semibold">오늘 추천 업로드 시간</h3>
+              <span class="text-[10px] text-gray-400">지역+업종+요일 학습</span>
+            </div>
+            <div class="space-y-2">
+              <div class="flex items-center gap-3 p-2.5 rounded-lg border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/40 dark:bg-emerald-500/5">
+                <div class="text-2xl font-semibold tabular-nums w-14">11:30</div>
+                <div class="flex-1">
+                  <div class="text-xs font-medium">미옥당 · 인스타 릴스</div>
+                  <div class="text-[11px] text-emerald-700 dark:text-emerald-300">점심 직전 · 검색 트래픽 +43%</div>
+                </div>
+                <span class="text-[11px] px-2 py-1 rounded bg-emerald-600 text-white font-medium">최적</span>
+              </div>
+              <div class="flex items-center gap-3 p-2.5 rounded-lg border border-gray-100 dark:border-zinc-800">
+                <div class="text-2xl font-semibold tabular-nums w-14 text-gray-700 dark:text-zinc-300">19:45</div>
+                <div class="flex-1">
+                  <div class="text-xs font-medium">루나헤어 · 카드뉴스</div>
+                  <div class="text-[11px] text-gray-500 dark:text-zinc-500">퇴근길 · 저장률 ★★★★</div>
+                </div>
+                <span class="text-[11px] text-gray-500 dark:text-zinc-500">+2.1x</span>
+              </div>
+              <div class="flex items-center gap-3 p-2.5 rounded-lg border border-gray-100 dark:border-zinc-800">
+                <div class="text-2xl font-semibold tabular-nums w-14 text-gray-700 dark:text-zinc-300">21:10</div>
+                <div class="flex-1">
+                  <div class="text-xs font-medium">청담의료 · 블로그</div>
+                  <div class="text-[11px] text-gray-500 dark:text-zinc-500">취침 전 · 정보형 클릭 ★★★</div>
+                </div>
+                <span class="text-[11px] text-gray-500 dark:text-zinc-500">+1.6x</span>
+              </div>
+            </div>
+            <a href="15-schedule.html" class="mt-3 block text-center text-xs text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white">전체 예약 큐 →</a>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Trending reels styles + activity -->
+      <section class="px-6 pt-6 pb-12">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+
+          <!-- Trending reels styles -->
+          <div class="card p-5 lg:col-span-2 fade-in">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <h3 class="text-sm font-semibold">이번주 인기 릴스 스타일</h3>
+                <p class="text-[11px] text-gray-500 dark:text-zinc-400 mt-0.5">강남구 · 외식/뷰티/의료 업종 1,247개 릴스 분석</p>
+              </div>
+              <a href="14-trends.html" class="text-[11px] text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white">전체 트렌드 →</a>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div class="rounded-lg overflow-hidden border border-gray-100 dark:border-zinc-800">
+                <div class="aspect-[9/16] bg-gradient-to-br from-amber-200 via-rose-300 to-amber-400 relative">
+                  <div class="absolute inset-0 flex items-end p-2">
+                    <div class="text-white text-[10px] font-medium drop-shadow">새벽 4시 시장</div>
+                  </div>
+                  <div class="absolute top-2 right-2 bg-black/40 text-white text-[9px] px-1.5 py-0.5 rounded">+312%</div>
+                </div>
+                <div class="p-2">
+                  <div class="text-[11px] font-medium">시간순 다큐</div>
+                  <div class="text-[10px] text-gray-500 dark:text-zinc-500">한정식 · 6컷</div>
+                </div>
+              </div>
+              <div class="rounded-lg overflow-hidden border border-gray-100 dark:border-zinc-800">
+                <div class="aspect-[9/16] bg-gradient-to-br from-zinc-700 via-zinc-900 to-stone-800 relative">
+                  <div class="absolute inset-0 flex items-end p-2">
+                    <div class="text-white text-[10px] font-medium drop-shadow">결이 살아요</div>
+                  </div>
+                  <div class="absolute top-2 right-2 bg-black/40 text-white text-[9px] px-1.5 py-0.5 rounded">+248%</div>
+                </div>
+                <div class="p-2">
+                  <div class="text-[11px] font-medium">ASMR 시술</div>
+                  <div class="text-[10px] text-gray-500 dark:text-zinc-500">미용 · 8컷</div>
+                </div>
+              </div>
+              <div class="rounded-lg overflow-hidden border border-gray-100 dark:border-zinc-800">
+                <div class="aspect-[9/16] bg-gradient-to-br from-sky-100 via-slate-200 to-blue-300 relative">
+                  <div class="absolute inset-0 flex items-end p-2">
+                    <div class="text-slate-900 text-[10px] font-medium">5분 만에 안내</div>
+                  </div>
+                  <div class="absolute top-2 right-2 bg-black/40 text-white text-[9px] px-1.5 py-0.5 rounded">+189%</div>
+                </div>
+                <div class="p-2">
+                  <div class="text-[11px] font-medium">정보형 카드</div>
+                  <div class="text-[10px] text-gray-500 dark:text-zinc-500">의료 · 5컷</div>
+                </div>
+              </div>
+              <div class="rounded-lg overflow-hidden border border-gray-100 dark:border-zinc-800">
+                <div class="aspect-[9/16] bg-gradient-to-br from-emerald-200 via-teal-300 to-amber-200 relative">
+                  <div class="absolute inset-0 flex items-end p-2">
+                    <div class="text-emerald-900 text-[10px] font-medium">공부 일상</div>
+                  </div>
+                  <div class="absolute top-2 right-2 bg-black/40 text-white text-[9px] px-1.5 py-0.5 rounded">+156%</div>
+                </div>
+                <div class="p-2">
+                  <div class="text-[11px] font-medium">학생 V-log</div>
+                  <div class="text-[10px] text-gray-500 dark:text-zinc-500">학원 · 7컷</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Activity feed -->
+          <div class="card p-5 fade-in" style="animation-delay:.05s">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-semibold">최근 BRIQ 활동</h3>
+              <span class="text-[10px] text-gray-400 inline-flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>실시간
+              </span>
+            </div>
+            <ul class="space-y-2.5">
+              <li class="flex items-start gap-2.5">
+                <div class="h-6 w-6 rounded-md bg-emerald-100 dark:bg-emerald-500/10 grid place-items-center text-emerald-700 dark:text-emerald-400 text-[10px] font-bold shrink-0">✓</div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-xs"><b>미옥당</b> · 5월 봄나물 코스 카드뉴스 6장 자동 발행</div>
+                  <div class="text-[10px] text-gray-500 dark:text-zinc-500 mt-0.5">14분 전 · 인스타 + 블로그</div>
+                </div>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <div class="h-6 w-6 rounded-md bg-sky-100 dark:bg-sky-500/10 grid place-items-center text-sky-700 dark:text-sky-400 text-[10px] font-bold shrink-0">💬</div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-xs"><b>루나헤어</b> · 네이버 리뷰 3건 자동 답변</div>
+                  <div class="text-[10px] text-gray-500 dark:text-zinc-500 mt-0.5">38분 전 · 단골 톤 적용</div>
+                </div>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <div class="h-6 w-6 rounded-md bg-amber-100 dark:bg-amber-500/10 grid place-items-center text-amber-700 dark:text-amber-400 text-[10px] font-bold shrink-0">⚠</div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-xs"><b>청담의료</b> · 의광법 위반 가능 1건 검출</div>
+                  <div class="text-[10px] text-gray-500 dark:text-zinc-500 mt-0.5">1시간 전 · 검토 큐로 이동</div>
+                </div>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <div class="h-6 w-6 rounded-md bg-violet-100 dark:bg-violet-500/10 grid place-items-center text-violet-700 dark:text-violet-400 text-[10px] font-bold shrink-0">🎬</div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-xs"><b>로스터리 1985</b> · 릴스 8컷 자동 편집 완료</div>
+                  <div class="text-[10px] text-gray-500 dark:text-zinc-500 mt-0.5">2시간 전 · BGM·자막·전환 적용</div>
+                </div>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <div class="h-6 w-6 rounded-md bg-rose-100 dark:bg-rose-500/10 grid place-items-center text-rose-700 dark:text-rose-400 text-[10px] font-bold shrink-0">🎨</div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-xs"><b>FORUM 패션</b> · 브랜드 키트 자동 생성</div>
+                  <div class="text-[10px] text-gray-500 dark:text-zinc-500 mt-0.5">3시간 전 · 차콜+본 컬러 추출</div>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
   </div>
+
+  <script src="mockup-runtime.js"></script>
 </body>
 </html>

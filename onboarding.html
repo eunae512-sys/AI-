@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BRIQ · 시작하기</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode:'class', theme:{ extend:{ fontFamily:{ sans:['"Pretendard Variable"','Pretendard','system-ui','sans-serif'] } } } };
+    if (localStorage.getItem('briq-theme') === 'dark') document.documentElement.classList.add('dark');
+  </script>
+  <style>
+    body{font-family:'Pretendard Variable',Pretendard,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+    .gradient-text { background:linear-gradient(135deg,#6366f1,#a855f7 50%,#ec4899); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+    .step-card { background:#fff; border:1px solid #e5e7eb; border-radius:16px; cursor:pointer; transition:all .18s; }
+    .dark .step-card { background:#0f0f12; border-color:#27272a; }
+    .step-card:hover { border-color:#111827; transform:translateY(-2px); }
+    .dark .step-card:hover { border-color:#fff; }
+    .step-card.selected { border-color:#111827; background:#f9fafb; box-shadow:0 0 0 3px rgba(17,24,39,0.06); }
+    .dark .step-card.selected { border-color:#fff; background:#1a1a1f; box-shadow:0 0 0 3px rgba(255,255,255,0.08); }
+    .progress-pill { width:36px; height:5px; border-radius:9999px; background:#e5e7eb; transition:all .3s; }
+    .dark .progress-pill { background:#27272a; }
+    .progress-pill.done { background:#111827; }
+    .dark .progress-pill.done { background:#fff; }
+    .progress-pill.current { background:linear-gradient(90deg,#6366f1,#ec4899); width:48px; }
+    .step-panel { animation: fadeUp .5s cubic-bezier(.2,.8,.2,1) both; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+    .step-panel.leaving { animation: fadeOut .25s both; }
+    @keyframes fadeOut { from { opacity:1; } to { opacity:0; transform:translateY(-8px); } }
+    .pulse-grow { animation: pulseGrow 1.6s ease-in-out infinite; }
+    @keyframes pulseGrow { 0%,100% { transform:scale(1); } 50% { transform:scale(1.04); } }
+    .ai-shimmer { background: linear-gradient(110deg, transparent 30%, rgba(99,102,241,0.16) 50%, transparent 70%); background-size:200% 100%; animation: aiShimmer 1.8s infinite; }
+    @keyframes aiShimmer { from { background-position:-200% 0; } to { background-position:200% 0; } }
+    .typing::after { content:'▎'; animation: blink 1s step-end infinite; color:#6366f1; }
+    @keyframes blink { 50% { opacity:0; } }
+    .upload-photo { aspect-ratio:1; border-radius:12px; background:linear-gradient(135deg,#f3f4f6,#e5e7eb); position:relative; overflow:hidden; }
+    .dark .upload-photo { background:linear-gradient(135deg,#1f1f23,#27272a); }
+    .check-icon { animation: checkPop .4s cubic-bezier(.2,1.6,.4,1) both; }
+    @keyframes checkPop { from { opacity:0; transform:scale(0); } to { opacity:1; transform:scale(1); } }
+  </style>
+</head>
+<body class="min-h-screen bg-white dark:bg-[#0a0a0b] text-gray-900 dark:text-zinc-100 transition-colors">
+
+  <!-- Topbar -->
+  <header class="border-b border-gray-100 dark:border-zinc-900 backdrop-blur sticky top-0 z-10 bg-white/70 dark:bg-[#0a0a0b]/70">
+    <div class="max-w-3xl mx-auto px-6 h-14 flex items-center justify-between">
+      <a href="landing.html" class="flex items-center gap-2">
+        <div class="h-7 w-7 rounded-md bg-gradient-to-br from-indigo-500 via-violet-600 to-pink-500 grid place-items-center text-white text-xs font-bold">B</div>
+        <span class="text-sm font-semibold">BRIQ</span>
+      </a>
+      <div class="flex items-center gap-1.5" id="progress-pills">
+        <span class="progress-pill current" data-step="1"></span>
+        <span class="progress-pill" data-step="2"></span>
+        <span class="progress-pill" data-step="3"></span>
+        <span class="progress-pill" data-step="4"></span>
+        <span class="progress-pill" data-step="5"></span>
+        <span class="progress-pill" data-step="6"></span>
+        <span class="progress-pill" data-step="7"></span>
+      </div>
+      <div class="text-[11px] text-gray-500 dark:text-zinc-500 tabular-nums" id="step-counter">1 / 7</div>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-6 py-12 md:py-20">
+
+    <!-- STEP 1: 업종 -->
+    <section class="step-panel" data-step-panel="1">
+      <div class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold">STEP 01</div>
+      <h1 class="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight">어떤 가게를 운영하세요?</h1>
+      <p class="mt-3 text-base text-gray-600 dark:text-zinc-400">업종을 선택하면 BRIQ가 맞춤 톤·템플릿을 자동 적용합니다.</p>
+      <div class="mt-10 grid grid-cols-2 md:grid-cols-3 gap-3">
+        <button class="step-card p-5 text-left" data-pick="industry" data-value="cafe">
+          <div class="text-3xl">☕</div>
+          <div class="mt-3 text-base font-semibold">카페</div>
+          <div class="text-[12px] text-gray-500 dark:text-zinc-400 mt-0.5">스페셜티 / 베이커리</div>
+        </button>
+        <button class="step-card p-5 text-left" data-pick="industry" data-value="dessert">
+          <div class="text-3xl">🍰</div>
+          <div class="mt-3 text-base font-semibold">디저트샵</div>
+          <div class="text-[12px] text-gray-500 dark:text-zinc-400 mt-0.5">케이크 / 마카롱 / 빙수</div>
+        </button>
+        <button class="step-card p-5 text-left" data-pick="industry" data-value="stay">
+          <div class="text-3xl">🏡</div>
+          <div class="mt-3 text-base font-semibold">숙소</div>
+          <div class="text-[12px] text-gray-500 dark:text-zinc-400 mt-0.5">한옥스테이 / 펜션 / 게스트하우스</div>
+        </button>
+        <button class="step-card p-5 text-left" data-pick="industry" data-value="restaurant">
+          <div class="text-3xl">🍽</div>
+          <div class="mt-3 text-base font-semibold">음식점</div>
+          <div class="text-[12px] text-gray-500 dark:text-zinc-400 mt-0.5">한식 / 양식 / 일식</div>
+        </button>
+        <button class="step-card p-5 text-left" data-pick="industry" data-value="beauty">
+          <div class="text-3xl">💇</div>
+          <div class="mt-3 text-base font-semibold">미용·뷰티</div>
+          <div class="text-[12px] text-gray-500 dark:text-zinc-400 mt-0.5">헤어 / 네일 / 피부관리</div>
+        </button>
+        <button class="step-card p-5 text-left" data-pick="industry" data-value="local">
+          <div class="text-3xl">✦</div>
+          <div class="mt-3 text-base font-semibold">로컬 브랜드</div>
+          <div class="text-[12px] text-gray-500 dark:text-zinc-400 mt-0.5">소품 / 패션 / 라이프스타일</div>
+        </button>
+      </div>
+    </section>
+
+    <!-- STEP 2: 분위기 -->
+    <section class="step-panel hidden" data-step-panel="2">
+      <div class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold">STEP 02</div>
+      <h1 class="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight">브랜드 분위기는<br>어떤 결인가요?</h1>
+      <p class="mt-3 text-base text-gray-600 dark:text-zinc-400">선택한 분위기로 컬러·폰트·문체 톤이 자동 매칭됩니다.</p>
+      <div class="mt-10 grid grid-cols-2 md:grid-cols-3 gap-3">
+        <button class="step-card overflow-hidden text-left" data-pick="mood" data-value="warm">
+          <div class="aspect-[5/3] bg-gradient-to-br from-amber-200 via-orange-200 to-rose-200"></div>
+          <div class="p-4"><div class="font-semibold text-sm">따뜻한 · 정성</div><div class="text-[12px] text-gray-500 dark:text-zinc-400 mt-0.5">한식 · 베이커리 · 한옥</div></div>
+        </button>
+        <button class="step-card overflow-hidden text-left" data-pick="mood" data-value="modern">
+          <div class="aspect-[5/3] bg-gradient-to-br from-zinc-100 via-slate-200 to-zinc-300"></div>
+          <div class="p-4"><div class="font-semibold text-sm">미니멀 · 모던</div><div class="text-[12px] text-gray-500 dark:text-zinc-400 mt-0.5">스페셜티 카페 · 편집샵</div></div>
+        </button>
+        <button class="step-card overflow-hidden text-left" data-pick="mood" data-value="moody">
+          <div class="aspect-[5/3] bg-gradient-to-br from-stone-700 via-stone-800 to-stone-900"></div>
+          <div class="p-4"><div class="font-semibold text-sm">감성 · 시네마틱</div><div class="text-[12px] text-gray-500 dark:text-zinc-400 mt-0.5">와인바 · 스튜디오</div></div>
+        </button>
+        <button class="step-card overflow-hidden text-left" data-pick="mood" data-value="playful">
+          <div class="aspect-[5/3] bg-gradient-to-br from-pink-200 via-rose-300 to-orange-200"></div>
+          <div class="p-4"><div class="font-semibold text-sm">발랄한 · 친근</div><div class="text-[12px] text-gray-500 dark:text-zinc-400 mt-0.5">디저트 · 떡볶이 · 분식</div></div>
+        </button>
+        <button class="step-card overflow-hidden text-left" data-pick="mood" data-value="natural">
+          <div class="aspect-[5/3] bg-gradient-to-br from-emerald-200 via-lime-200 to-amber-100"></div>
+          <div class="p-4"><div class="font-semibold text-sm">내추럴 · 친환경</div><div class="text-[12px] text-gray-500 dark:text-zinc-400 mt-0.5">비건 · 유기농 · 로컬</div></div>
+        </button>
+        <button class="step-card overflow-hidden text-left" data-pick="mood" data-value="luxury">
+          <div class="aspect-[5/3] bg-gradient-to-br from-zinc-900 via-zinc-800 to-amber-900"></div>
+          <div class="p-4"><div class="font-semibold text-sm">럭셔리 · 프리미엄</div><div class="text-[12px] text-gray-500 dark:text-zinc-400 mt-0.5">파인다이닝 · 부티크</div></div>
+        </button>
+      </div>
+    </section>
+
+    <!-- STEP 3: Instagram 연결 -->
+    <section class="step-panel hidden" data-step-panel="3">
+      <div class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold">STEP 03</div>
+      <h1 class="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight">인스타 계정을 연결할게요</h1>
+      <p class="mt-3 text-base text-gray-600 dark:text-zinc-400">기존 게시물에서 브랜드 톤을 자동 학습합니다. (BRIQ는 댓글·DM에 접근하지 않습니다)</p>
+      <div class="mt-10 space-y-3">
+        <button class="step-card w-full p-5 flex items-center gap-4 text-left" data-pick="ig" data-value="connect">
+          <div class="h-12 w-12 rounded-xl bg-gradient-to-br from-fuchsia-500 via-pink-500 to-orange-400 grid place-items-center text-white font-bold text-lg">IG</div>
+          <div class="flex-1">
+            <div class="font-semibold text-sm">Instagram 계정 연결</div>
+            <div class="text-[12px] text-gray-500 dark:text-zinc-400 mt-0.5">Meta OAuth · 공식 비즈니스 API · 안전</div>
+          </div>
+          <span class="text-gray-400">→</span>
+        </button>
+        <button class="step-card w-full p-5 flex items-center gap-4 text-left" data-pick="ig" data-value="manual">
+          <div class="h-12 w-12 rounded-xl bg-gray-100 dark:bg-zinc-800 grid place-items-center text-2xl">📎</div>
+          <div class="flex-1">
+            <div class="font-semibold text-sm">@핸들 직접 입력 (선택)</div>
+            <div class="text-[12px] text-gray-500 dark:text-zinc-400 mt-0.5">공개 게시물만 학습 · 발행은 별도 연결</div>
+          </div>
+          <span class="text-gray-400">→</span>
+        </button>
+        <button class="text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white mt-2" data-pick="ig" data-value="skip">나중에 할게요 (사진 직접 업로드) →</button>
+      </div>
+    </section>
+
+    <!-- STEP 4: 사진 업로드 -->
+    <section class="step-panel hidden" data-step-panel="4">
+      <div class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold">STEP 04</div>
+      <h1 class="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight">사진 5~10장만<br>업로드해 주세요</h1>
+      <p class="mt-3 text-base text-gray-600 dark:text-zinc-400">매장·메뉴·공간 사진. BRIQ가 컬러·구도·분위기를 분석합니다.</p>
+
+      <div class="mt-8 rounded-2xl border-2 border-dashed border-gray-200 dark:border-zinc-800 p-10 text-center hover:border-gray-900 dark:hover:border-white transition cursor-pointer" id="upload-zone">
+        <div class="text-5xl">📷</div>
+        <div class="mt-4 text-base font-medium">이곳에 사진을 드롭하거나 클릭</div>
+        <div class="mt-1 text-[12px] text-gray-500 dark:text-zinc-500">JPG · PNG · HEIC · 최대 20장</div>
+        <button class="mt-4 text-xs px-4 py-2 rounded-md bg-gray-900 text-white dark:bg-white dark:text-zinc-900 font-medium">파일 선택</button>
+      </div>
+
+      <div class="mt-5 grid grid-cols-3 sm:grid-cols-6 gap-2" id="upload-preview">
+        <div class="upload-photo" style="background:linear-gradient(135deg,#fde68a,#fb7185)"></div>
+        <div class="upload-photo" style="background:linear-gradient(135deg,#a78bfa,#ec4899)"></div>
+        <div class="upload-photo" style="background:linear-gradient(135deg,#fcd34d,#92400e)"></div>
+        <div class="upload-photo" style="background:linear-gradient(135deg,#cbd5e1,#475569)"></div>
+        <div class="upload-photo" style="background:linear-gradient(135deg,#fef3c7,#f59e0b)"></div>
+        <div class="upload-photo border-2 border-dashed border-gray-200 dark:border-zinc-700 grid place-items-center text-gray-400" style="background:transparent">+</div>
+      </div>
+      <div class="mt-3 text-[11px] text-gray-500">업로드된 사진: <b>5장</b> · 최소 충족 ✓</div>
+
+      <div class="mt-10 flex items-center justify-between">
+        <button class="text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white" data-back>← 이전</button>
+        <button class="text-sm font-medium px-5 py-2.5 rounded-md bg-gray-900 text-white dark:bg-white dark:text-zinc-900" data-pick="upload" data-value="done">분석 시작 →</button>
+      </div>
+    </section>
+
+    <!-- STEP 5: AI 분석 -->
+    <section class="step-panel hidden" data-step-panel="5">
+      <div class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold">STEP 05</div>
+      <h1 class="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight">BRIQ가 브랜드를 분석 중...</h1>
+      <p class="mt-3 text-base text-gray-600 dark:text-zinc-400">평균 47초 소요됩니다. 잠시만 기다려 주세요.</p>
+
+      <div class="mt-12 space-y-3" id="analysis-stages">
+        <div class="rounded-xl border border-gray-100 dark:border-zinc-800 p-4 flex items-center gap-3" data-stage="0">
+          <div class="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 grid place-items-center text-emerald-700 dark:text-emerald-400 font-bold text-sm">✓</div>
+          <div class="flex-1"><div class="text-sm font-medium">사진에서 컬러 추출</div><div class="text-[11px] text-gray-500 dark:text-zinc-500 mt-0.5">5장 · 평균 컬러 6개 / 액센트 컬러 2개</div></div>
+          <span class="text-[10px] text-emerald-600 font-medium">완료 · 0.8s</span>
+        </div>
+        <div class="rounded-xl border border-gray-100 dark:border-zinc-800 p-4 flex items-center gap-3" data-stage="1">
+          <div class="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 grid place-items-center text-emerald-700 dark:text-emerald-400 font-bold text-sm">✓</div>
+          <div class="flex-1"><div class="text-sm font-medium">분위기 · 구도 · 채도 분석</div><div class="text-[11px] text-gray-500 dark:text-zinc-500 mt-0.5">'따뜻한 자연광 + 단정한 미니멀' 결로 판단</div></div>
+          <span class="text-[10px] text-emerald-600 font-medium">완료 · 2.4s</span>
+        </div>
+        <div class="rounded-xl border border-gray-100 dark:border-zinc-800 p-4 flex items-center gap-3 ai-shimmer" data-stage="2">
+          <div class="h-8 w-8 rounded-lg bg-violet-100 dark:bg-violet-500/20 grid place-items-center text-violet-700 dark:text-violet-400 font-bold text-sm pulse-grow">⏵</div>
+          <div class="flex-1"><div class="text-sm font-medium typing">인스타 캡션 23개에서 톤 학습 중</div><div class="text-[11px] text-gray-500 dark:text-zinc-500 mt-0.5">Claude Sonnet 4.6 · 5축 톤 슬라이더 자동 보정</div></div>
+        </div>
+        <div class="rounded-xl border border-gray-100 dark:border-zinc-800 p-4 flex items-center gap-3 opacity-50" data-stage="3">
+          <div class="h-8 w-8 rounded-lg bg-gray-100 dark:bg-zinc-800 grid place-items-center text-gray-400 font-bold text-sm">○</div>
+          <div class="flex-1"><div class="text-sm">금지어 / 자주 쓰는 표현 추출</div></div>
+        </div>
+        <div class="rounded-xl border border-gray-100 dark:border-zinc-800 p-4 flex items-center gap-3 opacity-50" data-stage="4">
+          <div class="h-8 w-8 rounded-lg bg-gray-100 dark:bg-zinc-800 grid place-items-center text-gray-400 font-bold text-sm">○</div>
+          <div class="flex-1"><div class="text-sm">업종 가이드라인 · 지역 트렌드 매칭</div></div>
+        </div>
+        <div class="rounded-xl border border-gray-100 dark:border-zinc-800 p-4 flex items-center gap-3 opacity-50" data-stage="5">
+          <div class="h-8 w-8 rounded-lg bg-gray-100 dark:bg-zinc-800 grid place-items-center text-gray-400 font-bold text-sm">○</div>
+          <div class="flex-1"><div class="text-sm">브랜드 키트 · 첫 콘텐츠 자동 생성</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 6: 결과 — 브랜드 키트 -->
+    <section class="step-panel hidden" data-step-panel="6">
+      <div class="text-[11px] uppercase tracking-widest text-emerald-600 dark:text-emerald-400 font-semibold">STEP 06 · 분석 완료</div>
+      <h1 class="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight">사장님 브랜드,<br><span class="gradient-text">이렇게 정리됐어요.</span></h1>
+
+      <div class="mt-10 space-y-4">
+        <!-- Brand kit -->
+        <div class="rounded-2xl border border-gray-100 dark:border-zinc-800 p-6">
+          <div class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold">브랜드 컬러 (자동 추출)</div>
+          <div class="mt-3 grid grid-cols-6 gap-2">
+            <div class="aspect-square rounded-lg" style="background:#7B2D26"></div>
+            <div class="aspect-square rounded-lg" style="background:#E9DCC0"></div>
+            <div class="aspect-square rounded-lg" style="background:#2D1810"></div>
+            <div class="aspect-square rounded-lg" style="background:#C2A876"></div>
+            <div class="aspect-square rounded-lg" style="background:#F4E4C1"></div>
+            <div class="aspect-square rounded-lg" style="background:#3E2C20"></div>
+          </div>
+        </div>
+
+        <!-- Tone -->
+        <div class="rounded-2xl border border-gray-100 dark:border-zinc-800 p-6">
+          <div class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold">브랜드 톤 (자동 학습)</div>
+          <div class="mt-3 text-base font-medium leading-relaxed" style="font-family:'Nanum Myeongjo',serif">
+            "단정한 존댓말로 한식의 정성과 새벽 시장의 발걸음을 담는 에디토리얼 톤. 직설적 칭찬보다 풍경·계절·재료의 시간을 짧게 끊어 보여준다."
+          </div>
+          <div class="mt-3 flex items-center gap-1.5 flex-wrap">
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">단정함</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">감성 우세</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">전통+모던</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">존댓말 100%</span>
+          </div>
+        </div>
+
+        <!-- Forbidden -->
+        <div class="rounded-2xl border border-gray-100 dark:border-zinc-800 p-6">
+          <div class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold">자동 차단 표현</div>
+          <div class="mt-3 flex items-center gap-1.5 flex-wrap">
+            <span class="text-[11px] px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">최고의</span>
+            <span class="text-[11px] px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">단연 1위</span>
+            <span class="text-[11px] px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">탁월한</span>
+            <span class="text-[11px] px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">완벽한</span>
+            <span class="text-[11px] px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">대박</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-10 flex items-center justify-between">
+        <button class="text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white" data-pick="result" data-value="adjust">조정하기</button>
+        <button class="text-sm font-medium px-5 py-2.5 rounded-md bg-gray-900 text-white dark:bg-white dark:text-zinc-900" data-pick="result" data-value="ok">완벽해요 → 첫 릴스 만들기</button>
+      </div>
+    </section>
+
+    <!-- STEP 7: 첫 릴스 자동 생성 -->
+    <section class="step-panel hidden" data-step-panel="7">
+      <div class="text-[11px] uppercase tracking-widest text-emerald-600 dark:text-emerald-400 font-semibold">STEP 07 · 완료</div>
+      <h1 class="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight">첫 릴스가<br>방금 만들어졌어요 ✦</h1>
+      <p class="mt-3 text-base text-gray-600 dark:text-zinc-400">BRIQ가 분석한 톤으로 30초 릴스를 자동 편집했습니다.</p>
+
+      <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+        <div class="relative mx-auto w-full max-w-[280px]">
+          <div class="rounded-[28px] border-[8px] border-zinc-900 dark:border-zinc-700 bg-zinc-900 overflow-hidden shadow-2xl">
+            <div class="aspect-[9/16] bg-gradient-to-br from-amber-200 via-rose-300 to-amber-400 relative">
+              <div class="absolute top-3 left-3 right-3 flex items-center gap-2 text-white">
+                <div class="h-6 w-6 rounded-full bg-white/20"></div>
+                <div class="text-[10px] font-medium">our_brand</div>
+              </div>
+              <div class="absolute bottom-24 left-3 right-3 text-white">
+                <div class="text-xl font-bold leading-tight drop-shadow-lg">새벽 4시,<br>시장이 깨어납니다</div>
+              </div>
+              <div class="absolute right-2 bottom-24 flex flex-col gap-2 text-white text-center">
+                <div><div class="text-xl">♡</div><div class="text-[9px]">2.4K</div></div>
+                <div><div class="text-xl">⌅</div><div class="text-[9px]">312</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="absolute -inset-6 -z-10 rounded-full bg-gradient-to-br from-rose-300/30 to-violet-400/30 blur-3xl"></div>
+        </div>
+
+        <div class="space-y-3">
+          <div class="rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/30 dark:bg-emerald-500/5 p-4">
+            <div class="text-[10px] uppercase tracking-widest text-emerald-700 dark:text-emerald-400 font-semibold">생성된 콘텐츠</div>
+            <ul class="mt-2 space-y-1.5 text-xs">
+              <li class="flex items-center gap-2"><span class="text-emerald-600">✓</span>인스타 릴스 30초 (8컷)</li>
+              <li class="flex items-center gap-2"><span class="text-emerald-600">✓</span>릴스 캡션 + 해시태그 12개</li>
+              <li class="flex items-center gap-2"><span class="text-emerald-600">✓</span>썸네일 1:1 / 9:16 (각 1장)</li>
+              <li class="flex items-center gap-2"><span class="text-emerald-600">✓</span>카드뉴스 6장 (인스타 캐러셀)</li>
+              <li class="flex items-center gap-2"><span class="text-emerald-600">✓</span>네이버 블로그 본문 1편</li>
+            </ul>
+          </div>
+          <div class="rounded-xl border border-gray-100 dark:border-zinc-800 p-4">
+            <div class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">콘텐츠 캘린더 자동 추천</div>
+            <ul class="mt-2 space-y-1.5 text-xs">
+              <li class="flex items-center gap-2"><span class="text-gray-400">5/13</span>장마 감성 릴스</li>
+              <li class="flex items-center gap-2"><span class="text-gray-400">5/15</span>스승의 날 카드뉴스</li>
+              <li class="flex items-center gap-2"><span class="text-gray-400">5/24</span>수국축제 콘텐츠</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-10 flex items-center justify-between">
+        <button class="text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white" data-back>← 다시 보기</button>
+        <a href="index.html" class="text-sm font-medium px-6 py-3 rounded-md bg-gray-900 text-white dark:bg-white dark:text-zinc-900">대시보드로 들어가기 →</a>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // 7-step controller
+    let currentStep = 1;
+    const totalSteps = 7;
+
+    function setStep(n) {
+      const cur = document.querySelector(`[data-step-panel="${currentStep}"]`);
+      const nxt = document.querySelector(`[data-step-panel="${n}"]`);
+      if (!nxt) return;
+      cur?.classList.add('leaving');
+      setTimeout(() => {
+        cur?.classList.add('hidden');
+        cur?.classList.remove('leaving');
+        nxt.classList.remove('hidden');
+        nxt.classList.add('step-panel'); // re-trigger animation
+        currentStep = n;
+        // progress
+        document.querySelectorAll('#progress-pills .progress-pill').forEach((p, i) => {
+          const idx = i + 1;
+          p.classList.toggle('done', idx < n);
+          p.classList.toggle('current', idx === n);
+        });
+        document.getElementById('step-counter').textContent = `${n} / ${totalSteps}`;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Step 5 시뮬레이션 — 단계별 체크
+        if (n === 5) runAnalysis();
+      }, 240);
+    }
+
+    document.addEventListener('click', (e) => {
+      // 선택 카드
+      const pick = e.target.closest('[data-pick]');
+      if (pick) {
+        // 동일 그룹 다른 카드 selected 해제
+        const group = pick.dataset.pick;
+        document.querySelectorAll(`[data-pick="${group}"]`).forEach(el => el.classList.remove('selected'));
+        pick.classList.add('selected');
+        // 분석 단계는 자동 진행되므로 클릭하지 않음
+        // skip / done 액션은 즉시 다음
+        if (group === 'upload' || group === 'result' || group === 'ig') {
+          setTimeout(() => setStep(currentStep + 1), 400);
+        } else if (group === 'industry' || group === 'mood') {
+          setTimeout(() => setStep(currentStep + 1), 600);
+        }
+      }
+      // 뒤로
+      if (e.target.closest('[data-back]')) {
+        if (currentStep > 1) setStep(currentStep - 1);
+      }
+    });
+
+    // STEP 5 — AI 분석 시뮬레이션
+    function runAnalysis() {
+      const stages = document.querySelectorAll('#analysis-stages [data-stage]');
+      // stage 0,1 already done; animate 2,3,4,5
+      const completeStage = (idx, ms) => {
+        setTimeout(() => {
+          const s = stages[idx];
+          if (!s) return;
+          s.classList.remove('opacity-50', 'ai-shimmer');
+          const dot = s.querySelector('.h-8');
+          dot.className = 'h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 grid place-items-center text-emerald-700 dark:text-emerald-400 font-bold text-sm check-icon';
+          dot.textContent = '✓';
+          // remove typing class
+          s.querySelector('.typing')?.classList.remove('typing');
+          // append timing
+          const timing = document.createElement('span');
+          timing.className = 'text-[10px] text-emerald-600 font-medium';
+          timing.textContent = `완료 · ${(Math.random()*4 + 1).toFixed(1)}s`;
+          s.appendChild(timing);
+          // next stage shimmer
+          const next = stages[idx + 1];
+          if (next) {
+            next.classList.remove('opacity-50');
+            next.classList.add('ai-shimmer');
+            const ndot = next.querySelector('.h-8');
+            ndot.className = 'h-8 w-8 rounded-lg bg-violet-100 dark:bg-violet-500/20 grid place-items-center text-violet-700 dark:text-violet-400 font-bold text-sm pulse-grow';
+            ndot.textContent = '⏵';
+            next.querySelector('.flex-1 .text-sm')?.classList.add('typing');
+          }
+        }, ms);
+      };
+      completeStage(2, 1500);
+      completeStage(3, 3200);
+      completeStage(4, 4800);
+      completeStage(5, 6400);
+      setTimeout(() => setStep(6), 7800);
+    }
+  </script>
+</body>
+</html>

@@ -250,9 +250,9 @@
           <div class="flex items-center gap-2">
             <span class="text-[10px] uppercase tracking-widest text-gray-500 font-semibold">스타일 프리셋</span>
             <div class="inline-flex p-0.5 bg-white border border-gray-200 rounded-md" id="preset-toggle">
-              <button data-preset="traditional" class="preset-btn active text-xs font-medium px-2.5 py-1 rounded">정통 한정식</button>
-              <button data-preset="modern" class="preset-btn text-xs font-medium px-2.5 py-1 rounded">모던 한식</button>
-              <button data-preset="moody" class="preset-btn text-xs font-medium px-2.5 py-1 rounded">감성 사진</button>
+              <button data-preset="traditional" class="preset-btn active text-xs font-medium px-2.5 py-1 rounded">클래식</button>
+              <button data-preset="modern" class="preset-btn text-xs font-medium px-2.5 py-1 rounded">모던</button>
+              <button data-preset="moody" class="preset-btn text-xs font-medium px-2.5 py-1 rounded">감성</button>
               <button data-preset="illustration" class="preset-btn text-xs font-medium px-2.5 py-1 rounded">일러스트</button>
             </div>
           </div>
@@ -980,25 +980,82 @@
     }
 
 
-    // 프리셋별 modifier — Pexels 검색어 / AI 프롬프트 스타일 suffix
-    const STYLE_MODIFIERS = {
-      traditional: {
-        pexels: 'traditional korean',
-        ai: 'editorial food photography style, warm natural tungsten light, traditional Korean wooden textures and hanji paper, restrained refined feel, cream and amber palette with deep wine red accent (#7B2D26), film photography aesthetic',
+    // 브랜드별 스타일 어휘 — AI 프롬프트 + Pexels 쿼리 동적 인터폴레이션
+    // 키: brandId, 값: { pexels(업종), illustration(모티브), colors(컬러+hex), moodyColors, ambiance, koLabel }
+    const BRAND_STYLE_VOCAB = {
+      'miokdang': {
+        pexels: 'korean food restaurant hanjeongsik',
+        illustration: 'korean traditional jogakbo and dancheong patterns',
+        colors: 'deep wine red (#7B2D26) and warm cream amber (#E9DCC0)',
+        moodyColors: 'deep wine red and dark amber palette',
+        ambiance: 'traditional korean restaurant ambiance with hanji paper and wooden textures',
+        koLabel: '와인 레드 #7B2D26 + 크림 앰버',
       },
-      modern: {
-        pexels: 'modern minimalist',
-        ai: 'modern minimalist food photography, bright natural daylight, clean white linen surfaces, contemporary korean aesthetic, restrained palette, magazine cover style, sharp focus, generous negative space',
+      'luna-hair': {
+        pexels: 'hair salon beauty studio styling',
+        illustration: 'abstract flowing feminine line art with rose gold accents',
+        colors: 'inky deep black (#1B1B1F) and dusty rose taupe (#D9B6A1)',
+        moodyColors: 'jet black and dusty rose taupe palette',
+        ambiance: 'high-end salon ambiance with soft directional lighting',
+        koLabel: '잉크 블랙 #1B1B1F + 더스티 로즈',
       },
-      moody: {
-        pexels: 'moody dim cinematic',
-        ai: 'moody cinematic photography, low-key dramatic lighting, deep shadows, soft film grain, intimate atmosphere, deep wine red and dark amber palette, side rim light, restaurant ambiance',
+      'cheongdam-medical': {
+        pexels: 'medical clinic skincare aesthetic professional',
+        illustration: 'minimal geometric medical iconography, clean line work',
+        colors: 'clinical navy (#0E2C4B) and pale sky cream (#C7D8E8)',
+        moodyColors: 'deep clinical navy and cool desaturated cream palette',
+        ambiance: 'minimal clinical aesthetic with diffused natural light',
+        koLabel: '클리니컬 네이비 #0E2C4B + 페일 스카이',
       },
-      illustration: {
-        pexels: 'illustration korean traditional',
-        ai: 'flat vector illustration style, minimal line art, Korean traditional patterns (jogakbo / dancheong inspired), restrained 4-color palette of cream amber and wine red, no photorealism, editorial illustration',
+      'best-eng': {
+        pexels: 'classroom education kids learning bright',
+        illustration: 'playful flat education line art with rounded shapes',
+        colors: 'deep teal (#0F766E) and warm cream (#FFEFC4)',
+        moodyColors: 'deep teal and shadowed cream palette',
+        ambiance: 'bright friendly study-room ambiance with natural daylight',
+        koLabel: '딥 틸 #0F766E + 웜 크림',
+      },
+      'forum-fashion': {
+        pexels: 'contemporary fashion editorial neutral',
+        illustration: 'minimal monochrome editorial line art with camel accents',
+        colors: 'deep charcoal (#111111) and warm bone (#E5E1DB)',
+        moodyColors: 'deep charcoal and bone neutral palette',
+        ambiance: 'editorial studio ambiance with hard directional light',
+        koLabel: '딥 차콜 #111111 + 웜 본',
+      },
+      'roastery-1985': {
+        pexels: 'specialty coffee cafe roastery espresso',
+        illustration: 'minimal cafe vintage line art with warm tan accents',
+        colors: 'rich espresso brown (#3B2A20) and warm tan (#D4B895)',
+        moodyColors: 'rich espresso brown and warm tan palette',
+        ambiance: 'specialty coffee shop ambiance with warm tungsten light',
+        koLabel: '에스프레소 브라운 #3B2A20 + 웜 탄',
       },
     };
+
+    // 프리셋 + 현재 브랜드 → {pexels, ai} 동적 빌드
+    function buildStyleModifier(preset, brandId) {
+      const v = BRAND_STYLE_VOCAB[brandId] || BRAND_STYLE_VOCAB.miokdang;
+      const presets = {
+        traditional: {
+          pexels: `${v.pexels} traditional classic`,
+          ai: `editorial photography style, warm natural tungsten light, refined restrained classical feel, ${v.colors} palette, ${v.ambiance}, film photography aesthetic`,
+        },
+        modern: {
+          pexels: `${v.pexels} modern minimalist clean`,
+          ai: `modern minimalist photography, bright natural daylight, clean uncluttered surfaces, contemporary aesthetic, ${v.colors} restrained palette, magazine cover style, sharp focus, generous negative space`,
+        },
+        moody: {
+          pexels: `${v.pexels} moody dim cinematic`,
+          ai: `moody cinematic photography, low-key dramatic lighting, deep shadows, soft film grain, intimate atmosphere, ${v.moodyColors}, side rim light, ${v.ambiance}`,
+        },
+        illustration: {
+          pexels: `illustration ${v.pexels}`,
+          ai: `flat vector illustration style, minimal line art, ${v.illustration}, restrained 4-color palette of ${v.colors}, no photorealism, editorial illustration`,
+        },
+      };
+      return presets[preset] || presets.traditional;
+    }
 
     // 각 슬라이드별 시드 (변형 시 변경, AI 모드에서 사용)
     const SEEDS = { 1: 'a7f3', 2: 'a7f3', 3: 'a7f3', 4: 'a7f3', 5: 'a7f3', 6: 'a7f3' };
@@ -1153,11 +1210,34 @@
       }
     }
 
+    // 정적 미리보기 (file:// 또는 API 미연결) 감지 — 한 번만 계산
+    const IS_STATIC_PREVIEW = (
+      typeof window !== 'undefined' &&
+      (window.location.protocol === 'file:' || window.location.hostname === '')
+    );
+    let _staticPreviewToastShown = false;
+
     // ----- 슬라이드 1개 생성 (소스에 따라 분기) -----
     async function generateSlide(slideId, opts = {}) {
       const article = document.querySelector(`[data-slide-id="${slideId}"]`);
       if (!article) return;
       const canvas = article.querySelector('[class*="slide-bg-"]');
+
+      // 정적 미리보기 모드: API 호출 대신 브랜드 그라데이션 유지 + 데모 뱃지
+      if (IS_STATIC_PREVIEW) {
+        // 기존 이미지가 있으면 잠깐 깜빡 효과로 "재생성된 척"
+        if (canvas.dataset.hasImage === 'true') {
+          canvas.style.transition = 'opacity .25s';
+          canvas.style.opacity = '0.4';
+          setTimeout(() => { canvas.style.opacity = '1'; }, 280);
+        }
+        setStatus(slideId, 'done', '데모');
+        if (!_staticPreviewToastShown) {
+          _staticPreviewToastShown = true;
+          toast('정적 미리보기 모드 — API 서버 미연결. 실제 사진 생성 대신 브랜드 그라데이션으로 표시됩니다.', 'info');
+        }
+        return;
+      }
 
       canvas.dataset.loading = 'true';
       setStatus(slideId, 'loading');
@@ -1168,7 +1248,7 @@
         if (IMAGE_SOURCE === 'pexels') {
           // ===== Pexels 검색 =====
           const baseQuery = PEXELS_QUERIES[slideId] || `korean food slide ${slideId}`;
-          const styleHint = STYLE_MODIFIERS[STYLE_PRESET]?.pexels || '';
+          const styleHint = buildStyleModifier(STYLE_PRESET, CURRENT_BRAND_ID).pexels || '';
           const query = styleHint ? `${baseQuery} ${styleHint}` : baseQuery;
           const pickIndex = opts.newSeed ? -1 : (PEXELS_PICK[slideId] ?? -1);
           const r = await fetch('/api/search-pexels', {
@@ -1192,7 +1272,7 @@
           const promptEl = article.querySelector(`[data-prompt="${slideId}"]`);
           const basePrompt = (promptEl?.innerText || '').trim();
           if (!basePrompt || basePrompt.length < 5) throw new Error('프롬프트가 비어 있습니다');
-          const styleSuffix = STYLE_MODIFIERS[STYLE_PRESET]?.ai || '';
+          const styleSuffix = buildStyleModifier(STYLE_PRESET, CURRENT_BRAND_ID).ai || '';
           const prompt = styleSuffix ? `${basePrompt}. Style: ${styleSuffix}` : basePrompt;
 
           const r = await fetch('/api/generate-image-codex', {
@@ -1216,7 +1296,7 @@
           const basePrompt = (promptEl?.innerText || '').trim();
           if (!basePrompt || basePrompt.length < 5) throw new Error('프롬프트가 비어 있습니다');
 
-          const styleSuffix = STYLE_MODIFIERS[STYLE_PRESET]?.ai || '';
+          const styleSuffix = buildStyleModifier(STYLE_PRESET, CURRENT_BRAND_ID).ai || '';
           const stylePrompt = styleSuffix ? `${basePrompt}. Style: ${styleSuffix}` : basePrompt;
 
           const seed = opts.newSeed ? Math.random().toString(36).slice(2, 6) : SEEDS[slideId];
@@ -1241,8 +1321,21 @@
           toast(`슬라이드 ${slideId} · ₩${data.meta?.costKrw ?? '?'}`, 'success');
         }
       } catch (err) {
-        console.error('[generateSlide]', slideId, err);
+        console.warn('[generateSlide]', slideId, err);
         delete canvas.dataset.loading;
+
+        // 네트워크 미연결 (Failed to fetch / TypeError) → 정적 미리보기 폴백
+        const isNetErr = err instanceof TypeError ||
+          /failed to fetch|networkerror|load failed/i.test(err.message || '');
+        if (isNetErr) {
+          setStatus(slideId, 'done', '데모');
+          if (!_staticPreviewToastShown) {
+            _staticPreviewToastShown = true;
+            toast('API 서버 미연결 — 정적 미리보기 모드로 전환합니다. 브랜드 그라데이션이 그대로 유지됩니다.', 'info');
+          }
+          return;
+        }
+
         setStatus(slideId, 'error', '실패 ↻');
         toast(`슬라이드 ${slideId} 실패: ${err.message}`, 'error');
       }
@@ -1309,6 +1402,20 @@
       if (btn) btn.disabled = true;
       if (label) label.textContent = '생성 중…';
 
+      // 정적 미리보기 모드: 현재 브랜드의 slides 데이터를 그대로 재적용
+      if (IS_STATIC_PREVIEW) {
+        const b = CN_BRANDS[CURRENT_BRAND_ID];
+        if (b?.slides) {
+          b.slides.slice(0, 6).forEach((s, idx) => {
+            applySlideText(String(idx + 1), s);
+          });
+        }
+        toast('정적 미리보기 — 브랜드 톤 텍스트를 다시 적용했습니다 (실서버에서는 GPT 호출)', 'info');
+        if (label && origLabel) label.textContent = origLabel;
+        if (btn) btn.disabled = false;
+        return;
+      }
+
       toast('GPT-4o 가 6장 카드뉴스 텍스트를 생성합니다 (약 8~15초)', 'info');
 
       try {
@@ -1338,8 +1445,22 @@
 
         if (label && origLabel) label.textContent = 'AI 텍스트 재생성';
       } catch (err) {
-        console.error('[generateAllText]', err);
-        toast('텍스트 생성 실패: ' + err.message, 'error');
+        console.warn('[generateAllText]', err);
+        const isNetErr = err instanceof TypeError ||
+          /failed to fetch|networkerror|load failed/i.test(err.message || '');
+        if (isNetErr) {
+          // 정적 미리보기 폴백 — 현재 브랜드 slides 데이터로 텍스트 적용
+          const b = CN_BRANDS[CURRENT_BRAND_ID];
+          if (b?.slides) {
+            b.slides.slice(0, 6).forEach((s, idx) => applySlideText(String(idx + 1), s));
+          }
+          if (!_staticPreviewToastShown) {
+            _staticPreviewToastShown = true;
+            toast('API 서버 미연결 — 정적 미리보기 모드. 브랜드 톤 텍스트를 다시 적용했습니다.', 'info');
+          }
+        } else {
+          toast('텍스트 생성 실패: ' + err.message, 'error');
+        }
         if (label && origLabel) label.textContent = origLabel;
       } finally {
         if (btn) btn.disabled = false;
@@ -1480,11 +1601,14 @@
       // body 클래스로 CSS 필터 즉시 적용
       document.body.classList.remove('style-traditional', 'style-modern', 'style-moody', 'style-illustration');
       document.body.classList.add('style-' + STYLE_PRESET);
+      const _b = CN_BRANDS[CURRENT_BRAND_ID];
+      const _palette = BRAND_STYLE_VOCAB[CURRENT_BRAND_ID]?.koLabel || '';
+      const _bn = _b ? _b.name : '';
       const labels = {
-        traditional: '정통 한정식 — 한지/한옥 텍스처, 와인 레드 액센트',
-        modern: '모던 한식 — 밝은 자연광, 미니멀, 매거진 스타일',
-        moody: '감성 사진 — 저조도 시네마틱, 깊은 그림자, 필름 그레인',
-        illustration: '일러스트 — 플랫 벡터, 한국 전통 패턴, 4색 팔레트',
+        traditional: `클래식 · ${_bn} — ${_palette} · 따뜻한 자연광, 클래식 텍스처`,
+        modern: `모던 · ${_bn} — ${_palette} · 밝은 미니멀, 매거진 스타일`,
+        moody: `감성 · ${_bn} — ${_palette} · 저조도 시네마틱, 깊은 그림자`,
+        illustration: `일러스트 · ${_bn} — ${_palette} · 플랫 벡터, 4색 팔레트`,
       };
       // Pexels 모드일 때만 자동 재생성 (Codex/AI 는 비용/시간 때문에 수동)
       if (IMAGE_SOURCE === 'pexels') {
