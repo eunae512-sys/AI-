@@ -86,7 +86,7 @@ export function BrandToneScreen() {
   const example = BEFORE_AFTER[brand.id] ?? BEFORE_AFTER.miokdang;
 
   return (
-    <div className="px-6 py-6">
+    <div className="px-4 sm:px-6 py-4 sm:py-6">
       <div className="mb-6">
         <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">
           BRAND VOICE MEMORY · {brand.name} · v{brand.toneVersion}

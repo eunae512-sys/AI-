@@ -155,7 +155,7 @@ export function TrendsScreen() {
   const trends = TRENDS_BY_INDUSTRY[brand.industry] ?? TRENDS_BY_INDUSTRY.restaurant;
 
   return (
-    <div className="px-6 py-6">
+    <div className="px-4 sm:px-6 py-4 sm:py-6">
       <div className="flex items-end justify-between gap-4 flex-wrap mb-6">
         <div>
           <div className="text-[11px] uppercase tracking-widest text-violet-600 dark:text-violet-400 font-semibold">

@@ -27,7 +27,7 @@ export function ClientsScreen() {
   };
 
   return (
-    <div className="px-6 py-6">
+    <div className="px-4 sm:px-6 py-4 sm:py-6">
       <div className="flex items-end justify-between gap-4 flex-wrap mb-6">
         <div>
           <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">CLIENTS</div>

@@ -178,7 +178,7 @@ export function ReelsScreen() {
   }, [cutIdx]);
 
   return (
-    <div className="px-6 py-6">
+    <div className="px-4 sm:px-6 py-4 sm:py-6">
       {/* Hero */}
       <div className="flex items-end justify-between gap-4 flex-wrap mb-6">
         <div>
@@ -203,8 +203,8 @@ export function ReelsScreen() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Left - Template + controls */}
-        <div className="lg:col-span-3 space-y-3">
+        {/* Left - Template + controls (mobile: order-2 so preview is shown first) */}
+        <div className="lg:col-span-3 space-y-3 order-2 lg:order-1">
           <Card className="p-4">
             <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold mb-3">업종별 템플릿</div>
             <div className="space-y-2">
@@ -286,8 +286,8 @@ export function ReelsScreen() {
         </div>
 
         {/* Center - Phone preview */}
-        <div className="lg:col-span-5 flex flex-col items-center">
-          <div className="relative" style={{ width: 280 }}>
+        <div className="lg:col-span-5 flex flex-col items-center order-1 lg:order-2">
+          <div className="relative w-[min(280px,calc(100vw-48px))]">
             <motion.div
               animate={{ y: [0, -6, 0] }}
               transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
@@ -441,7 +441,7 @@ export function ReelsScreen() {
         </div>
 
         {/* Right - Output assets */}
-        <div className="lg:col-span-4 space-y-3">
+        <div className="lg:col-span-4 space-y-3 order-3">
           <Card className="p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">자동 생성된 자산</div>

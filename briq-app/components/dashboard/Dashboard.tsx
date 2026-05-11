@@ -57,11 +57,11 @@ export function DashboardScreen() {
   return (
     <div>
       {/* Hero strip */}
-      <motion.section className="px-6 pt-8 pb-4" {...fade()} key={brand.id}>
+      <motion.section className="px-4 sm:px-6 pt-5 sm:pt-8 pb-3 sm:pb-4" {...fade()} key={brand.id}>
         <div className="flex items-end justify-between gap-6 flex-wrap">
           <div>
             <div className="text-[11px] font-medium text-zinc-500 mb-1">{today} · ☁️ 24°C 흐림</div>
-            <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight">
               <span className="gradient-text">{brand.name}</span>, 어서 오세요
             </h1>
             <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 max-w-2xl">
@@ -83,7 +83,7 @@ export function DashboardScreen() {
       </motion.section>
 
       {/* KPI strip — 선택된 브랜드 기준 */}
-      <section className="px-6 pb-2">
+      <section className="px-4 sm:px-6 pb-2">
         {(() => {
           const kpis = [
             { label: `${brand.name} 팔로워`, value: formatNumber(brand.followers), delta: "+8.4%", note: `${brand.industryLabel} 평균 5.2K 대비` },
@@ -113,7 +113,7 @@ export function DashboardScreen() {
       </section>
 
       {/* Today's recommendations */}
-      <section className="px-6 pt-8">
+      <section className="px-4 sm:px-6 pt-5 sm:pt-8">
         <div className="flex items-end justify-between mb-3">
           <div>
             <h2 className="text-lg font-semibold tracking-tight">오늘의 추천 콘텐츠</h2>
@@ -155,7 +155,7 @@ export function DashboardScreen() {
       </section>
 
       {/* Trending reels + activity */}
-      <section className="px-6 pt-8 pb-12 grid grid-cols-1 lg:grid-cols-3 gap-3">
+      <section className="px-4 sm:px-6 pt-5 sm:pt-8 pb-8 sm:pb-12 grid grid-cols-1 lg:grid-cols-3 gap-3">
         <Card className="lg:col-span-2 p-5">
           <div className="flex items-center justify-between mb-3">
             <div>

@@ -187,7 +187,7 @@ export function ScheduleScreen() {
   };
 
   return (
-    <div className="px-6 py-6">
+    <div className="px-4 sm:px-6 py-4 sm:py-6">
       <div className="flex items-end justify-between gap-4 flex-wrap mb-6">
         <div>
           <div className="text-[11px] uppercase tracking-widest text-sky-600 dark:text-sky-400 font-semibold">
@@ -252,20 +252,20 @@ export function ScheduleScreen() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, x: -16 }}
                   transition={{ delay: i * 0.04 }}
-                  className={`p-4 flex items-center gap-4 ${u.status === "paused" ? "opacity-50" : ""}`}
+                  className={`p-3 sm:p-4 flex items-center gap-3 sm:gap-4 ${u.status === "paused" ? "opacity-50" : ""}`}
                 >
-                  <div className="text-xs font-semibold tabular-nums w-14 text-emerald-600">
+                  <div className="text-xs font-semibold tabular-nums w-12 sm:w-14 text-emerald-600 shrink-0">
                     {u.time}
                     <div className="text-[10px] font-normal text-zinc-500">{u.date}</div>
                   </div>
-                  <div className={`h-12 w-12 rounded-md bg-gradient-to-br ${brand.gradient} shrink-0 grid place-items-center text-white font-bold`}>
+                  <div className={`h-10 w-10 sm:h-12 sm:w-12 rounded-md bg-gradient-to-br ${brand.gradient} shrink-0 grid place-items-center text-white font-bold text-sm`}>
                     {brand.letter}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-xs font-medium">{u.title}</div>
-                    <div className="text-[11px] text-zinc-500 mt-0.5">{u.channel}</div>
+                    <div className="text-xs font-medium truncate">{u.title}</div>
+                    <div className="text-[11px] text-zinc-500 mt-0.5 truncate">{u.channel}</div>
                   </div>
-                  <Badge tone={u.status === "paused" ? "default" : i === 0 ? "emerald" : "sky"}>
+                  <Badge tone={u.status === "paused" ? "default" : i === 0 ? "emerald" : "sky"} className="hidden sm:inline-flex">
                     {u.status === "paused" ? "일시정지" : i === 0 ? "최적시간 ★" : "예약"}
                   </Badge>
                   <div className="flex items-center gap-1 relative">
@@ -380,7 +380,7 @@ export function ScheduleScreen() {
               exit={{ opacity: 0, scale: 0.96, y: 8 }}
               transition={{ duration: 0.2 }}
               onSubmit={submitBooking}
-              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[440px] max-w-[92vw] rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-2xl"
+              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[440px] max-w-[calc(100vw-24px)] max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-2xl"
             >
               <div className="px-5 py-4 border-b border-zinc-100 dark:border-zinc-900 flex items-center justify-between">
                 <div>

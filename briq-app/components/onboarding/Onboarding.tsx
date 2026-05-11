@@ -62,7 +62,7 @@ export function Onboarding() {
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="border-b border-zinc-100 dark:border-zinc-900 backdrop-blur sticky top-0 z-10 bg-white/70 dark:bg-zinc-950/70">
-        <div className="max-w-3xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="h-7 w-7 rounded-md bg-gradient-to-br from-indigo-500 via-violet-600 to-pink-500 grid place-items-center text-white text-xs font-bold">B</div>
             <span className="text-sm font-semibold">BRIQ</span>
@@ -93,7 +93,7 @@ export function Onboarding() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-12 md:py-20">
+      <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 sm:py-12 md:py-20">
         <AnimatePresence mode="wait">
           {/* Step 1 - Industry */}
           {step === 1 && (

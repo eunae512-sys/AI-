@@ -55,7 +55,28 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: "ss01", "ss02", "tnum";
+  /* 가로 스크롤 방지 — 모바일에서 작은 overflow 가 viewport 깨는 것 방지 */
+  overflow-x: hidden;
+  /* iOS Safari URL bar 등 viewport 안정화 */
+  min-height: 100vh;
+  min-height: 100dvh;
+  /* tap highlight 부드럽게 */
+  -webkit-tap-highlight-color: transparent;
 }
+
+/* 모바일에서 최소 가독성 16px (input zoom-in 방지) */
+input, select, textarea {
+  font-size: 16px;
+}
+@media (min-width: 640px) {
+  input, select, textarea {
+    font-size: inherit;
+  }
+}
+
+/* iOS 안전 영역 패딩 헬퍼 */
+.safe-pb { padding-bottom: env(safe-area-inset-bottom); }
+.safe-pt { padding-top: env(safe-area-inset-top); }
 
 @font-face {
   font-family: "Pretendard Variable";

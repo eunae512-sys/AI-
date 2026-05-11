@@ -35,9 +35,9 @@ export function BrandPicker() {
         >
           {brand.letter}
         </span>
-        <span className="text-xs font-medium truncate max-w-[140px]">{brand.name}</span>
+        <span className="text-xs font-medium truncate max-w-[80px] sm:max-w-[140px]">{brand.name}</span>
         <span className="text-[10px] text-zinc-400 hidden sm:inline">v{brand.toneVersion}</span>
-        <ChevronDown className={cn("h-3 w-3 text-zinc-400 transition-transform", open && "rotate-180")} />
+        <ChevronDown className={cn("h-3 w-3 text-zinc-400 transition-transform shrink-0", open && "rotate-180")} />
       </button>
 
       <AnimatePresence>
@@ -47,7 +47,7 @@ export function BrandPicker() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full mt-1.5 w-72 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-xl z-50 overflow-hidden"
+            className="absolute right-0 top-full mt-1.5 w-[min(288px,calc(100vw-24px))] rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-xl z-50 overflow-hidden"
             role="listbox"
           >
             <div className="px-3 py-2 border-b border-zinc-100 dark:border-zinc-900">

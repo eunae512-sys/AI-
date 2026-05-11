@@ -74,7 +74,7 @@ export function AnalyticsScreen() {
   ];
 
   return (
-    <div className="px-6 py-6">
+    <div className="px-4 sm:px-6 py-4 sm:py-6">
       <div className="mb-6">
         <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">
           PERFORMANCE · {brand.name} · 최근 30일

@@ -563,7 +563,7 @@ export function CardnewsScreen() {
   const onDownload = () => toast.info("ZIP 다운로드 시작 — 6.4 MB");
 
   return (
-    <div className="px-6 py-6">
+    <div className="px-4 sm:px-6 py-4 sm:py-6">
       <AnimatePresence>
         {keyMissing && !bannerDismissed && (
           <motion.div
@@ -589,12 +589,12 @@ export function CardnewsScreen() {
         )}
       </AnimatePresence>
 
-      <div className="flex items-end justify-between gap-4 flex-wrap mb-6">
+      <div className="flex items-end justify-between gap-3 sm:gap-4 flex-wrap mb-4 sm:mb-6">
         <div>
-          <div className="text-[11px] uppercase tracking-widest text-violet-600 dark:text-violet-400 font-semibold">
+          <div className="text-[10px] sm:text-[11px] uppercase tracking-widest text-violet-600 dark:text-violet-400 font-semibold">
             AI CARDNEWS · {brand.name}
           </div>
-          <h1 className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight">카드뉴스 6장 자동 생성</h1>
+          <h1 className="mt-1.5 sm:mt-2 text-xl sm:text-2xl md:text-3xl font-semibold tracking-tight">카드뉴스 6장 자동 생성</h1>
           <p className="mt-1 text-sm text-zinc-500 max-w-2xl">
             {brand.name} 톤 v{brand.toneVersion} · 컬러 팔레트 · {detail?.hero.tagline ?? brand.campaign}
           </p>
@@ -645,14 +645,14 @@ export function CardnewsScreen() {
 
       {/* Source toggle */}
       <Card className="p-4 mb-4">
-        <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-start sm:items-center justify-between gap-3 flex-col sm:flex-row">
           <div>
             <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">이미지 소스</div>
             <p className="text-[11px] text-zinc-500 mt-0.5">
               브랜드 무드에 맞는 소스 선택 · 6장 모두 같은 소스로 생성됩니다
             </p>
           </div>
-          <div className="inline-flex rounded-lg border border-zinc-200 dark:border-zinc-800 p-1 bg-zinc-50 dark:bg-zinc-900/40">
+          <div className="inline-flex w-full sm:w-auto overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800 p-1 bg-zinc-50 dark:bg-zinc-900/40">
             {(Object.keys(SOURCE_LABEL) as Source[]).map((s) => {
               const Icon = SOURCE_LABEL[s].icon;
               const active = source === s;
@@ -661,7 +661,7 @@ export function CardnewsScreen() {
                   key={s}
                   onClick={() => setSource(s)}
                   disabled={busy}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-colors whitespace-nowrap min-h-10 ${
                     active
                       ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm"
                       : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
@@ -685,7 +685,7 @@ export function CardnewsScreen() {
           <h3 className="text-sm font-semibold">6장 캐러셀</h3>
           <span className="text-[11px] text-zinc-500">9:16 · 인스타 캐러셀 · 발행 전 검수 자동</span>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
           {slides.map((s, i) => {
             const c = colors[i % (colors.length || 1)];
             const img = images[i] ?? { status: "idle" };

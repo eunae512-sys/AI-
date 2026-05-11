@@ -60,7 +60,7 @@ const PILL_TONE: Record<string, string> = {
 
 export function CalendarScreen() {
   return (
-    <div className="px-6 py-6">
+    <div className="px-4 sm:px-6 py-4 sm:py-6">
       {/* Hero */}
       <div className="flex items-end justify-between gap-4 flex-wrap mb-6">
         <div>
