@@ -1,11 +1,15 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, FileImage, Film, CheckCircle2, Menu } from "lucide-react";
+import { motion } from "motion/react";
+import { Home, FileImage, Film, CheckCircle2, Menu, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const TABS: { href: string; icon: typeof Home; label: string }[] = [
+type Tab = { href: string; icon: LucideIcon; label: string };
+
+const TABS: Tab[] = [
   { href: "/dashboard", icon: Home, label: "홈" },
   { href: "/cardnews", icon: FileImage, label: "카드뉴스" },
   { href: "/reels", icon: Film, label: "릴스" },
@@ -21,47 +25,76 @@ export function MobileBottomNav() {
     }
   };
 
+  const isActive = (href: string) =>
+    pathname === href || pathname.startsWith(href + "/");
+
   return (
     <nav
-      className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/95 dark:bg-zinc-950/95 border-t border-zinc-200 dark:border-zinc-800 backdrop-blur-md safe-pb"
+      className="md:hidden fixed inset-x-0 bottom-0 z-30"
       aria-label="모바일 하단 네비게이션"
     >
-      <ul className="grid grid-cols-5">
-        {TABS.map((t) => {
-          const Icon = t.icon;
-          const active = pathname === t.href || pathname.startsWith(t.href + "/");
-          return (
-            <li key={t.href}>
-              <Link
-                href={t.href}
-                className={cn(
-                  "flex flex-col items-center justify-center gap-0.5 h-14 text-[10px] font-medium transition-colors",
-                  active
-                    ? "text-zinc-900 dark:text-zinc-50"
-                    : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100",
-                )}
-              >
-                <Icon className={cn("h-5 w-5", active && "stroke-[2.5]")} />
-                <span>{t.label}</span>
-                {active && (
-                  <span className="absolute top-0 h-0.5 w-8 rounded-b-full bg-gradient-to-r from-indigo-500 to-pink-500" />
-                )}
-              </Link>
-            </li>
-          );
-        })}
-        <li>
-          <button
-            type="button"
-            onClick={openSidebar}
-            className="w-full flex flex-col items-center justify-center gap-0.5 h-14 text-[10px] font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
-            aria-label="전체 메뉴 열기"
-          >
-            <Menu className="h-5 w-5" />
-            <span>더보기</span>
-          </button>
-        </li>
-      </ul>
+      {/* Edge blur — content fades behind nav */}
+      <div
+        className="absolute inset-x-0 -top-4 h-4 pointer-events-none bg-gradient-to-b from-transparent to-white/60 dark:to-zinc-950/60"
+        aria-hidden
+      />
+      <div className="bg-white/85 dark:bg-zinc-950/85 backdrop-blur-2xl border-t border-zinc-200/60 dark:border-zinc-800/60 safe-pb">
+        <ul className="grid grid-cols-5 px-1 pt-1.5">
+          {TABS.map((t) => {
+            const Icon = t.icon;
+            const active = isActive(t.href);
+            return (
+              <li key={t.href} className="relative">
+                <Link
+                  href={t.href}
+                  className={cn(
+                    "relative flex flex-col items-center justify-center gap-1 h-14 rounded-xl transition-colors",
+                    active
+                      ? "text-zinc-900 dark:text-zinc-50"
+                      : "text-zinc-400 dark:text-zinc-500 active:text-zinc-700 dark:active:text-zinc-300",
+                  )}
+                  aria-current={active ? "page" : undefined}
+                >
+                  {active && (
+                    <motion.span
+                      layoutId="mobile-nav-pill"
+                      className="absolute inset-1 rounded-xl bg-zinc-100 dark:bg-zinc-900"
+                      transition={{ type: "spring", stiffness: 400, damping: 34 }}
+                    />
+                  )}
+                  <span className="relative z-10 flex flex-col items-center gap-1">
+                    <Icon
+                      className={cn(
+                        "h-5 w-5 transition-all",
+                        active ? "stroke-[2.25]" : "stroke-[1.75]",
+                      )}
+                    />
+                    <span
+                      className={cn(
+                        "text-[10px] tracking-tight",
+                        active ? "font-semibold" : "font-medium",
+                      )}
+                    >
+                      {t.label}
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+          <li>
+            <button
+              type="button"
+              onClick={openSidebar}
+              className="w-full flex flex-col items-center justify-center gap-1 h-14 rounded-xl text-zinc-400 dark:text-zinc-500 active:text-zinc-700 dark:active:text-zinc-300 active:bg-zinc-100 dark:active:bg-zinc-900 transition-colors"
+              aria-label="전체 메뉴 열기"
+            >
+              <Menu className="h-5 w-5 stroke-[1.75]" />
+              <span className="text-[10px] font-medium tracking-tight">더보기</span>
+            </button>
+          </li>
+        </ul>
+      </div>
     </nav>
   );
 }

@@ -111,10 +111,10 @@ export function ReviewsScreen() {
   return (
     <div className="px-4 sm:px-6 py-4 sm:py-6">
       <div className="mb-6">
-        <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">
+        <div className="text-[11px] uppercase tracking-[0.15em] text-zinc-400 font-semibold">
           REVIEW AUTO-RESPONSE · {brand.name}
         </div>
-        <h1 className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight">리뷰 자동 답변</h1>
+        <h1 className="mt-2 text-[22px] sm:text-2xl md:text-3xl font-semibold tracking-tight leading-[1.15]">리뷰 자동 답변</h1>
         <p className="mt-1 text-sm text-zinc-500 max-w-2xl">
           네이버 · 구글 · 배민 · 요기요 후기를 한 곳에서. {brand.name} 톤 메모리로 답변하고 진상/단골 자동 분류합니다.
         </p>
@@ -124,7 +124,7 @@ export function ReviewsScreen() {
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-5">
         {kpis.map((k) => (
           <Card key={k.label} className="p-4">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">{k.label}</div>
+            <div className="text-[10px] uppercase tracking-[0.15em] text-zinc-400 font-semibold">{k.label}</div>
             <div className="mt-1.5 flex items-baseline gap-2">
               <div className={`text-xl font-semibold tabular-nums ${k.danger ? "text-rose-600" : ""}`}>{k.value}</div>
               <div className={`text-[11px] font-medium ${k.danger ? "text-rose-600" : "text-emerald-600"}`}>{k.delta}</div>
@@ -182,7 +182,7 @@ export function ReviewsScreen() {
                       }`}
                     >
                       <div
-                        className={`text-[10px] uppercase tracking-widest font-semibold mb-1 ${
+                        className={`text-[10px] uppercase tracking-[0.15em] font-semibold mb-1 ${
                           TYPE_TONE[r.type] === "emerald"
                             ? "text-emerald-700 dark:text-emerald-400"
                             : TYPE_TONE[r.type] === "sky"

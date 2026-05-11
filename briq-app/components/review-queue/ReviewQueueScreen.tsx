@@ -144,10 +144,10 @@ export function ReviewQueueScreen() {
   return (
     <div className="px-4 sm:px-6 py-4 sm:py-6">
       <div className="mb-6">
-        <div className="text-[11px] uppercase tracking-widest text-amber-600 dark:text-amber-400 font-semibold">
+        <div className="text-[11px] uppercase tracking-[0.15em] text-amber-600 dark:text-amber-400 font-semibold">
           REVIEW QUEUE · {brand.name}
         </div>
-        <h1 className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight">발행 전 자동 검수</h1>
+        <h1 className="mt-2 text-[22px] sm:text-2xl md:text-3xl font-semibold tracking-tight leading-[1.15]">발행 전 자동 검수</h1>
         <p className="mt-1 text-sm text-zinc-500 max-w-2xl">
           {brand.name} 톤 v{brand.toneVersion} · 금지어 · 의광법 · 가이드라인. 모든 콘텐츠는 발행 전 BRIQ 자동 검수를 거칩니다.
         </p>
@@ -156,19 +156,19 @@ export function ReviewQueueScreen() {
       {/* Summary */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
         <Card className="p-4">
-          <div className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">전체 큐</div>
+          <div className="text-[10px] uppercase tracking-[0.15em] text-zinc-400 font-semibold">전체 큐</div>
           <div className="mt-1.5 text-2xl font-semibold tabular-nums">{queue.length}</div>
         </Card>
         <Card className="p-4">
-          <div className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">통과 · 자동 발행</div>
+          <div className="text-[10px] uppercase tracking-[0.15em] text-zinc-400 font-semibold">통과 · 자동 발행</div>
           <div className="mt-1.5 text-2xl font-semibold tabular-nums text-emerald-600">{okCount}</div>
         </Card>
         <Card className="p-4">
-          <div className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">검토 필요</div>
+          <div className="text-[10px] uppercase tracking-[0.15em] text-zinc-400 font-semibold">검토 필요</div>
           <div className="mt-1.5 text-2xl font-semibold tabular-nums text-amber-600">{warnCount}</div>
         </Card>
         <Card className="p-4">
-          <div className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">차단 · 사장님 확인</div>
+          <div className="text-[10px] uppercase tracking-[0.15em] text-zinc-400 font-semibold">차단 · 사장님 확인</div>
           <div className="mt-1.5 text-2xl font-semibold tabular-nums text-rose-600">{dangerCount}</div>
         </Card>
       </div>
@@ -188,7 +188,7 @@ export function ReviewQueueScreen() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ delay: i * 0.04 }}
-                className="p-4 flex items-start gap-4"
+                className="p-3 sm:p-4 flex items-start gap-3"
               >
                 <div
                   className={`h-8 w-8 rounded-md grid place-items-center shrink-0 ${
@@ -201,16 +201,18 @@ export function ReviewQueueScreen() {
                 >
                   {item.severity === "ok" ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
                 </div>
-                <div className={`h-12 w-12 rounded-md bg-gradient-to-br ${brand.gradient} shrink-0 grid place-items-center text-white font-bold text-sm`}>
+                <div className={`hidden sm:grid h-12 w-12 rounded-md bg-gradient-to-br ${brand.gradient} shrink-0 place-items-center text-white font-bold text-sm`}>
                   {brand.letter}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                     <Badge tone="default">{item.type}</Badge>
-                    <span className="text-sm font-medium truncate">{item.title}</span>
-                    <Badge tone={SEVERITY_TONE[item.severity]} className="ml-auto">
+                    <Badge tone={SEVERITY_TONE[item.severity]}>
                       {SEVERITY_LABEL[item.severity]}
                     </Badge>
+                  </div>
+                  <div className="mt-1.5 text-sm font-medium leading-snug break-keep">
+                    {item.title}
                   </div>
                   <div className="mt-1 text-[11px] text-zinc-500">
                     {item.channel} · {item.ago}
@@ -231,20 +233,20 @@ export function ReviewQueueScreen() {
                       ⚠ {item.issue}
                     </div>
                   )}
-                  <div className="mt-2 flex items-center gap-2">
+                  <div className="mt-2 flex items-center gap-2 flex-wrap">
                     {item.severity === "ok" ? (
-                      <Button size="sm" className="h-7 text-[11px]" onClick={() => autoPublish(item.id)}>
+                      <Button size="sm" className="h-9 sm:h-7 text-xs sm:text-[11px]" onClick={() => autoPublish(item.id)}>
                         <Send className="h-3 w-3" />자동 발행
                       </Button>
                     ) : (
                       <>
-                        <Button size="sm" className="h-7 text-[11px]" onClick={() => approve(item.id)}>
+                        <Button size="sm" className="h-9 sm:h-7 text-xs sm:text-[11px]" onClick={() => approve(item.id)}>
                           <CheckCircle2 className="h-3 w-3" />승인 + 발행
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-7 text-[11px]"
+                          className="h-9 sm:h-7 text-xs sm:text-[11px]"
                           onClick={() => openEdit(item.id)}
                         >
                           <Edit3 className="h-3 w-3" />수정
@@ -285,7 +287,7 @@ export function ReviewQueueScreen() {
             >
               <div className="px-5 py-4 border-b border-zinc-100 dark:border-zinc-900 flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-semibold uppercase tracking-widest text-amber-600 dark:text-amber-400">
+                  <div className="text-xs font-semibold uppercase tracking-[0.15em] text-amber-600 dark:text-amber-400">
                     EDIT REVIEW ITEM
                   </div>
                   <h2 className="text-base font-semibold mt-0.5">콘텐츠 수정</h2>
@@ -307,7 +309,7 @@ export function ReviewQueueScreen() {
                     value={draft.title}
                     onChange={(e) => setDraft({ ...draft, title: e.target.value })}
                     required
-                    className="mt-1.5 w-full h-10 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
+                    className="mt-1.5 w-full h-11 sm:h-10 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
                   />
                 </div>
 

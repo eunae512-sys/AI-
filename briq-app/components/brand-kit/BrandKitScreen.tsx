@@ -102,10 +102,10 @@ export function BrandKitScreen() {
     <div className="px-4 sm:px-6 py-4 sm:py-6">
       <div className="flex items-end justify-between gap-4 flex-wrap mb-6">
         <div>
-          <div className="text-[11px] uppercase tracking-widest text-rose-600 dark:text-rose-400 font-semibold">
+          <div className="text-[11px] uppercase tracking-[0.15em] text-rose-600 dark:text-rose-400 font-semibold">
             AUTO BRAND KIT · {brand.name}
           </div>
-          <h1 className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight">
+          <h1 className="mt-2 text-[22px] sm:text-2xl md:text-3xl font-semibold tracking-tight leading-[1.15]">
             로고 + 사진 한 장으로 키트 완성
           </h1>
           <p className="mt-1 text-sm text-zinc-500 max-w-2xl">
@@ -179,7 +179,7 @@ export function BrandKitScreen() {
                 <div className="text-[9px] tabular-nums text-white/80 mix-blend-difference">{c.hex}</div>
               </div>
               {i === 0 && (
-                <span className="absolute top-2 right-2 text-[8px] font-bold uppercase tracking-widest text-white/90 bg-black/30 backdrop-blur px-1.5 py-0.5 rounded">
+                <span className="absolute top-2 right-2 text-[8px] font-bold uppercase tracking-[0.15em] text-white/90 bg-black/30 backdrop-blur px-1.5 py-0.5 rounded">
                   Primary
                 </span>
               )}
@@ -223,7 +223,7 @@ export function BrandKitScreen() {
             className="rounded-xl border border-zinc-100 dark:border-zinc-800 p-5"
           >
             <div className="flex items-center justify-between">
-              <div className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">제목 · Headline</div>
+              <div className="text-[10px] uppercase tracking-[0.15em] text-zinc-400 font-semibold">제목 · Headline</div>
               <Badge tone="emerald">추천</Badge>
             </div>
             <div className="mt-3" style={{ fontFamily: fonts.headline.family }}>
@@ -242,7 +242,7 @@ export function BrandKitScreen() {
             className="rounded-xl border border-zinc-100 dark:border-zinc-800 p-5"
           >
             <div className="flex items-center justify-between">
-              <div className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">본문 · Body</div>
+              <div className="text-[10px] uppercase tracking-[0.15em] text-zinc-400 font-semibold">본문 · Body</div>
               <Badge tone="emerald">추천</Badge>
             </div>
             <div className="mt-3" style={{ fontFamily: fonts.body.family }}>
@@ -329,7 +329,7 @@ export function BrandKitScreen() {
               </div>
               <form onSubmit={submitColor} className="space-y-3">
                 <div>
-                  <label className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">컬러 이름</label>
+                  <label className="text-[11px] uppercase tracking-[0.15em] text-zinc-400 font-semibold">컬러 이름</label>
                   <input
                     type="text"
                     value={draft.name}
@@ -339,7 +339,7 @@ export function BrandKitScreen() {
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">HEX</label>
+                  <label className="text-[11px] uppercase tracking-[0.15em] text-zinc-400 font-semibold">HEX</label>
                   <div className="mt-1 flex items-center gap-2">
                     <input
                       type="color"

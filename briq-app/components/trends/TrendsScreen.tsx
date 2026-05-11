@@ -158,10 +158,10 @@ export function TrendsScreen() {
     <div className="px-4 sm:px-6 py-4 sm:py-6">
       <div className="flex items-end justify-between gap-4 flex-wrap mb-6">
         <div>
-          <div className="text-[11px] uppercase tracking-widest text-violet-600 dark:text-violet-400 font-semibold">
+          <div className="text-[11px] uppercase tracking-[0.15em] text-violet-600 dark:text-violet-400 font-semibold">
             LOCAL TREND RADAR · {brand.name}
           </div>
-          <h1 className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight">우리 동네는 이게 잘 돼요</h1>
+          <h1 className="mt-2 text-[22px] sm:text-2xl md:text-3xl font-semibold tracking-tight leading-[1.15]">우리 동네는 이게 잘 돼요</h1>
           <p className="mt-1 text-sm text-zinc-500 max-w-2xl">
             {trends.radius} · {brand.industryLabel} {trends.competitors}개 매장 분석. 저장률 폭증 포맷·키워드·전환 효과 실시간.
           </p>
@@ -238,7 +238,7 @@ export function TrendsScreen() {
           </div>
           <div className="overflow-x-auto -mx-5 px-5">
             <table className="w-full text-xs">
-              <thead className="text-left text-[10px] uppercase tracking-widest text-zinc-400 font-semibold border-b border-zinc-100 dark:border-zinc-800">
+              <thead className="text-left text-[10px] uppercase tracking-[0.15em] text-zinc-400 font-semibold border-b border-zinc-100 dark:border-zinc-800">
                 <tr>
                   <th className="py-2 pr-3">업체</th>
                   <th className="py-2 pr-3">팔로워</th>

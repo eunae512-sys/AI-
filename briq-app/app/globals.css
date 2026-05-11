@@ -44,6 +44,8 @@
   --color-text-muted: var(--text-muted);
   --color-accent: var(--accent);
   --color-accent-fg: var(--accent-fg);
+  /* 추가 브레이크포인트: xs (대형 모바일 / 작은 태블릿) */
+  --breakpoint-xs: 480px;
 }
 
 * { border-color: var(--border); }

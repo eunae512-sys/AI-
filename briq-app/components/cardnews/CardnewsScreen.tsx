@@ -589,17 +589,20 @@ export function CardnewsScreen() {
         )}
       </AnimatePresence>
 
-      <div className="flex items-end justify-between gap-3 sm:gap-4 flex-wrap mb-4 sm:mb-6">
-        <div>
-          <div className="text-[10px] sm:text-[11px] uppercase tracking-widest text-violet-600 dark:text-violet-400 font-semibold">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-5 sm:mb-6">
+        <div className="min-w-0">
+          <div className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] text-violet-600 dark:text-violet-400 font-semibold">
             AI CARDNEWS · {brand.name}
           </div>
-          <h1 className="mt-1.5 sm:mt-2 text-xl sm:text-2xl md:text-3xl font-semibold tracking-tight">카드뉴스 6장 자동 생성</h1>
-          <p className="mt-1 text-sm text-zinc-500 max-w-2xl">
-            {brand.name} 톤 v{brand.toneVersion} · 컬러 팔레트 · {detail?.hero.tagline ?? brand.campaign}
+          <h1 className="mt-2 text-[22px] sm:text-2xl md:text-3xl font-semibold tracking-tight leading-[1.15]">
+            카드뉴스 6장 자동 생성
+          </h1>
+          <p className="mt-1.5 text-[13px] sm:text-sm text-zinc-500 max-w-2xl leading-relaxed">
+            {brand.name} 톤 v{brand.toneVersion} · {detail?.hero.tagline ?? brand.campaign}
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        {/* Mobile: 2x2 grid; sm+: inline */}
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-2 sm:flex-wrap">
           <Button
             variant="outline"
             size="sm"
@@ -612,17 +615,19 @@ export function CardnewsScreen() {
             ) : (
               <PenLine className="h-3.5 w-3.5" />
             )}
-            AI 텍스트 생성
+            <span>AI 텍스트</span>
           </Button>
           <Button variant="outline" size="sm" onClick={onUploadAll} disabled={busy}>
-            <Upload className="h-3.5 w-3.5" />직접 업로드
+            <Upload className="h-3.5 w-3.5" />
+            <span>직접 업로드</span>
           </Button>
           <Button variant="outline" size="sm" onClick={onVariation} disabled={busy}>
-            <RefreshCw className="h-3.5 w-3.5" />변형 생성
+            <RefreshCw className="h-3.5 w-3.5" />
+            <span>변형 생성</span>
           </Button>
           <Button size="sm" onClick={regenerateAll} disabled={busy}>
             {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-            이미지 재생성
+            <span>이미지 재생성</span>
           </Button>
         </div>
       </div>
@@ -685,7 +690,7 @@ export function CardnewsScreen() {
           <h3 className="text-sm font-semibold">6장 캐러셀</h3>
           <span className="text-[11px] text-zinc-500">9:16 · 인스타 캐러셀 · 발행 전 검수 자동</span>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
+        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-3">
           {slides.map((s, i) => {
             const c = colors[i % (colors.length || 1)];
             const img = images[i] ?? { status: "idle" };

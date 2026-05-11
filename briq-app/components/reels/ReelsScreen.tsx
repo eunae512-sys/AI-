@@ -180,29 +180,29 @@ export function ReelsScreen() {
   return (
     <div className="px-4 sm:px-6 py-4 sm:py-6">
       {/* Hero */}
-      <div className="flex items-end justify-between gap-4 flex-wrap mb-6">
-        <div>
-          <div className="text-[11px] uppercase tracking-widest text-violet-600 dark:text-violet-400 font-semibold">
-            AI REELS STUDIO · {brand.name} · 톤 v{brand.toneVersion}
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-5 sm:mb-6">
+        <div className="min-w-0">
+          <div className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] text-violet-600 dark:text-violet-400 font-semibold">
+            AI REELS · {brand.name} · 톤 v{brand.toneVersion}
           </div>
-          <h1 className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight">
+          <h1 className="mt-2 text-[22px] sm:text-2xl md:text-3xl font-semibold tracking-tight leading-[1.15]">
             사진 5~10장이면 30초 릴스가 자동 완성
           </h1>
-          <p className="mt-1 text-sm text-zinc-500 max-w-2xl">
-            {brand.industryLabel} 업종 템플릿 자동 적용 · 컷 분할 · 자막 · 후크 · BGM · 썸네일 · 9:16
+          <p className="mt-1.5 text-[13px] sm:text-sm text-zinc-500 max-w-2xl leading-relaxed">
+            {brand.industryLabel} 업종 템플릿 · 컷 분할 · 자막 · BGM · 9:16
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={variation}>
+          <Button variant="outline" size="sm" onClick={variation} className="flex-1 sm:flex-initial">
             <RefreshCw className="h-3.5 w-3.5" />변형 생성
           </Button>
-          <Button size="sm" onClick={generate}>
+          <Button size="sm" onClick={generate} className="flex-1 sm:flex-initial">
             <Sparkles className="h-3.5 w-3.5" />다시 생성
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
         {/* Left - Template + controls (mobile: order-2 so preview is shown first) */}
         <div className="lg:col-span-3 space-y-3 order-2 lg:order-1">
           <Card className="p-4">
@@ -287,7 +287,7 @@ export function ReelsScreen() {
 
         {/* Center - Phone preview */}
         <div className="lg:col-span-5 flex flex-col items-center order-1 lg:order-2">
-          <div className="relative w-[min(280px,calc(100vw-48px))]">
+          <div className="relative w-[min(300px,calc(100vw-32px))] lg:w-[280px]">
             <motion.div
               animate={{ y: [0, -6, 0] }}
               transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}

@@ -88,10 +88,10 @@ export function BrandToneScreen() {
   return (
     <div className="px-4 sm:px-6 py-4 sm:py-6">
       <div className="mb-6">
-        <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">
+        <div className="text-[11px] uppercase tracking-[0.15em] text-zinc-400 font-semibold">
           BRAND VOICE MEMORY · {brand.name} · v{brand.toneVersion}
         </div>
-        <h1 className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight">
+        <h1 className="mt-2 text-[22px] sm:text-2xl md:text-3xl font-semibold tracking-tight leading-[1.15]">
           {brand.name}의 말투를 기억합니다
         </h1>
         <p className="mt-1 text-sm text-zinc-500 max-w-2xl">
@@ -123,7 +123,7 @@ export function BrandToneScreen() {
             ))}
           </div>
           <div className="mt-6 pt-5 border-t border-zinc-100 dark:border-zinc-800">
-            <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold mb-2">한 줄 요약 (AI 학습)</div>
+            <div className="text-[11px] uppercase tracking-[0.15em] text-zinc-400 font-semibold mb-2">한 줄 요약 (AI 학습)</div>
             <p
               className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 italic"
               style={{ fontFamily: "'Nanum Myeongjo', serif" }}
@@ -142,7 +142,7 @@ export function BrandToneScreen() {
             ))}
           </div>
           <div className="mt-4">
-            <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold mb-2">자주 쓰는 좋은 표현</div>
+            <div className="text-[11px] uppercase tracking-[0.15em] text-zinc-400 font-semibold mb-2">자주 쓰는 좋은 표현</div>
             <div className="flex flex-wrap gap-1.5">
               {(detail?.preferredWords ?? []).map((w) => (
                 <Badge key={w} tone="emerald">{w}</Badge>
@@ -154,7 +154,7 @@ export function BrandToneScreen() {
         <Card className="lg:col-span-3 p-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="rounded-lg border border-zinc-100 dark:border-zinc-800 p-4">
-              <div className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">BEFORE · GPT 기본</div>
+              <div className="text-[10px] uppercase tracking-[0.15em] text-zinc-400 font-semibold">BEFORE · GPT 기본</div>
               <p className="mt-2 text-sm leading-relaxed text-zinc-500 line-through whitespace-pre-line">
                 {example.before}
               </p>
@@ -165,7 +165,7 @@ export function BrandToneScreen() {
               animate={{ opacity: 1, x: 0 }}
               className="rounded-lg border-2 border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/30 dark:bg-emerald-500/5 p-4"
             >
-              <div className="text-[10px] uppercase tracking-widest text-emerald-700 dark:text-emerald-400 font-semibold">
+              <div className="text-[10px] uppercase tracking-[0.15em] text-emerald-700 dark:text-emerald-400 font-semibold">
                 AFTER · {brand.name} v{brand.toneVersion}
               </div>
               <p

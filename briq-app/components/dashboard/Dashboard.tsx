@@ -58,22 +58,27 @@ export function DashboardScreen() {
     <div>
       {/* Hero strip */}
       <motion.section className="px-4 sm:px-6 pt-5 sm:pt-8 pb-3 sm:pb-4" {...fade()} key={brand.id}>
-        <div className="flex items-end justify-between gap-6 flex-wrap">
-          <div>
-            <div className="text-[11px] font-medium text-zinc-500 mb-1">{today} · ☁️ 24°C 흐림</div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight">
-              <span className="gradient-text">{brand.name}</span>, 어서 오세요
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 sm:gap-6">
+          <div className="min-w-0">
+            <div className="text-[11px] font-medium text-zinc-500 mb-1.5">{today} · ☁️ 24°C 흐림</div>
+            <h1 className="text-[26px] sm:text-3xl md:text-4xl font-semibold tracking-tight leading-[1.1]">
+              <span className="gradient-text">{brand.name}</span>,<br className="sm:hidden" /> 어서 오세요
             </h1>
-            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 max-w-2xl">
-              {brand.industryLabel} · {brand.city} · 톤 v{brand.toneVersion} · 현재 캠페인 <b>{brand.campaign}</b>.
-              오늘 BRIQ가 6개 클라이언트를 대신 운영합니다 — 검토 대기 3 · 예약 12 · 톤 경고 2.
+            <p className="mt-2 sm:mt-3 text-[13px] sm:text-sm text-zinc-600 dark:text-zinc-400 max-w-2xl leading-relaxed">
+              <span className="hidden sm:inline">
+                {brand.industryLabel} · {brand.city} · 톤 v{brand.toneVersion} · 현재 캠페인 <b>{brand.campaign}</b>.
+                오늘 BRIQ가 6개 클라이언트를 대신 운영합니다 — 검토 대기 3 · 예약 12 · 톤 경고 2.
+              </span>
+              <span className="sm:hidden">
+                현재 캠페인 <b>{brand.campaign}</b> · 검토 3 · 예약 12 · 톤 경고 2
+              </span>
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={open}>
+          <div className="flex items-center gap-2 -mx-1 sm:mx-0 overflow-x-auto sm:overflow-visible">
+            <Button variant="outline" size="sm" onClick={open} className="shrink-0">
               <Sparkles className="h-3.5 w-3.5" />AI 빠른 실행
             </Button>
-            <Button asChild size="sm">
+            <Button asChild size="sm" className="shrink-0">
               <Link href="/reels">
                 <Plus className="h-3.5 w-3.5" />새 콘텐츠
               </Link>
@@ -92,18 +97,18 @@ export function DashboardScreen() {
             { label: "절감 시간", value: "42h", delta: "≈ ₩1.4M", note: "이번달 BRIQ 자동화 누적" },
           ];
           return (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 xs:grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
               {kpis.map((k, i) => (
                 <motion.div key={k.label} {...fade(i * 0.04)}>
-                  <Card className="p-4">
-                    <div className="text-[10px] uppercase tracking-widest text-zinc-400 dark:text-zinc-500 font-semibold truncate">
+                  <Card className="p-3.5 sm:p-4 h-full">
+                    <div className="text-[10px] uppercase tracking-[0.12em] text-zinc-400 dark:text-zinc-500 font-semibold truncate">
                       {k.label}
                     </div>
-                    <div className="mt-2 flex items-baseline gap-2">
-                      <div className="text-2xl font-semibold tabular-nums">{k.value}</div>
-                      <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">{k.delta}</div>
+                    <div className="mt-1.5 sm:mt-2 flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
+                      <div className="text-xl sm:text-2xl font-semibold tabular-nums tracking-tight">{k.value}</div>
+                      <div className="text-[10px] sm:text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">{k.delta}</div>
                     </div>
-                    <div className="mt-1 text-[11px] text-zinc-500">{k.note}</div>
+                    <div className="mt-1 text-[10px] sm:text-[11px] text-zinc-500 leading-snug line-clamp-2">{k.note}</div>
                   </Card>
                 </motion.div>
               ))}

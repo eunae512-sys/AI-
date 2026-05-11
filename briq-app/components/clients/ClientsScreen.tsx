@@ -30,8 +30,8 @@ export function ClientsScreen() {
     <div className="px-4 sm:px-6 py-4 sm:py-6">
       <div className="flex items-end justify-between gap-4 flex-wrap mb-6">
         <div>
-          <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">CLIENTS</div>
-          <h1 className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight">관리 중인 브랜드</h1>
+          <div className="text-[11px] uppercase tracking-[0.15em] text-zinc-400 font-semibold">CLIENTS</div>
+          <h1 className="mt-2 text-[22px] sm:text-2xl md:text-3xl font-semibold tracking-tight leading-[1.15]">관리 중인 브랜드</h1>
           <p className="mt-1 text-sm text-zinc-500">
             각 브랜드의 톤 메모리·콘텐츠·예약 큐를 한 곳에서 운영합니다. 카드를 클릭하면 해당 브랜드로 전환됩니다.
           </p>

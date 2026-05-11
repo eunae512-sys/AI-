@@ -84,7 +84,7 @@ export function SettingsScreen() {
   return (
     <div className="px-4 sm:px-6 py-4 sm:py-6 max-w-3xl">
       <div className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">설정</h1>
+        <h1 className="text-[22px] sm:text-2xl md:text-3xl font-semibold tracking-tight leading-[1.15]">설정</h1>
         <p className="mt-1 text-sm text-zinc-500">계정 · 결제 · 외부 연결 · 팀 시트.</p>
       </div>
 
@@ -140,15 +140,15 @@ export function SettingsScreen() {
                 key={c.name}
                 className="flex items-center justify-between gap-3 p-3 rounded-lg border border-zinc-100 dark:border-zinc-800"
               >
-                <div>
-                  <div className="text-xs font-medium">{c.name}</div>
-                  <div className="text-[11px] text-zinc-500">{c.state}</div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[13px] sm:text-xs font-medium truncate">{c.name}</div>
+                  <div className="text-[11px] text-zinc-500 truncate">{c.state}</div>
                 </div>
                 {c.connected ? (
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-[11px] h-7"
+                    className="text-xs sm:text-[11px] h-9 sm:h-7 shrink-0"
                     onClick={() => toast.warn(`${c.name} 연결 해제 — 진행하시려면 한 번 더 클릭`)}
                   >
                     연결 해제
@@ -156,7 +156,7 @@ export function SettingsScreen() {
                 ) : (
                   <Button
                     size="sm"
-                    className="text-[11px] h-7"
+                    className="text-xs sm:text-[11px] h-9 sm:h-7 shrink-0"
                     onClick={() => toast.success(`${c.name} OAuth 시작 — 새 창에서 인증해 주세요`)}
                   >
                     + 연결
@@ -217,7 +217,7 @@ export function SettingsScreen() {
                     value={profileDraft.name}
                     onChange={(e) => setProfileDraft({ ...profileDraft, name: e.target.value })}
                     required
-                    className="mt-1.5 w-full h-10 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
+                    className="mt-1.5 w-full h-11 sm:h-10 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
                   />
                 </div>
                 <div>
@@ -227,7 +227,7 @@ export function SettingsScreen() {
                     value={profileDraft.email}
                     onChange={(e) => setProfileDraft({ ...profileDraft, email: e.target.value })}
                     required
-                    className="mt-1.5 w-full h-10 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
+                    className="mt-1.5 w-full h-11 sm:h-10 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
                   />
                 </div>
                 <div>
@@ -237,7 +237,7 @@ export function SettingsScreen() {
                     value={profileDraft.role}
                     onChange={(e) => setProfileDraft({ ...profileDraft, role: e.target.value })}
                     placeholder="예: 사장님 · 관리자"
-                    className="mt-1.5 w-full h-10 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
+                    className="mt-1.5 w-full h-11 sm:h-10 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
                   />
                 </div>
               </div>
@@ -274,7 +274,7 @@ export function SettingsScreen() {
             >
               <div className="px-5 py-4 border-b border-zinc-100 dark:border-zinc-900 flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-semibold uppercase tracking-widest text-violet-600 dark:text-violet-400">
+                  <div className="text-xs font-semibold uppercase tracking-[0.15em] text-violet-600 dark:text-violet-400">
                     PAYMENT METHOD
                   </div>
                   <h2 className="text-base font-semibold mt-0.5">결제 수단 변경</h2>
@@ -296,7 +296,7 @@ export function SettingsScreen() {
                     onChange={(e) => setPaymentDraft({ ...paymentDraft, holder: e.target.value })}
                     required
                     placeholder="HEO EUNAE"
-                    className="mt-1.5 w-full h-10 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
+                    className="mt-1.5 w-full h-11 sm:h-10 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
                   />
                 </div>
                 <div>
@@ -308,7 +308,7 @@ export function SettingsScreen() {
                     inputMode="numeric"
                     required
                     placeholder="0000 0000 0000 0000"
-                    className="mt-1.5 w-full h-10 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm tabular-nums focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
+                    className="mt-1.5 w-full h-11 sm:h-10 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm tabular-nums focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -321,7 +321,7 @@ export function SettingsScreen() {
                       required
                       placeholder="08/27"
                       maxLength={5}
-                      className="mt-1.5 w-full h-10 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm tabular-nums focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
+                      className="mt-1.5 w-full h-11 sm:h-10 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm tabular-nums focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
                     />
                   </div>
                   <div>
@@ -334,7 +334,7 @@ export function SettingsScreen() {
                       required
                       placeholder="123"
                       maxLength={4}
-                      className="mt-1.5 w-full h-10 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm tabular-nums focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
+                      className="mt-1.5 w-full h-11 sm:h-10 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm tabular-nums focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
                     />
                   </div>
                 </div>

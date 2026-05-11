@@ -23,21 +23,26 @@ export function BrandPicker() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-800 hover:border-zinc-900 dark:hover:border-zinc-100 transition-colors group bg-white dark:bg-zinc-950"
+        className="inline-flex items-center gap-1.5 sm:gap-2 pl-1.5 pr-2 sm:pl-2.5 sm:pr-2.5 h-9 sm:h-8 rounded-full sm:rounded-md border border-zinc-200/80 dark:border-zinc-800/80 hover:border-zinc-400 dark:hover:border-zinc-600 active:bg-zinc-50 dark:active:bg-zinc-900 transition-colors bg-white dark:bg-zinc-950"
         aria-haspopup="listbox"
         aria-expanded={open}
+        aria-label={`현재 브랜드: ${brand.name}, 변경하려면 탭하세요`}
       >
         <span
           className={cn(
-            "h-5 w-5 rounded bg-gradient-to-br grid place-items-center text-white text-[10px] font-bold shrink-0",
-            brand.gradient
+            "h-6 w-6 sm:h-5 sm:w-5 rounded-full sm:rounded bg-gradient-to-br grid place-items-center text-white text-[11px] sm:text-[10px] font-bold shrink-0",
+            brand.gradient,
           )}
         >
           {brand.letter}
         </span>
-        <span className="text-xs font-medium truncate max-w-[80px] sm:max-w-[140px]">{brand.name}</span>
-        <span className="text-[10px] text-zinc-400 hidden sm:inline">v{brand.toneVersion}</span>
-        <ChevronDown className={cn("h-3 w-3 text-zinc-400 transition-transform shrink-0", open && "rotate-180")} />
+        <span className="text-xs font-medium truncate max-w-[88px] sm:max-w-[140px] hidden xs:inline sm:inline">
+          {brand.name}
+        </span>
+        <span className="text-[10px] text-zinc-400 hidden md:inline">v{brand.toneVersion}</span>
+        <ChevronDown
+          className={cn("h-3 w-3 text-zinc-400 transition-transform shrink-0", open && "rotate-180")}
+        />
       </button>
 
       <AnimatePresence>

@@ -56,7 +56,7 @@ function SidebarBody({ pathname, onNavigate, variant }: SidebarBodyProps) {
                   href={item.href}
                   onClick={onNavigate}
                   className={cn(
-                    "relative flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors",
+                    "relative flex items-center gap-2.5 px-2.5 py-2.5 md:py-1.5 rounded-md text-[13px] md:text-xs font-medium transition-colors",
                     active
                       ? "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-50 shadow-sm"
                       : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-zinc-100",
@@ -141,19 +141,19 @@ export function Sidebar() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="md:hidden fixed inset-0 bg-black/50 z-40"
+              className="md:hidden fixed inset-0 bg-black/55 backdrop-blur-sm z-40"
               onClick={() => setMobileOpen(false)}
             />
             <motion.aside
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
-              transition={{ type: "tween", duration: 0.25 }}
-              className="md:hidden fixed top-0 left-0 bottom-0 z-50 w-72 flex flex-col bg-white dark:bg-zinc-950 border-r border-zinc-100 dark:border-zinc-900 shadow-2xl"
+              transition={{ type: "tween", duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
+              className="md:hidden fixed top-0 left-0 bottom-0 z-50 w-[82vw] max-w-[320px] flex flex-col bg-white dark:bg-zinc-950 rounded-r-2xl shadow-[8px_0_40px_-8px_rgba(0,0,0,0.25)] safe-pt safe-pb"
             >
               <button
                 onClick={() => setMobileOpen(false)}
-                className="absolute top-4 right-3 p-2 rounded-md text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-900 z-10"
+                className="absolute top-4 right-3 h-9 w-9 grid place-items-center rounded-full text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-900 z-10 transition-colors"
                 aria-label="메뉴 닫기"
               >
                 <X className="h-4 w-4" />

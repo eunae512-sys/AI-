@@ -190,10 +190,10 @@ export function ScheduleScreen() {
     <div className="px-4 sm:px-6 py-4 sm:py-6">
       <div className="flex items-end justify-between gap-4 flex-wrap mb-6">
         <div>
-          <div className="text-[11px] uppercase tracking-widest text-sky-600 dark:text-sky-400 font-semibold">
+          <div className="text-[11px] uppercase tracking-[0.15em] text-sky-600 dark:text-sky-400 font-semibold">
             UPLOAD QUEUE · {brand.name}
           </div>
-          <h1 className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight">예약 업로드 큐</h1>
+          <h1 className="mt-2 text-[22px] sm:text-2xl md:text-3xl font-semibold tracking-tight leading-[1.15]">예약 업로드 큐</h1>
           <p className="mt-1 text-sm text-zinc-500 max-w-2xl">
             인스타 · 블로그 · Threads · 카카오 채널 동시 예약. BRIQ가 학습한 최적 시간으로 자동 보정합니다.
           </p>
@@ -252,9 +252,9 @@ export function ScheduleScreen() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, x: -16 }}
                   transition={{ delay: i * 0.04 }}
-                  className={`p-3 sm:p-4 flex items-center gap-3 sm:gap-4 ${u.status === "paused" ? "opacity-50" : ""}`}
+                  className={`p-3 sm:p-4 flex items-center gap-3 ${u.status === "paused" ? "opacity-50" : ""}`}
                 >
-                  <div className="text-xs font-semibold tabular-nums w-12 sm:w-14 text-emerald-600 shrink-0">
+                  <div className="text-xs font-semibold tabular-nums w-11 sm:w-14 text-emerald-600 shrink-0">
                     {u.time}
                     <div className="text-[10px] font-normal text-zinc-500">{u.date}</div>
                   </div>
@@ -262,26 +262,29 @@ export function ScheduleScreen() {
                     {brand.letter}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-xs font-medium truncate">{u.title}</div>
-                    <div className="text-[11px] text-zinc-500 mt-0.5 truncate">{u.channel}</div>
+                    <div className="text-[13px] sm:text-xs font-medium truncate leading-tight">{u.title}</div>
+                    <div className="text-[11px] text-zinc-500 mt-1 sm:mt-0.5 truncate">{u.channel}</div>
                   </div>
-                  <Badge tone={u.status === "paused" ? "default" : i === 0 ? "emerald" : "sky"} className="hidden sm:inline-flex">
-                    {u.status === "paused" ? "일시정지" : i === 0 ? "최적시간 ★" : "예약"}
+                  <Badge
+                    tone={u.status === "paused" ? "default" : i === 0 ? "emerald" : "sky"}
+                    className="hidden sm:inline-flex shrink-0"
+                  >
+                    {u.status === "paused" ? "일시정지" : i === 0 ? "최적 ★" : "예약"}
                   </Badge>
-                  <div className="flex items-center gap-1 relative">
+                  <div className="flex items-center gap-0.5 relative shrink-0">
                     <button
                       onClick={() => togglePause(u.id)}
-                      className="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 p-1.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                      title={u.status === "paused" ? "재개" : "일시정지"}
+                      className="h-9 w-9 grid place-items-center text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 active:bg-zinc-200 dark:active:bg-zinc-700 transition-colors"
+                      aria-label={u.status === "paused" ? "재개" : "일시정지"}
                     >
-                      {u.status === "paused" ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
+                      {u.status === "paused" ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
                     </button>
                     <button
                       onClick={() => setMenuFor(menuFor === u.id ? null : u.id)}
-                      className="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 p-1.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                      title="더보기"
+                      className="h-9 w-9 grid place-items-center text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 active:bg-zinc-200 dark:active:bg-zinc-700 transition-colors"
+                      aria-label="더보기"
                     >
-                      <MoreHorizontal className="h-3.5 w-3.5" />
+                      <MoreHorizontal className="h-4 w-4" />
                     </button>
                     {menuFor === u.id && (
                       <div className="absolute right-0 top-full mt-1 w-44 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-xl z-30 overflow-hidden">
@@ -350,7 +353,7 @@ export function ScheduleScreen() {
             ))}
           </div>
           <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold mb-1.5">자동 보정 규칙</div>
+            <div className="text-[10px] uppercase tracking-[0.15em] text-zinc-400 font-semibold mb-1.5">자동 보정 규칙</div>
             <ul className="text-[11px] space-y-1 text-zinc-600 dark:text-zinc-400">
               <li>· 비 오는 날 +30분 앞당김</li>
               <li>· 공휴일 -2시간 (가족 동반 시간)</li>
@@ -384,7 +387,7 @@ export function ScheduleScreen() {
             >
               <div className="px-5 py-4 border-b border-zinc-100 dark:border-zinc-900 flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-semibold uppercase tracking-widest text-sky-600 dark:text-sky-400">
+                  <div className="text-xs font-semibold uppercase tracking-[0.15em] text-sky-600 dark:text-sky-400">
                     {editingId ? "EDIT BOOKING" : "NEW BOOKING"}
                   </div>
                   <h2 className="text-base font-semibold mt-0.5">
@@ -409,7 +412,7 @@ export function ScheduleScreen() {
                     onChange={(e) => setForm({ ...form, title: e.target.value })}
                     placeholder="예: 장마 감성 릴스"
                     required
-                    className="mt-1.5 w-full h-10 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
+                    className="mt-1.5 w-full h-11 sm:h-10 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
                   />
                 </div>
 
@@ -422,7 +425,7 @@ export function ScheduleScreen() {
                       onChange={(e) => setForm({ ...form, date: e.target.value })}
                       min={today}
                       required
-                      className="mt-1.5 w-full h-10 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
+                      className="mt-1.5 w-full h-11 sm:h-10 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
                     />
                   </div>
                   <div>
@@ -432,7 +435,7 @@ export function ScheduleScreen() {
                       value={form.time}
                       onChange={(e) => setForm({ ...form, time: e.target.value })}
                       required
-                      className="mt-1.5 w-full h-10 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
+                      className="mt-1.5 w-full h-11 sm:h-10 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
                     />
                   </div>
                 </div>
@@ -464,7 +467,7 @@ export function ScheduleScreen() {
                 </div>
 
                 <div className="rounded-lg bg-emerald-50/40 dark:bg-emerald-500/5 border border-emerald-100 dark:border-emerald-900/40 p-3 text-xs">
-                  <div className="text-[10px] uppercase tracking-widest text-emerald-700 dark:text-emerald-400 font-semibold mb-1">
+                  <div className="text-[10px] uppercase tracking-[0.15em] text-emerald-700 dark:text-emerald-400 font-semibold mb-1">
                     BRIQ 추천
                   </div>
                   <div className="text-emerald-900 dark:text-emerald-300">

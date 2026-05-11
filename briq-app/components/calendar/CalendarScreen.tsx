@@ -64,8 +64,8 @@ export function CalendarScreen() {
       {/* Hero */}
       <div className="flex items-end justify-between gap-4 flex-wrap mb-6">
         <div>
-          <div className="text-[11px] uppercase tracking-widest text-amber-600 font-semibold">CONTENT CALENDAR</div>
-          <h1 className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight">콘텐츠 캘린더</h1>
+          <div className="text-[11px] uppercase tracking-[0.15em] text-amber-600 font-semibold">CONTENT CALENDAR</div>
+          <h1 className="mt-2 text-[22px] sm:text-2xl md:text-3xl font-semibold tracking-tight leading-[1.15]">콘텐츠 캘린더</h1>
           <p className="mt-1 text-sm text-zinc-500 max-w-2xl">공휴일 · 시즌 · 날씨 · 지역 축제 · 트렌드 자동 추천. 클릭 한 번으로 생성·예약.</p>
         </div>
         <div className="flex items-center gap-2">
@@ -83,7 +83,7 @@ export function CalendarScreen() {
       {/* Recommendation strip */}
       <div className="mb-5">
         <div className="flex items-center gap-3 mb-2">
-          <span className="text-[11px] uppercase tracking-widest text-indigo-600 dark:text-indigo-400 font-semibold">BRIQ 자동 추천</span>
+          <span className="text-[11px] uppercase tracking-[0.15em] text-indigo-600 dark:text-indigo-400 font-semibold">BRIQ 자동 추천</span>
           <span className="text-[11px] text-zinc-500">5월 11~31일 · 14건</span>
         </div>
         <div className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6">
@@ -136,7 +136,7 @@ export function CalendarScreen() {
           </div>
         </div>
 
-        <div className="grid grid-cols-7 gap-1.5 text-[10px] uppercase tracking-widest text-zinc-400 font-semibold mb-1.5">
+        <div className="grid grid-cols-7 gap-1.5 text-[10px] uppercase tracking-[0.15em] text-zinc-400 font-semibold mb-1.5">
           <div className="px-2 text-rose-500">일</div><div className="px-2">월</div><div className="px-2">화</div><div className="px-2">수</div><div className="px-2">목</div><div className="px-2">금</div><div className="px-2">토</div>
         </div>
 

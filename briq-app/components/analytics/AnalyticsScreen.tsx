@@ -76,10 +76,10 @@ export function AnalyticsScreen() {
   return (
     <div className="px-4 sm:px-6 py-4 sm:py-6">
       <div className="mb-6">
-        <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">
+        <div className="text-[11px] uppercase tracking-[0.15em] text-zinc-400 font-semibold">
           PERFORMANCE · {brand.name} · 최근 30일
         </div>
-        <h1 className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight">{brand.name} 성과 분석</h1>
+        <h1 className="mt-2 text-[22px] sm:text-2xl md:text-3xl font-semibold tracking-tight leading-[1.15]">{brand.name} 성과 분석</h1>
         <p className="mt-1 text-sm text-zinc-500">
           {brand.industryLabel} · {brand.city} · 조회 · 저장 · CTR · 예약 전환 · Before/After ROI 시각화
         </p>
@@ -93,7 +93,7 @@ export function AnalyticsScreen() {
       >
         {sparkRows.map((row) => (
           <Card key={row.label} className="p-5">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">{row.label}</div>
+            <div className="text-[10px] uppercase tracking-[0.15em] text-zinc-400 font-semibold">{row.label}</div>
             <div className="mt-2 flex items-baseline gap-2">
               <div className="text-2xl font-semibold tabular-nums">{row.value}</div>
               <div className="text-[11px] text-emerald-600 font-medium">{row.delta}</div>
@@ -128,7 +128,7 @@ export function AnalyticsScreen() {
             { label: "월 매출", b: k.beforeAfter.revenue.before, a: k.beforeAfter.revenue.after, d: k.beforeAfter.revenue.delta },
           ].map((m) => (
             <div key={m.label} className="rounded-xl border border-zinc-100 dark:border-zinc-800 p-4">
-              <div className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">{m.label}</div>
+              <div className="text-[10px] uppercase tracking-[0.15em] text-zinc-400 font-semibold">{m.label}</div>
               <div className="mt-3 grid grid-cols-2 gap-2 items-end">
                 <div>
                   <div className="text-[10px] text-zinc-500">BEFORE</div>
@@ -163,7 +163,7 @@ export function AnalyticsScreen() {
           </div>
           <div className="overflow-x-auto -mx-5 px-5">
             <table className="w-full text-xs">
-              <thead className="text-left text-[10px] uppercase tracking-widest text-zinc-400 font-semibold border-b border-zinc-100 dark:border-zinc-800">
+              <thead className="text-left text-[10px] uppercase tracking-[0.15em] text-zinc-400 font-semibold border-b border-zinc-100 dark:border-zinc-800">
                 <tr>
                   <th className="py-2 pr-3">#</th>
                   <th className="py-2 pr-3">콘텐츠</th>
