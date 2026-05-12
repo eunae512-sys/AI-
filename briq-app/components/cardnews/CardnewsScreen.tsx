@@ -28,6 +28,9 @@ import { Button } from "@/components/ui/button";
 import { useBrand } from "@/components/brand/BrandProvider";
 import { useToast } from "@/components/ui/toast";
 import { getBrandDetail } from "@/lib/dummy/brand-detail";
+import { NextStepCard } from "@/components/layout/RoadmapStrip";
+import { addToQueue as enqueuePublish } from "@/lib/queue/publish-queue";
+import { useAutoSaveDraft, formatSavedAt } from "@/lib/drafts/auto-save";
 
 type Source = "pexels" | "codex" | "ai";
 
@@ -166,14 +169,87 @@ const SOURCE_LABEL: Record<Source, { label: string; sub: string; icon: typeof Cl
   ai: { label: "AI 결제 (OpenAI)", sub: "gpt-image-1 · ~₩60/장", icon: CreditCard },
 };
 
+// 업종 → 대표 더미 브랜드 ID (사용자 브랜드 시 같은 업종 템플릿을 시작점으로 사용)
+const INDUSTRY_TEMPLATE_BRAND: Record<string, string> = {
+  restaurant: "miokdang",
+  cafe: "roastery-1985",
+  stay: "seochon-stay",
+  dessert: "dolce-dessert",
+  beauty: "luna-hair",
+  local: "forum-fashion",
+};
+
+// 업종별 GPT 컨텍스트 디폴트 — API 가 한정식으로 fallback 하지 않도록 클라이언트에서 풍부한 컨텍스트 주입
+const INDUSTRY_PROMPT_DEFAULTS: Record<
+  string,
+  { goal: string; target: string; promotion: string; mustSay: string; forbidden: string; tone: string }
+> = {
+  restaurant: {
+    goal: "신규 고객 유입 + 사전 예약 전환",
+    target: "30~50대 직장인·가족 모임 주최자",
+    promotion: "시즌 한정 코스 · 사전 예약 권장 · 단체석 안내",
+    mustSay: "코스, 한 상, 시즌",
+    forbidden: "최고, 100%, JMT, 맛집, 대박",
+    tone: "정성, 단정한 존댓말, 재료의 시간을 짧게 끊어 보여줌",
+  },
+  cafe: {
+    goal: "단골 유치 + 원두/메뉴 구매 전환",
+    target: "20~40대 작업러·커피 애호가·동네 직장인",
+    promotion: "시즌 원두 · 신메뉴 · 픽업 안내",
+    mustSay: "원두, 추출, 한 잔",
+    forbidden: "최고, 1등, 대박, 핫플",
+    tone: "매거진 톤, 한 잔의 리듬, 산미·바디 같은 전문 용어 자연스럽게",
+  },
+  dessert: {
+    goal: "인스타 노출 + 픽업 예약 전환",
+    target: "20~30대 디저트 애호가·기념일 선물",
+    promotion: "시즌 한정 메뉴 · 픽업 예약 · 홀케이크 안내",
+    mustSay: "한 입, 단면, 시즌",
+    forbidden: "최고, 1등, JMT, 대박",
+    tone: "친근한 반말 혹은 가벼운 존댓말, 한 입의 감각 강조",
+  },
+  stay: {
+    goal: "예약 전환 + 패키지 안내",
+    target: "30~60대 가족 단위·커플·외국인",
+    promotion: "1박 패키지 · 기념일 옵션 · 체크인 안내",
+    mustSay: "공간, 빛, 환영",
+    forbidden: "최고, 인생숙소, 무조건, 강추",
+    tone: "편지 형식, 손님께 보내는 말투, 공간의 빛·소리 묘사",
+  },
+  beauty: {
+    goal: "신규 디자이너 지명 + 시술 예약",
+    target: "20~40대 헤어 관리에 관심 있는 직장인",
+    promotion: "시즌 컬러 · 케어 패키지 · 단골 우선 예약",
+    mustSay: "결, 톤, 케어",
+    forbidden: "최고, 100%, 1등, 절대",
+    tone: "자신감 있는 존댓말, 단계별 결과 강조",
+  },
+  local: {
+    goal: "쇼룸 방문 + DM 문의 전환",
+    target: "20~40대 컨템포러리 패션 관심 소비자",
+    promotion: "시즌 룩북 · 신상 컬렉션 · 쇼룸 안내",
+    mustSay: "원단, 룩, 쇼룸",
+    forbidden: "최고, 1등, 머스트해브, 강추",
+    tone: "절제된 영문·한국어 혼용 에디토리얼, 원단·실루엣 디테일",
+  },
+};
+
 export function CardnewsScreen() {
-  const { brand } = useBrand();
+  const { brand, userBrand } = useBrand();
   const toast = useToast();
-  const detail = getBrandDetail(brand.id);
-  const colors = detail?.colorPalette ?? [];
+  const isUserBrand = !!userBrand && brand.id === userBrand.id;
+  // 사용자 브랜드면 업종에 맞는 템플릿 ID로 SLIDES 조회 (industry → template brand)
+  const templateBrandId = isUserBrand
+    ? INDUSTRY_TEMPLATE_BRAND[brand.industry] ?? "miokdang"
+    : brand.id;
+  const detail = getBrandDetail(templateBrandId);
+  // colors: 사용자 브랜드면 추출 팔레트, 아니면 더미 brand-detail
+  const colors = isUserBrand && userBrand
+    ? userBrand.palette.map((c) => ({ name: c.name, hex: c.hex }))
+    : detail?.colorPalette ?? [];
   const gradient = brand.gradient;
 
-  const defaultSlides = SLIDES_BY_BRAND[brand.id] ?? SLIDES_BY_BRAND.miokdang;
+  const defaultSlides = SLIDES_BY_BRAND[templateBrandId] ?? SLIDES_BY_BRAND.miokdang;
 
   const [slides, setSlides] = useState<SlideCopy[]>(defaultSlides);
   const [source, setSource] = useState<Source>("pexels");
@@ -186,15 +262,27 @@ export function CardnewsScreen() {
   const [keyMissing, setKeyMissing] = useState<string | null>(null);
   const [bannerDismissed, setBannerDismissed] = useState(false);
 
+  // 자동 저장 — slides + approved + source (이미지는 dataURL 이라 빼고; 다시 생성하면 됨)
+  const { lastSavedAt: draftSavedAt } = useAutoSaveDraft({
+    scope: "cardnews",
+    brandId: brand.id,
+    value: { slides, approved, source },
+    onRestore: (draft) => {
+      if (Array.isArray(draft.slides) && draft.slides.length > 0) setSlides(draft.slides);
+      if (Array.isArray(draft.approved)) setApproved(draft.approved);
+      if (typeof draft.source === "string") setSource(draft.source as Source);
+    },
+  });
+
   const uploadAllRef = useRef<HTMLInputElement>(null);
   const uploadOneRef = useRef<HTMLInputElement>(null);
   const uploadTargetSlide = useRef<number | null>(null);
 
-  const queries = PEXELS_QUERY_BY_BRAND[brand.id] ?? PEXELS_QUERY_BY_BRAND.miokdang;
+  const queries = PEXELS_QUERY_BY_BRAND[templateBrandId] ?? PEXELS_QUERY_BY_BRAND.miokdang;
 
   // 브랜드 전환 시 상태 리셋
   useEffect(() => {
-    const fresh = SLIDES_BY_BRAND[brand.id] ?? SLIDES_BY_BRAND.miokdang;
+    const fresh = SLIDES_BY_BRAND[templateBrandId] ?? SLIDES_BY_BRAND.miokdang;
     setSlides(fresh);
     setImages(fresh.map(() => ({ status: "idle" })));
     setApproved(fresh.map(() => false));
@@ -290,6 +378,7 @@ export function CardnewsScreen() {
   );
 
   const regenerateAll = useCallback(async () => {
+    if (busy || generatingText) return;
     setBusy(true);
     setImages(slides.map(() => ({ status: "loading" })));
     toast.info(`${brand.name} · 6장 ${SOURCE_LABEL[source].label}로 생성 시작`);
@@ -316,7 +405,7 @@ export function CardnewsScreen() {
     } else {
       toast.warn(`${okCount}/${slides.length} 완료 · 일부 실패`);
     }
-  }, [slides, source, brand.name, generateOne, toast]);
+  }, [slides, source, brand.name, generateOne, toast, busy, generatingText]);
 
   const regenerateOne = useCallback(
     async (idx: number) => {
@@ -413,18 +502,34 @@ export function CardnewsScreen() {
   };
 
   const generateText = useCallback(async () => {
+    if (generatingText || busy) return;
     setGeneratingText(true);
     toast.info(`${brand.name} 카드뉴스 텍스트 GPT-4o 생성 중...`);
     try {
+      const ind = INDUSTRY_PROMPT_DEFAULTS[brand.industry] ?? INDUSTRY_PROMPT_DEFAULTS.restaurant;
+      const detailMustSay = (detail?.preferredWords ?? []).join(", ");
+      const detailForbidden = (detail?.forbiddenWords ?? []).join(", ");
+      // ★ 사용자 브랜드 데이터 주입 — 시그니처 메뉴 + tagline 이 카피에 박힘
+      const userMenuMustSay = isUserBrand && userBrand?.signatureMenu
+        ? userBrand.signatureMenu.filter(Boolean).join(", ")
+        : "";
+      const userTagline = isUserBrand && userBrand?.tagline ? userBrand.tagline : "";
+      const campaignWithTagline = userTagline
+        ? `${brand.campaign} · 가게 한 줄 소개: "${userTagline}"`
+        : brand.campaign;
       const body = {
         brand: brand.name,
         industry: brand.industryLabel,
         location: brand.city,
-        campaign: brand.campaign,
-        tone: detail?.toneSummary ?? "단정한 존댓말, 절제, 신뢰",
-        forbidden: (detail?.forbiddenWords ?? []).join(", "),
-        must_say: (detail?.preferredWords ?? []).join(", "),
-        slide_count: 6,
+        campaign: campaignWithTagline,
+        goal: ind.goal,
+        target: ind.target,
+        promotion: ind.promotion,
+        tone: detail?.toneSummary ?? ind.tone,
+        forbidden: [detailForbidden, ind.forbidden].filter(Boolean).join(", "),
+        // 시그니처 메뉴는 must_say 최상단 — GPT 가 우선 반영
+        must_say: [userMenuMustSay, detailMustSay, ind.mustSay].filter(Boolean).join(", "),
+        slide_count: slides.length || 6,
       };
       const res = await fetch("/api/generate-text", {
         method: "POST",
@@ -509,19 +614,34 @@ export function CardnewsScreen() {
   const approvedCount = approved.filter(Boolean).length;
 
   const onVariation = useCallback(async () => {
+    // 중복 클릭 방어 — disabled prop 이 안 잡힐 가능성 대비 (focus/keyboard 등)
+    if (generatingText || busy) return;
     setGeneratingText(true);
     toast.info(`${brand.name} 변형 카피 GPT-4o 생성 중 — 다른 각도로 6장`);
     try {
-      const variationHint = " 변형 버전 — 같은 캠페인이지만 다른 후크/스토리/각도로 새로 써주세요. 첫 시도와 겹치지 않게.";
+      const variationHint = " 변형 버전 — 같은 캠페인이지만 다른 후크·스토리·각도로 새로 작성. 첫 시도와 같은 단어·문장 반복 금지.";
+      const ind = INDUSTRY_PROMPT_DEFAULTS[brand.industry] ?? INDUSTRY_PROMPT_DEFAULTS.restaurant;
+      const detailMustSay = (detail?.preferredWords ?? []).join(", ");
+      const detailForbidden = (detail?.forbiddenWords ?? []).join(", ");
+      const userMenuMustSay = isUserBrand && userBrand?.signatureMenu
+        ? userBrand.signatureMenu.filter(Boolean).join(", ")
+        : "";
+      const userTagline = isUserBrand && userBrand?.tagline ? userBrand.tagline : "";
+      const campaignBase = userTagline
+        ? `${brand.campaign} · 가게 한 줄 소개: "${userTagline}"`
+        : brand.campaign;
       const body = {
         brand: brand.name,
         industry: brand.industryLabel,
         location: brand.city,
-        campaign: brand.campaign + variationHint,
-        tone: detail?.toneSummary ?? "단정한 존댓말, 절제, 신뢰",
-        forbidden: (detail?.forbiddenWords ?? []).join(", "),
-        must_say: (detail?.preferredWords ?? []).join(", "),
-        slide_count: 6,
+        campaign: campaignBase + variationHint,
+        goal: ind.goal,
+        target: ind.target,
+        promotion: ind.promotion,
+        tone: detail?.toneSummary ?? ind.tone,
+        forbidden: [detailForbidden, ind.forbidden].filter(Boolean).join(", "),
+        must_say: [userMenuMustSay, detailMustSay, ind.mustSay].filter(Boolean).join(", "),
+        slide_count: slides.length || 6,
       };
       const res = await fetch("/api/generate-text", {
         method: "POST",
@@ -551,15 +671,43 @@ export function CardnewsScreen() {
     } finally {
       setGeneratingText(false);
     }
-  }, [brand, detail, toast]);
+  }, [brand, detail, toast, busy, generatingText, slides.length]);
   const onPublish = () => {
     if (approvedCount < slides.length) {
       toast.warn(`승인된 슬라이드 ${approvedCount}/${slides.length} · 전체 승인 후 발행 가능`);
       return;
     }
-    toast.success(`${brand.name} 인스타에 캐러셀 ${slides.length}장 발행 요청됨`);
+    const firstSlide = slides[0];
+    const firstImage = images[0];
+    enqueuePublish({
+      brandId: brand.id,
+      brandName: brand.name,
+      type: "cardnews",
+      typeLabel: `카드뉴스 ${slides.length}장`,
+      title: firstSlide?.title ?? brand.campaign,
+      caption: firstSlide?.sub,
+      thumbnail: firstImage?.status === "ready" ? firstImage.url : undefined,
+      channels: ["instagram"],
+      status: "scheduled",
+    });
+    toast.success(`${brand.name} 카드뉴스 발행 큐에 등록 — /schedule 에서 시간 지정`);
   };
-  const onQueue = () => toast.success(`${brand.name} 예약 큐에 카드뉴스 추가됨`);
+  const onQueue = () => {
+    const firstSlide = slides[0];
+    const firstImage = images[0];
+    enqueuePublish({
+      brandId: brand.id,
+      brandName: brand.name,
+      type: "cardnews",
+      typeLabel: `카드뉴스 ${slides.length}장`,
+      title: firstSlide?.title ?? brand.campaign,
+      caption: firstSlide?.sub,
+      thumbnail: firstImage?.status === "ready" ? firstImage.url : undefined,
+      channels: ["instagram"],
+      status: "draft",
+    });
+    toast.success(`${brand.name} 카드뉴스 초안으로 큐에 저장됨`);
+  };
   const onDownload = () => toast.info("ZIP 다운로드 시작 — 6.4 MB");
 
   return (
@@ -601,7 +749,9 @@ export function CardnewsScreen() {
             {brand.name} 톤 v{brand.toneVersion} · {detail?.hero.tagline ?? brand.campaign}
           </p>
         </div>
-        {/* Mobile: 2x2 grid; sm+: inline */}
+        {/* Mobile: 2x2 grid; sm+: inline
+            disabled 정책: busy(이미지 재생성 중) OR generatingText(텍스트 생성 중) → 모든 작업 버튼 disabled
+            spinner 정책: 각 버튼의 자체 작업 중일 때만 spinner */}
         <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-2 sm:flex-wrap">
           <Button
             variant="outline"
@@ -615,21 +765,35 @@ export function CardnewsScreen() {
             ) : (
               <PenLine className="h-3.5 w-3.5" />
             )}
-            <span>AI 텍스트</span>
+            <span>{generatingText ? "AI 작성 중..." : "AI 텍스트"}</span>
           </Button>
-          <Button variant="outline" size="sm" onClick={onUploadAll} disabled={busy}>
+          <Button variant="outline" size="sm" onClick={onUploadAll} disabled={busy || generatingText}>
             <Upload className="h-3.5 w-3.5" />
             <span>직접 업로드</span>
           </Button>
-          <Button variant="outline" size="sm" onClick={onVariation} disabled={busy}>
-            <RefreshCw className="h-3.5 w-3.5" />
-            <span>변형 생성</span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onVariation}
+            disabled={busy || generatingText}
+          >
+            {generatingText ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <RefreshCw className="h-3.5 w-3.5" />
+            )}
+            <span>{generatingText ? "변형 중..." : "변형 생성"}</span>
           </Button>
-          <Button size="sm" onClick={regenerateAll} disabled={busy}>
+          <Button size="sm" onClick={regenerateAll} disabled={busy || generatingText}>
             {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-            <span>이미지 재생성</span>
+            <span>{busy ? "이미지 생성 중..." : "이미지 재생성"}</span>
           </Button>
         </div>
+      </div>
+
+      {/* 자동 저장 상태 — 사용자 신뢰 */}
+      <div className="mt-2 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+        ✓ {formatSavedAt(draftSavedAt)} · 카피·승인 상태 자동 보존됨
       </div>
 
       <input
@@ -1003,6 +1167,11 @@ export function CardnewsScreen() {
             <p className="mt-2 text-[10px] text-zinc-500">{SOURCE_LABEL[source].sub}</p>
           </div>
         </Card>
+      </div>
+
+      {/* 다음 단계 — 발행 예약 */}
+      <div className="mt-5">
+        <NextStepCard />
       </div>
     </div>
   );

@@ -1,11 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "motion/react";
+import { Sparkles, ArrowRight, Lightbulb } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useBrand } from "@/components/brand/BrandProvider";
 import { getBrandDetail } from "@/lib/dummy/brand-detail";
+import { getBrand } from "@/lib/dummy/brands";
 import { formatNumber } from "@/lib/utils";
+import { usePublishQueue } from "@/lib/queue/publish-queue";
+import { NextStepCard } from "@/components/layout/RoadmapStrip";
 
 // 브랜드별 KPI + 스파크라인
 const BRAND_KPIS: Record<
@@ -61,17 +67,46 @@ const BRAND_KPIS: Record<
   },
 };
 
-export function AnalyticsScreen() {
-  const { brand } = useBrand();
-  const detail = getBrandDetail(brand.id);
-  const k = BRAND_KPIS[brand.id] ?? BRAND_KPIS.miokdang;
+// 업종 → 동일 업종 더미 브랜드 (사용자 브랜드 활성 시 "유사 매장 평균" 표시용)
+const INDUSTRY_PEER_BRAND: Record<string, string> = {
+  restaurant: "miokdang",
+  cafe: "roastery-1985",
+  stay: "seochon-stay",
+  dessert: "dolce-dessert",
+  beauty: "luna-hair",
+  local: "forum-fashion",
+};
 
-  const sparkRows: { label: string; value: string; delta: string; spark: number[] }[] = [
-    { label: "총 도달", value: formatNumber(k.reach), delta: k.reachDelta, spark: k.spark.reach },
-    { label: "평균 저장률", value: k.saves, delta: k.savesDelta, spark: k.spark.saves },
-    { label: "CTR · 클릭률", value: k.ctr, delta: k.ctrDelta, spark: k.spark.ctr },
-    { label: "예약 전환율", value: k.rsv, delta: k.rsvDelta, spark: k.spark.rsv },
-  ];
+export function AnalyticsScreen() {
+  const { brand, userBrand } = useBrand();
+  const isUserBrand = !!userBrand && brand.id === userBrand.id;
+  const detail = getBrandDetail(brand.id);
+  // 사용자 브랜드면 KPI 데이터 없음 — 동일 업종 peer 브랜드의 데이터를 "유사 매장 평균"으로 표시
+  const peerId = isUserBrand
+    ? INDUSTRY_PEER_BRAND[brand.industry] ?? "miokdang"
+    : brand.id;
+  const k = BRAND_KPIS[peerId] ?? BRAND_KPIS.miokdang;
+
+  // 사용자 브랜드가 발행한 콘텐츠 — 큐에서 status: "published" 인 항목 (지금은 모두 draft/scheduled 라 0건)
+  const publishedQueue = usePublishQueue(brand.id).filter((q) => q.status === "published");
+  const hasOwnData = publishedQueue.length > 0;
+
+  // 사용자 브랜드 + 자기 발행 데이터 없음 → KPI는 dash 로
+  const showOwnEmpty = isUserBrand && !hasOwnData;
+
+  const sparkRows: { label: string; value: string; delta: string; spark: number[] }[] = showOwnEmpty
+    ? [
+        { label: "총 도달", value: "—", delta: "데이터 수집 전", spark: [] },
+        { label: "평균 저장률", value: "—", delta: "데이터 수집 전", spark: [] },
+        { label: "CTR · 클릭률", value: "—", delta: "데이터 수집 전", spark: [] },
+        { label: "예약 전환율", value: "—", delta: "데이터 수집 전", spark: [] },
+      ]
+    : [
+        { label: "총 도달", value: formatNumber(k.reach), delta: k.reachDelta, spark: k.spark.reach },
+        { label: "평균 저장률", value: k.saves, delta: k.savesDelta, spark: k.spark.saves },
+        { label: "CTR · 클릭률", value: k.ctr, delta: k.ctrDelta, spark: k.spark.ctr },
+        { label: "예약 전환율", value: k.rsv, delta: k.rsvDelta, spark: k.spark.rsv },
+      ];
 
   return (
     <div className="px-4 sm:px-6 py-4 sm:py-6">
@@ -85,6 +120,29 @@ export function AnalyticsScreen() {
         </p>
       </div>
 
+      {showOwnEmpty && (
+        <div className="mb-5 rounded-xl border border-amber-200/60 dark:border-amber-800/40 bg-amber-50/40 dark:bg-amber-500/[0.05] p-4">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-semibold text-amber-900 dark:text-amber-100">
+                {brand.name} 의 데이터가 아직 없어요
+              </div>
+              <p className="mt-1 text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
+                첫 발행 후 약 7일이 지나면 실데이터가 쌓입니다. 그 동안 아래는{" "}
+                <b>동일 업종({brand.industryLabel}) 의 유사 매장</b>{" "}
+                <span className="font-medium">{getBrand(peerId)?.name ?? "예시"}</span> 의 참고용 수치입니다.
+              </p>
+              <Button asChild size="sm" className="mt-3">
+                <Link href="/shorts">
+                  <Sparkles className="h-3.5 w-3.5" /> 첫 콘텐츠 만들기 <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <motion.div
         key={brand.id}
         initial={{ opacity: 0, y: 6 }}
@@ -92,27 +150,68 @@ export function AnalyticsScreen() {
         className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6"
       >
         {sparkRows.map((row) => (
-          <Card key={row.label} className="p-5">
+          <Card key={row.label} className={`p-5 ${showOwnEmpty ? "border-dashed" : ""}`}>
             <div className="text-[10px] uppercase tracking-[0.15em] text-zinc-400 font-semibold">{row.label}</div>
             <div className="mt-2 flex items-baseline gap-2">
-              <div className="text-2xl font-semibold tabular-nums">{row.value}</div>
-              <div className="text-[11px] text-emerald-600 font-medium">{row.delta}</div>
+              <div className={`text-2xl font-semibold tabular-nums ${showOwnEmpty ? "text-zinc-400" : ""}`}>
+                {row.value}
+              </div>
+              <div className={`text-[11px] font-medium ${showOwnEmpty ? "text-zinc-400" : "text-emerald-600"}`}>
+                {row.delta}
+              </div>
             </div>
-            <div className="mt-2 flex items-end gap-0.5 h-7">
-              {row.spark.map((v, i) => (
-                <motion.span
-                  key={i}
-                  initial={{ height: 0 }}
-                  animate={{ height: `${v}%` }}
-                  transition={{ delay: i * 0.03 }}
-                  className="flex-1 rounded-sm bg-zinc-900 dark:bg-zinc-100"
-                />
-              ))}
-            </div>
+            {row.spark.length > 0 ? (
+              <div className="mt-2 flex items-end gap-0.5 h-7">
+                {row.spark.map((v, i) => (
+                  <motion.span
+                    key={i}
+                    initial={{ height: 0 }}
+                    animate={{ height: `${v}%` }}
+                    transition={{ delay: i * 0.03 }}
+                    className="flex-1 rounded-sm bg-zinc-900 dark:bg-zinc-100"
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="mt-2 h-7 rounded-sm bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center">
+                <span className="text-[9px] text-zinc-400">발행 후 7일 ↑</span>
+              </div>
+            )}
           </Card>
         ))}
       </motion.div>
 
+      {/* 사용자 브랜드 빈 상태에서도 peer 데이터로 "유사 매장 참고" 섹션 별도 노출 */}
+      {showOwnEmpty && (
+        <Card className="p-5 mb-6 bg-zinc-50/40 dark:bg-zinc-900/30">
+          <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
+            <div>
+              <h3 className="text-sm font-semibold">유사 매장 참고 — {getBrand(peerId)?.name ?? brand.industryLabel}</h3>
+              <p className="text-[11px] text-zinc-500 mt-0.5">
+                같은 {brand.industryLabel} 업종에서 BRIQ 도입 후 도달 {k.reachDelta}, 저장률 {k.savesDelta}
+              </p>
+            </div>
+            <Badge tone="violet">참고용</Badge>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            {[
+              { label: "도달", value: formatNumber(k.reach), delta: k.reachDelta },
+              { label: "저장률", value: k.saves, delta: k.savesDelta },
+              { label: "CTR", value: k.ctr, delta: k.ctrDelta },
+              { label: "예약 전환", value: k.rsv, delta: k.rsvDelta },
+            ].map((p) => (
+              <div key={p.label} className="rounded-lg bg-white dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800 p-3">
+                <div className="text-[10px] text-zinc-500 font-medium">{p.label}</div>
+                <div className="mt-1 text-base font-semibold tabular-nums">{p.value}</div>
+                <div className="text-[10px] text-emerald-600 font-medium">{p.delta}</div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* Before/After — 사용자 브랜드 + 데이터 없음일 때는 숨김 (가짜 BeforeAfter 보이지 않게) */}
+      {!showOwnEmpty && (
       <Card className="p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -154,8 +253,9 @@ export function AnalyticsScreen() {
           ))}
         </div>
       </Card>
+      )}
 
-      {detail && (
+      {detail && !showOwnEmpty && (
         <Card className="p-5">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold">{brand.name} 베스트 콘텐츠</h3>
@@ -187,6 +287,26 @@ export function AnalyticsScreen() {
           </div>
         </Card>
       )}
+
+      {/* 사용자 브랜드 + 발행 0건 → 베스트 콘텐츠 empty state */}
+      {showOwnEmpty && (
+        <Card className="p-8 text-center">
+          <div className="text-sm font-semibold mb-1">아직 발행한 콘텐츠가 없어요</div>
+          <p className="text-xs text-zinc-500 mb-4">
+            첫 콘텐츠를 발행하고 7일이 지나면 도달 · 저장률 · 베스트 콘텐츠가 여기 표시됩니다.
+          </p>
+          <Button asChild size="sm">
+            <Link href="/shorts">
+              <Sparkles className="h-3.5 w-3.5" /> 첫 콘텐츠 만들기
+            </Link>
+          </Button>
+        </Card>
+      )}
+
+      {/* 워크플로우 푸터 — 분석이 마지막 단계라 NextStepCard 가 prev 만 표시 */}
+      <div className="mt-6">
+        <NextStepCard />
+      </div>
     </div>
   );
 }

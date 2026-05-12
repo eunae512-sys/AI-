@@ -80,10 +80,15 @@ const BEFORE_AFTER: Record<string, { before: string; after: string }> = {
 };
 
 export function BrandToneScreen() {
-  const { brand } = useBrand();
+  const { brand, userBrand } = useBrand();
   const detail = getBrandDetail(brand.id);
   const sliders = SLIDERS_BY_BRAND[brand.id] ?? SLIDERS_BY_BRAND.miokdang;
   const example = BEFORE_AFTER[brand.id] ?? BEFORE_AFTER.miokdang;
+  const isUserBrand = !!userBrand && brand.id === userBrand.id;
+  // 사용자 브랜드면 온보딩에서 도출된 toneText 우선
+  const toneSummary = isUserBrand && userBrand
+    ? userBrand.toneText
+    : detail?.toneSummary ?? "톤 학습이 필요합니다.";
 
   return (
     <div className="px-4 sm:px-6 py-4 sm:py-6">
@@ -128,7 +133,7 @@ export function BrandToneScreen() {
               className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 italic"
               style={{ fontFamily: "'Nanum Myeongjo', serif" }}
             >
-              "{detail?.toneSummary ?? "톤 학습이 필요합니다."}"
+              "{toneSummary}"
             </p>
           </div>
         </Card>

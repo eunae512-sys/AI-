@@ -147,6 +147,21 @@ export function ReviewsScreen() {
           </div>
         </div>
         <AnimatePresence mode="popLayout">
+          {reviews.length === 0 ? (
+            <div className="p-12 text-center">
+              <div className="text-4xl mb-3">💬</div>
+              <div className="text-sm font-semibold mb-1">아직 받은 리뷰가 없어요</div>
+              <p className="text-[12px] text-zinc-500 max-w-md mx-auto leading-relaxed">
+                Naver 플레이스 · Google 비즈니스 · 배민 · 요기요를 연결하면 새 리뷰가 들어올 때마다 {brand.name} 톤으로 답변 초안을 만들어 드립니다.
+              </p>
+              <a
+                href="/channels"
+                className="mt-5 inline-flex items-center gap-1.5 text-[12px] font-medium px-4 py-2 rounded-md bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900 hover:opacity-90"
+              >
+                SNS · 리뷰 채널 연결 →
+              </a>
+            </div>
+          ) : null}
           <ul key={brand.id} className="divide-y divide-zinc-100 dark:divide-zinc-800">
             {reviews.map((r, i) => (
               <motion.li

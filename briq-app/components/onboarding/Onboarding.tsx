@@ -5,9 +5,40 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import { Coffee, Cake, Home, UtensilsCrossed, Scissors, Sparkles, ChevronLeft, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { extractPaletteFromPhotos, type ExtractedColor } from "@/lib/colors/extract-palette";
+import { saveUserBrand } from "@/lib/brand/user-brand";
+import { useRouter } from "next/navigation";
+import type { Industry as IndustryType, Mood as MoodIdType } from "@/types";
+
+// 업종 id → 한국 도시 기본값 (사용자가 도시 미입력 시)
+const INDUSTRY_DEFAULT_CITY: Record<string, string> = {
+  restaurant: "강남구",
+  cafe: "서촌",
+  dessert: "성수동",
+  stay: "종로구",
+  beauty: "강남구",
+  local: "한남동",
+};
+
+const INDUSTRY_LABEL: Record<string, string> = {
+  restaurant: "한정식",
+  cafe: "스페셜티 카페",
+  dessert: "디저트샵",
+  stay: "한옥 숙소",
+  beauty: "미용·헤어",
+  local: "컨템포러리 패션",
+};
 
 type Industry = { id: string; label: string; sub: string; Icon: React.ElementType };
-type Mood = { id: string; label: string; sub: string; gradient: string };
+type Mood = {
+  id: string;
+  label: string;
+  sub: string;
+  gradient: string;
+  swatches: string[]; // 4-5 HEX 컬러 — 미니 무드보드
+  ringClass: string; // 선택 시 ring 색
+  tag: string; // 캡션 (영문, 매거진 톤)
+};
 
 const INDUSTRIES: Industry[] = [
   { id: "cafe", label: "카페", sub: "스페셜티 / 베이커리", Icon: Coffee },
@@ -18,14 +49,100 @@ const INDUSTRIES: Industry[] = [
   { id: "local", label: "로컬 브랜드", sub: "소품 / 패션 / 라이프스타일", Icon: Sparkles },
 ];
 
+// Pinterest Predicts 2026 — Editorial Muted Palette
+// 단일 hue 안에서 light↔mid 만 변화 (light↔dark 대비 X — 그게 촌스러움의 원인)
+// 다이내믹 레인지 좁힘 → 매거진 컬러칩 느낌
 const MOODS: Mood[] = [
-  { id: "warm", label: "따뜻한 · 정성", sub: "한식 · 베이커리 · 한옥", gradient: "from-amber-200 via-orange-200 to-rose-200" },
-  { id: "modern", label: "미니멀 · 모던", sub: "스페셜티 카페 · 편집샵", gradient: "from-zinc-100 via-slate-200 to-zinc-300" },
-  { id: "moody", label: "감성 · 시네마틱", sub: "와인바 · 스튜디오", gradient: "from-stone-700 via-stone-800 to-stone-900" },
-  { id: "playful", label: "발랄한 · 친근", sub: "디저트 · 분식 · 카페", gradient: "from-pink-200 via-rose-300 to-orange-200" },
-  { id: "natural", label: "내추럴 · 친환경", sub: "비건 · 유기농 · 로컬", gradient: "from-emerald-200 via-lime-200 to-amber-100" },
-  { id: "luxury", label: "럭셔리 · 프리미엄", sub: "파인다이닝 · 부티크", gradient: "from-zinc-900 via-zinc-800 to-amber-900" },
+  {
+    id: "warm",
+    label: "따뜻한 · 정성",
+    sub: "한식 · 베이커리 · 한옥",
+    tag: "Almond Milk",
+    // 오트밀 크림 — Pinterest "Cottage Country" 2026
+    gradient: "from-[#EFE6D5] to-[#D6C3A7]",
+    swatches: ["#EFE6D5", "#DFCDB1", "#B89B7B"],
+    ringClass: "ring-[#B89B7B]",
+  },
+  {
+    id: "modern",
+    label: "미니멀 · 모던",
+    sub: "스페셜티 카페 · 편집샵",
+    tag: "Atelier",
+    // 라이스 페이퍼 그레이 — Quiet Luxury 2026
+    gradient: "from-[#ECEAE3] to-[#C7C3B9]",
+    swatches: ["#ECEAE3", "#D7D3C9", "#9A958A"],
+    ringClass: "ring-[#9A958A]",
+  },
+  {
+    id: "moody",
+    label: "감성 · 시네마틱",
+    sub: "와인바 · 스튜디오",
+    tag: "Mocha Mousse",
+    // Pantone 2025 컬러 오브 더 이어 — 차분한 무드
+    gradient: "from-[#9A8775] to-[#5A4838]",
+    swatches: ["#C2A98E", "#9A8775", "#5A4838"],
+    ringClass: "ring-[#9A8775]",
+  },
+  {
+    id: "playful",
+    label: "발랄한 · 친근",
+    sub: "디저트 · 분식 · 카페",
+    tag: "Peach Fuzz",
+    // 살구빛 — 분홍 아닌 따뜻한 살굿빛 (Pinterest Predicts 2025-26)
+    gradient: "from-[#F3DDD1] to-[#D6A78F]",
+    swatches: ["#F3DDD1", "#E5BFAC", "#C99B85"],
+    ringClass: "ring-[#C99B85]",
+  },
+  {
+    id: "natural",
+    label: "내추럴 · 친환경",
+    sub: "비건 · 유기농 · 로컬",
+    tag: "Verdigris",
+    // 라이켄 그린 — 빈티지 그린 (Pinterest "Eccentric Garden" 2026)
+    gradient: "from-[#D7D8C7] to-[#8E957A]",
+    swatches: ["#D7D8C7", "#A8AE96", "#7C8268"],
+    ringClass: "ring-[#7C8268]",
+  },
+  {
+    id: "luxury",
+    label: "럭셔리 · 프리미엄",
+    sub: "파인다이닝 · 부티크",
+    tag: "Cherry Reign",
+    // Pantone 2026 예측 — 보르도 와인 (블랙 클리셰 X)
+    gradient: "from-[#7A3B3F] to-[#3D1E22]",
+    swatches: ["#C9B59E", "#7A3B3F", "#3D1E22"],
+    ringClass: "ring-[#7A3B3F]",
+  },
 ];
+
+// 업종 × 무드 → 톤 설명 (실제 분석 결과 시뮬레이션)
+const INDUSTRY_TONE: Record<string, string> = {
+  restaurant: "한식의 정성과 재료의 시간을 단정한 존댓말로 짧게 끊어 보여줍니다",
+  cafe: "한 잔의 리듬과 원두의 산미를 매거진 톤으로 차분하게 풀어냅니다",
+  dessert: "달콤한 순간의 단면과 색을 친근한 반말로 가볍게 띄웁니다",
+  stay: "공간의 빛과 시간의 결을 손님께 보내는 편지 형식으로 담습니다",
+  beauty: "결과 컬러의 변화를 자신감 있는 존댓말로 압축해 보여줍니다",
+  local: "원단과 실루엣을 절제된 영문 + 한국어 혼용 에디토리얼로 다룹니다",
+};
+
+const MOOD_TONE_MODIFIER: Record<string, string> = {
+  warm: "따뜻한 정성 · 손맛 · 새벽 분위기를 강조",
+  modern: "여백 · 미니멀 · 한 줄 카피 위주",
+  moody: "시네마틱 · 깊이감 · 저녁 톤",
+  playful: "발랄 · 친근 · 짧은 호흡 · 이모지 가볍게",
+  natural: "유기적 · 손글씨 느낌 · 자연광 · 식물 디테일",
+  luxury: "절제 · 영문 액센트 · 큰 여백 · 시그니처 한 컷",
+};
+
+// 업종별 첫 릴스 후크 카피 (Step 7 미리보기용)
+const INDUSTRY_HOOK: Record<string, { line1: string; line2: string; hashtag: string }> = {
+  restaurant: { line1: "오늘의 한 상,", line2: "정성으로 차립니다", hashtag: "#한정식 #제철" },
+  cafe:       { line1: "한 잔의 시간,",  line2: "오늘 다시 내립니다", hashtag: "#스페셜티 #로스터리" },
+  dessert:    { line1: "달콤한 한 입,",  line2: "이 계절의 색", hashtag: "#디저트 #신상" },
+  stay:       { line1: "창호로 드는 빛,", line2: "오늘의 환영", hashtag: "#한옥 #스테이" },
+  beauty:     { line1: "결을 살리는,",   line2: "오늘의 컬러", hashtag: "#헤어 #봄컬러" },
+  local:      { line1: "한 벌의 무게,",  line2: "한 줄의 시그니처", hashtag: "#룩북 #에디토리얼" },
+};
 
 const STAGES = [
   { id: 0, title: "사진에서 컬러 추출", sub: "5장 · 평균 컬러 6개" },
@@ -37,26 +154,103 @@ const STAGES = [
 ];
 
 export function Onboarding() {
+  const router = useRouter();
   const [step, setStep] = React.useState(1);
   const totalSteps = 7;
   const [industry, setIndustry] = React.useState<string>();
   const [mood, setMood] = React.useState<string>();
   const [analysisStep, setAnalysisStep] = React.useState(0);
+  const [extractedPalette, setExtractedPalette] = React.useState<ExtractedColor[]>([]);
+  const [extractError, setExtractError] = React.useState<string | null>(null);
+
+  // === Step 4: 사진 업로드 ===
+  type UploadedPhoto = { url: string; name: string; size: number };
+  const [photos, setPhotos] = React.useState<UploadedPhoto[]>([]);
+  const photoInputRef = React.useRef<HTMLInputElement>(null);
+  const [dragOver, setDragOver] = React.useState(false);
+  const MAX_PHOTOS = 20;
+  const MIN_PHOTOS = 3;
+
+  // === Step 4 추가: 사장님 가게 정보 ===
+  const [shopName, setShopName] = React.useState("");
+  const [tagline, setTagline] = React.useState("");
+  const [signatureMenu, setSignatureMenu] = React.useState<[string, string, string]>(["", "", ""]);
+  const [ownerName, setOwnerName] = React.useState("");
+  const [ownerEmail, setOwnerEmail] = React.useState("");
+
+  const readFiles = async (fileList: FileList | File[]) => {
+    const files = Array.from(fileList).filter((f) => f.type.startsWith("image/"));
+    if (!files.length) return;
+    const remaining = MAX_PHOTOS - photos.length;
+    const accepted = files.slice(0, remaining);
+    const readers = await Promise.all(
+      accepted.map(
+        (f) =>
+          new Promise<UploadedPhoto>((resolve, reject) => {
+            const r = new FileReader();
+            r.onload = () =>
+              resolve({ url: String(r.result), name: f.name, size: f.size });
+            r.onerror = () => reject(new Error("읽기 실패"));
+            r.readAsDataURL(f);
+          }),
+      ),
+    );
+    setPhotos((prev) => [...prev, ...readers].slice(0, MAX_PHOTOS));
+  };
+
+  const onPhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) await readFiles(e.target.files);
+    if (e.target) e.target.value = "";
+  };
+
+  const onDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    if (e.dataTransfer?.files) await readFiles(e.dataTransfer.files);
+  };
+
+  const removePhoto = (idx: number) =>
+    setPhotos((prev) => prev.filter((_, i) => i !== idx));
 
   const next = () => setStep((s) => Math.min(s + 1, totalSteps));
   const back = () => setStep((s) => Math.max(s - 1, 1));
 
-  // Step 5 analysis simulation
+  // Step 5 analysis — 실제 사진에서 컬러 추출 + 단계 애니메이션
   React.useEffect(() => {
     if (step !== 5) return;
     setAnalysisStep(0);
+    setExtractError(null);
+    let cancelled = false;
     const timers: NodeJS.Timeout[] = [];
+
+    // 단계 애니메이션 (시각 효과)
     STAGES.forEach((_, i) => {
-      timers.push(setTimeout(() => setAnalysisStep(i + 1), (i + 1) * 1100));
+      timers.push(setTimeout(() => {
+        if (!cancelled) setAnalysisStep(i + 1);
+      }, (i + 1) * 1100));
     });
-    timers.push(setTimeout(() => setStep(6), STAGES.length * 1100 + 600));
-    return () => timers.forEach(clearTimeout);
-  }, [step]);
+
+    // 실제 컬러 추출 (병렬 진행 — 애니메이션 끝까지 보장)
+    (async () => {
+      try {
+        if (photos.length === 0) throw new Error("사진이 없습니다");
+        const colors = await extractPaletteFromPhotos(photos.map((p) => p.url));
+        if (!cancelled) setExtractedPalette(colors);
+      } catch (e) {
+        if (!cancelled) setExtractError(e instanceof Error ? e.message : String(e));
+      }
+    })();
+
+    // 애니메이션 완료 후 step 6 이동 (추출은 그때까지 보통 끝남)
+    timers.push(setTimeout(() => {
+      if (!cancelled) setStep(6);
+    }, STAGES.length * 1100 + 600));
+
+    return () => {
+      cancelled = true;
+      timers.forEach(clearTimeout);
+    };
+  }, [step, photos]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -114,7 +308,7 @@ export function Onboarding() {
                   return (
                     <button
                       key={it.id}
-                      onClick={() => { setIndustry(it.id); setTimeout(next, 350); }}
+                      onClick={() => setIndustry(it.id)}
                       className={cn(
                         "rounded-xl border p-5 text-left transition-all",
                         selected
@@ -129,6 +323,20 @@ export function Onboarding() {
                   );
                 })}
               </div>
+              <div className="mt-10 flex items-center justify-end">
+                <button
+                  onClick={next}
+                  disabled={!industry}
+                  className={cn(
+                    "text-sm font-medium px-5 py-2.5 rounded-md transition-colors",
+                    industry
+                      ? "bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900 hover:opacity-90"
+                      : "bg-zinc-200 text-zinc-400 cursor-not-allowed dark:bg-zinc-800 dark:text-zinc-600",
+                  )}
+                >
+                  다음 →
+                </button>
+              </div>
             </motion.section>
           )}
 
@@ -141,31 +349,85 @@ export function Onboarding() {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.35 }}
             >
-              <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">STEP 02</div>
-              <h1 className="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight">브랜드 분위기는<br />어떤 결인가요?</h1>
-              <p className="mt-3 text-base text-zinc-600 dark:text-zinc-400">선택한 분위기로 컬러·폰트·문체 톤이 자동 매칭됩니다.</p>
-              <div className="mt-10 grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="text-[11px] uppercase tracking-[0.15em] text-zinc-400 font-semibold">STEP 02</div>
+              <h1 className="mt-2 text-[26px] sm:text-3xl md:text-4xl font-semibold tracking-tight leading-[1.15]">
+                브랜드 분위기는<br />어떤 결인가요?
+              </h1>
+              <p className="mt-3 text-[14px] sm:text-base text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                선택한 무드로 컬러·폰트·문체 톤이 자동 매칭됩니다.
+              </p>
+              <div className="mt-8 sm:mt-10 grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                 {MOODS.map((m) => {
                   const selected = mood === m.id;
                   return (
                     <button
                       key={m.id}
-                      onClick={() => { setMood(m.id); setTimeout(next, 350); }}
+                      onClick={() => setMood(m.id)}
                       className={cn(
-                        "rounded-xl overflow-hidden border text-left transition-all",
+                        "group rounded-2xl overflow-hidden text-left transition-all bg-white dark:bg-zinc-950",
+                        "ring-1 ring-zinc-200/60 dark:ring-zinc-800/60",
                         selected
-                          ? "border-zinc-900 dark:border-zinc-100 shadow-[0_0_0_3px_rgba(17,24,39,0.06)]"
-                          : "border-zinc-200 dark:border-zinc-800 hover:border-zinc-900 dark:hover:border-zinc-100 hover:-translate-y-0.5"
+                          ? `ring-2 ${m.ringClass} shadow-[0_8px_24px_-12px_rgba(0,0,0,0.18)] -translate-y-0.5`
+                          : "hover:ring-zinc-400 dark:hover:ring-zinc-600 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_-6px_rgba(0,0,0,0.12)]",
                       )}
                     >
-                      <div className={cn("aspect-[5/3] bg-gradient-to-br", m.gradient)} />
-                      <div className="p-4">
-                        <div className="font-semibold text-sm">{m.label}</div>
-                        <div className="text-[12px] text-zinc-500 mt-0.5">{m.sub}</div>
+                      {/* Moodboard preview — editorial paint chip */}
+                      <div className={cn("relative aspect-[4/3] bg-gradient-to-br overflow-hidden", m.gradient)}>
+                        {/* very soft inner shadow — depth without grain */}
+                        <div
+                          className="absolute inset-0 pointer-events-none"
+                          style={{
+                            boxShadow: "inset 0 0 60px rgba(0,0,0,0.06)",
+                          }}
+                        />
+                        {/* selected check — minimal, no shadow */}
+                        {selected && (
+                          <div className="absolute top-3 right-3 h-6 w-6 rounded-full bg-white/95 backdrop-blur grid place-items-center">
+                            <Check className="h-3 w-3 text-zinc-900" strokeWidth={2.5} />
+                          </div>
+                        )}
+                        {/* serif italic tag — magazine spread label */}
+                        <span
+                          className="absolute bottom-3 left-4 text-[12px] italic tracking-tight"
+                          style={{
+                            fontFamily: '"Cormorant Garamond", "Times New Roman", serif',
+                            color: "rgba(0,0,0,0.55)",
+                            mixBlendMode: "multiply",
+                          }}
+                        >
+                          {m.tag}
+                        </span>
+                      </div>
+                      {/* hairline tonal strip — 3 accent only */}
+                      <div className="flex h-1">
+                        {m.swatches.map((sw) => (
+                          <div key={sw} className="flex-1" style={{ background: sw }} />
+                        ))}
+                      </div>
+                      <div className="p-4 sm:p-5">
+                        <div className="font-semibold text-[15px] sm:text-[14px] tracking-tight">{m.label}</div>
+                        <div className="text-[12px] text-zinc-500 mt-1 leading-relaxed">{m.sub}</div>
                       </div>
                     </button>
                   );
                 })}
+              </div>
+              <div className="mt-10 flex items-center justify-between">
+                <button onClick={back} className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 inline-flex items-center gap-1">
+                  <ChevronLeft className="h-3 w-3" />이전
+                </button>
+                <button
+                  onClick={next}
+                  disabled={!mood}
+                  className={cn(
+                    "text-sm font-medium px-5 py-2.5 rounded-md transition-colors",
+                    mood
+                      ? "bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900 hover:opacity-90"
+                      : "bg-zinc-200 text-zinc-400 cursor-not-allowed dark:bg-zinc-800 dark:text-zinc-600",
+                  )}
+                >
+                  다음 →
+                </button>
               </div>
             </motion.section>
           )}
@@ -199,33 +461,195 @@ export function Onboarding() {
               <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">STEP 04</div>
               <h1 className="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight">사진 5~10장만<br />업로드해 주세요</h1>
               <p className="mt-3 text-base text-zinc-600 dark:text-zinc-400">매장·메뉴·공간 사진. BRIQ가 컬러·구도·분위기를 분석합니다.</p>
-              <div className="mt-8 rounded-2xl border-2 border-dashed border-zinc-200 dark:border-zinc-800 p-10 text-center hover:border-zinc-900 dark:hover:border-zinc-100 transition cursor-pointer">
+              <button
+                type="button"
+                onClick={() => photoInputRef.current?.click()}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragOver(true);
+                }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={onDrop}
+                className={cn(
+                  "mt-8 w-full rounded-2xl border-2 border-dashed p-10 text-center transition cursor-pointer block",
+                  dragOver
+                    ? "border-zinc-900 dark:border-zinc-100 bg-zinc-50 dark:bg-zinc-900/60"
+                    : "border-zinc-200 dark:border-zinc-800 hover:border-zinc-900 dark:hover:border-zinc-100",
+                )}
+              >
                 <div className="text-5xl">📷</div>
                 <div className="mt-4 text-base font-medium">이곳에 사진을 드롭하거나 클릭</div>
-                <div className="mt-1 text-[12px] text-zinc-500">JPG · PNG · HEIC · 최대 20장</div>
+                <div className="mt-1 text-[12px] text-zinc-500">JPG · PNG · HEIC · 최대 {MAX_PHOTOS}장</div>
+              </button>
+              <input
+                ref={photoInputRef}
+                type="file"
+                multiple
+                accept="image/*"
+                className="hidden"
+                onChange={onPhotoChange}
+              />
+
+              {photos.length > 0 ? (
+                <div className="mt-5 grid grid-cols-3 sm:grid-cols-6 gap-2">
+                  {photos.map((p, i) => (
+                    <motion.div
+                      key={`${p.name}-${i}`}
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: i * 0.04 }}
+                      className="relative aspect-square rounded-lg overflow-hidden group"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={p.url}
+                        alt={p.name}
+                        className="absolute inset-0 h-full w-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removePhoto(i);
+                        }}
+                        className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 grid place-items-center rounded-full bg-black/65 hover:bg-rose-600 text-white"
+                        aria-label="삭제"
+                      >
+                        <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                          <path d="M18 6L6 18M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </motion.div>
+                  ))}
+                  {photos.length < MAX_PHOTOS && (
+                    <button
+                      type="button"
+                      onClick={() => photoInputRef.current?.click()}
+                      className="aspect-square rounded-lg border-2 border-dashed border-zinc-200 dark:border-zinc-700 grid place-items-center text-zinc-400 hover:border-zinc-400 dark:hover:border-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors text-2xl"
+                      aria-label="사진 더 추가"
+                    >
+                      +
+                    </button>
+                  )}
+                </div>
+              ) : null}
+
+              <div className="mt-3 text-[11px] text-zinc-500">
+                업로드된 사진: <b>{photos.length}장</b>
+                {photos.length >= MIN_PHOTOS ? (
+                  <span className="text-emerald-600 ml-1">· 최소 {MIN_PHOTOS}장 충족 ✓</span>
+                ) : (
+                  <span className="text-amber-600 ml-1">
+                    · 분석 시작까지 {MIN_PHOTOS - photos.length}장 더 필요
+                  </span>
+                )}
               </div>
-              <div className="mt-5 grid grid-cols-3 sm:grid-cols-6 gap-2">
-                {[
-                  "from-amber-200 to-rose-300",
-                  "from-violet-300 to-pink-400",
-                  "from-amber-300 to-stone-700",
-                  "from-slate-300 to-stone-500",
-                  "from-amber-100 to-amber-300",
-                ].map((g, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: i * 0.06 }}
-                    className={cn("aspect-square rounded-lg bg-gradient-to-br", g)}
-                  />
-                ))}
-                <div className="aspect-square rounded-lg border-2 border-dashed border-zinc-200 dark:border-zinc-700 grid place-items-center text-zinc-400">+</div>
+
+              {/* 가게 정보 입력 — 카피 생성 정확도 결정적 */}
+              <div className="mt-10 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 sm:p-6">
+                <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">
+                  가게 정보 (카피에 그대로 반영됩니다)
+                </div>
+                <h2 className="mt-2 text-lg font-semibold tracking-tight">
+                  사장님 가게를 한 줄로 소개해 주세요
+                </h2>
+                <p className="mt-1 text-xs text-zinc-500">
+                  이 정보로 릴스·카드뉴스·블로그 카피가 만들어져요. 비워두면 일반 템플릿으로 생성됩니다.
+                </p>
+
+                <div className="mt-5 space-y-4">
+                  <div>
+                    <label className="text-xs font-semibold">가게 이름</label>
+                    <input
+                      type="text"
+                      value={shopName}
+                      onChange={(e) => setShopName(e.target.value)}
+                      placeholder="예: 미옥당 본점"
+                      className="mt-1.5 w-full h-11 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold">한 줄 소개 (선택)</label>
+                    <input
+                      type="text"
+                      value={tagline}
+                      onChange={(e) => setTagline(e.target.value)}
+                      placeholder="예: 엄마 손맛 그대로, 강남에서 30년"
+                      maxLength={40}
+                      className="mt-1.5 w-full h-11 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
+                    />
+                    <div className="mt-1 text-[10px] text-zinc-400 tabular-nums">{tagline.length}/40</div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold">시그니처 메뉴 3개 (선택)</label>
+                    <p className="mt-1 text-[11px] text-zinc-500">
+                      대표 메뉴/상품을 적으면 카피에서 이 이름들을 우선 사용해요.
+                    </p>
+                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      {signatureMenu.map((v, idx) => (
+                        <input
+                          key={idx}
+                          type="text"
+                          value={v}
+                          onChange={(e) => {
+                            const next: [string, string, string] = [...signatureMenu] as [string, string, string];
+                            next[idx] = e.target.value;
+                            setSignatureMenu(next);
+                          }}
+                          placeholder={["갈비찜", "냉이된장국", "5첩 한정식"][idx]}
+                          maxLength={20}
+                          className="h-11 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-zinc-100 dark:border-zinc-900">
+                    <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">
+                      사장님 정보 (결제·알림용)
+                    </div>
+                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-semibold">사장님 이름</label>
+                        <input
+                          type="text"
+                          value={ownerName}
+                          onChange={(e) => setOwnerName(e.target.value)}
+                          placeholder="예: 홍길동"
+                          className="mt-1.5 w-full h-11 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold">이메일</label>
+                        <input
+                          type="email"
+                          value={ownerEmail}
+                          onChange={(e) => setOwnerEmail(e.target.value)}
+                          placeholder="예: hong@email.com"
+                          className="mt-1.5 w-full h-11 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="mt-3 text-[11px] text-zinc-500">업로드된 사진: <b>5장</b> · 최소 충족 ✓</div>
+
               <div className="mt-10 flex items-center justify-between">
-                <button onClick={back} className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 inline-flex items-center gap-1"><ChevronLeft className="h-3 w-3" />이전</button>
-                <button onClick={next} className="text-sm font-medium px-5 py-2.5 rounded-md bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900">분석 시작 →</button>
+                <button onClick={back} className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 inline-flex items-center gap-1">
+                  <ChevronLeft className="h-3 w-3" />이전
+                </button>
+                <button
+                  onClick={next}
+                  disabled={photos.length < MIN_PHOTOS}
+                  className={cn(
+                    "text-sm font-medium px-5 py-2.5 rounded-md transition-colors",
+                    photos.length >= MIN_PHOTOS
+                      ? "bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900 hover:opacity-90"
+                      : "bg-zinc-200 text-zinc-400 cursor-not-allowed dark:bg-zinc-800 dark:text-zinc-600",
+                  )}
+                >
+                  분석 시작 →
+                </button>
               </div>
             </motion.section>
           )}
@@ -283,25 +707,63 @@ export function Onboarding() {
               <h1 className="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight">사장님 브랜드,<br /><span className="gradient-text">이렇게 정리됐어요.</span></h1>
               <div className="mt-10 space-y-4">
                 <div className="rounded-2xl border border-zinc-100 dark:border-zinc-800 p-6">
-                  <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">브랜드 컬러 (자동 추출)</div>
-                  <div className="mt-3 grid grid-cols-6 gap-2">
-                    {["#7B2D26", "#E9DCC0", "#2D1810", "#C2A876", "#F4E4C1", "#3E2C20"].map((c, i) => (
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">
+                      브랜드 컬러 (업로드 사진 {photos.length}장에서 추출)
+                    </div>
+                    {extractedPalette.length > 0 && (
+                      <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                        {extractedPalette.length}개 컬러 추출됨
+                      </div>
+                    )}
+                  </div>
+                  {extractError ? (
+                    <div className="mt-3 text-[12px] text-amber-700 dark:text-amber-400">
+                      컬러 추출 실패: {extractError} — 기본 팔레트로 진행합니다.
+                    </div>
+                  ) : null}
+                  <div className="mt-3 grid grid-cols-3 sm:grid-cols-6 gap-2">
+                    {(extractedPalette.length > 0
+                      ? extractedPalette
+                      : [
+                          { hex: "#E5E0D6", name: "오프 화이트", hsl: [40, 0.2, 0.88] as [number, number, number], population: 0 },
+                          { hex: "#C9BCA0", name: "샌드", hsl: [42, 0.25, 0.7] as [number, number, number], population: 0 },
+                          { hex: "#9A8775", name: "모카", hsl: [28, 0.18, 0.53] as [number, number, number], population: 0 },
+                          { hex: "#6E5847", name: "월넛", hsl: [25, 0.22, 0.36] as [number, number, number], population: 0 },
+                          { hex: "#3F362C", name: "다크 토프", hsl: [30, 0.18, 0.21] as [number, number, number], population: 0 },
+                          { hex: "#1A1714", name: "차콜", hsl: [25, 0.12, 0.09] as [number, number, number], population: 0 },
+                        ]
+                    ).map((c, i) => (
                       <motion.div
-                        key={c}
+                        key={c.hex + i}
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ delay: i * 0.05 }}
-                        className="aspect-square rounded-lg"
-                        style={{ background: c }}
-                      />
+                        className="space-y-1.5"
+                      >
+                        <div
+                          className="aspect-square rounded-lg border border-zinc-100 dark:border-zinc-800"
+                          style={{ background: c.hex }}
+                        />
+                        <div className="text-[10.5px] font-medium truncate">{c.name}</div>
+                        <div className="text-[9.5px] text-zinc-500 tabular-nums">{c.hex}</div>
+                      </motion.div>
                     ))}
                   </div>
                 </div>
                 <div className="rounded-2xl border border-zinc-100 dark:border-zinc-800 p-6">
-                  <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">브랜드 톤 (자동 학습)</div>
-                  <div className="mt-3 text-base font-medium leading-relaxed" style={{ fontFamily: "'Nanum Myeongjo', serif" }}>
-                    "단정한 존댓말로 한식의 정성과 새벽 시장의 발걸음을 담는 에디토리얼 톤. 직설적 칭찬보다 풍경·계절·재료의 시간을 짧게 끊어 보여준다."
+                  <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">
+                    브랜드 톤 (업종 · 무드 기반 매칭)
                   </div>
+                  <div className="mt-3 text-base font-medium leading-relaxed" style={{ fontFamily: "'Nanum Myeongjo', serif" }}>
+                    "{industry ? INDUSTRY_TONE[industry] ?? "사장님의 브랜드 결을 단정한 톤으로 담습니다" : "사장님의 브랜드 결을 단정한 톤으로 담습니다"}."
+                  </div>
+                  {mood && MOOD_TONE_MODIFIER[mood] && (
+                    <div className="mt-3 text-[12px] text-zinc-500 leading-relaxed">
+                      <span className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold mr-2">무드 가중</span>
+                      {MOOD_TONE_MODIFIER[mood]}
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="mt-10 flex items-center justify-between">
@@ -311,12 +773,22 @@ export function Onboarding() {
             </motion.section>
           )}
 
-          {/* Step 7 - Done */}
-          {step === 7 && (
+          {/* Step 7 - Done — 업로드 사진 + 추출 팔레트 + 업종 후크 반영 */}
+          {step === 7 && (() => {
+            const hook = (industry && INDUSTRY_HOOK[industry]) || INDUSTRY_HOOK.restaurant;
+            const industryLabel = INDUSTRIES.find((it) => it.id === industry)?.label ?? "내 브랜드";
+            const moodTag = mood ? MOODS.find((m) => m.id === mood)?.tag : null;
+            const heroPhoto = photos[0]?.url;
+            const accentColor = extractedPalette[Math.floor(extractedPalette.length / 2)]?.hex ?? "#9A8775";
+            const primaryColor = extractedPalette[extractedPalette.length - 1]?.hex ?? "#3F362C";
+
+            return (
             <motion.section key="s7" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.4 }}>
               <div className="text-[11px] uppercase tracking-widest text-emerald-600 dark:text-emerald-400 font-semibold">STEP 07 · 완료</div>
               <h1 className="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight">첫 릴스가<br />방금 만들어졌어요 ✦</h1>
-              <p className="mt-3 text-base text-zinc-600 dark:text-zinc-400">BRIQ가 분석한 톤으로 30초 릴스를 자동 편집했습니다.</p>
+              <p className="mt-3 text-base text-zinc-600 dark:text-zinc-400">
+                업로드하신 사진 {photos.length}장과 추출된 팔레트로 30초 릴스를 자동 편집했습니다.
+              </p>
               <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                 <div className="relative mx-auto w-full" style={{ maxWidth: 280 }}>
                   <motion.div
@@ -324,14 +796,61 @@ export function Onboarding() {
                     animate={{ scale: 1, opacity: 1 }}
                     className="rounded-[28px] border-[8px] border-zinc-900 dark:border-zinc-700 bg-zinc-900 overflow-hidden shadow-2xl"
                   >
-                    <div className="aspect-[9/16] bg-gradient-to-br from-amber-200 via-rose-300 to-amber-400 relative">
+                    <div className="aspect-[9/16] relative overflow-hidden">
+                      {/* 업로드한 첫 사진 — 실제 영상 첫 프레임으로 사용 */}
+                      {heroPhoto ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={heroPhoto}
+                          alt="첫 릴스 프리뷰"
+                          className="absolute inset-0 h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div
+                          className="absolute inset-0"
+                          style={{
+                            background: `linear-gradient(135deg, ${extractedPalette[0]?.hex ?? "#EFE6D5"}, ${primaryColor})`,
+                          }}
+                        />
+                      )}
+                      {/* 하단 어두운 그라디언트 (자막 가독성) */}
+                      <div
+                        className="absolute inset-0 pointer-events-none"
+                        style={{
+                          background: "linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.65) 100%)",
+                        }}
+                      />
+                      {/* 상단 IG-style 헤더 — 브랜드 컬러 사용 */}
                       <div className="absolute top-3 left-3 right-3 flex items-center gap-2 text-white">
-                        <div className="h-6 w-6 rounded-full bg-white/20" />
-                        <div className="text-[10px] font-medium">our_brand</div>
+                        <div
+                          className="h-6 w-6 rounded-full ring-1 ring-white/40"
+                          style={{ background: accentColor }}
+                        />
+                        <div className="text-[10px] font-medium drop-shadow">our_brand</div>
+                        {moodTag && (
+                          <span
+                            className="ml-auto text-[9px] italic tracking-tight"
+                            style={{ fontFamily: '"Cormorant Garamond", "Times New Roman", serif', color: "rgba(255,255,255,0.85)" }}
+                          >
+                            {moodTag}
+                          </span>
+                        )}
                       </div>
-                      <div className="absolute bottom-24 left-3 right-3 text-white">
-                        <div className="text-xl font-bold leading-tight drop-shadow-lg">새벽 4시,<br />시장이 깨어납니다</div>
+                      {/* 업종별 후크 카피 */}
+                      <div className="absolute bottom-16 left-4 right-4 text-white">
+                        <div className="text-[22px] font-bold leading-[1.2] drop-shadow-lg">
+                          {hook.line1}<br />{hook.line2}
+                        </div>
+                        <div className="mt-2 text-[10px] text-white/85 drop-shadow">{hook.hashtag}</div>
                       </div>
+                      {/* 컬러 스트립 — 추출 팔레트 가시화 */}
+                      {extractedPalette.length > 0 && (
+                        <div className="absolute inset-x-0 bottom-0 flex h-1.5">
+                          {extractedPalette.map((c) => (
+                            <div key={c.hex} className="flex-1" style={{ background: c.hex }} />
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 </div>
@@ -339,22 +858,82 @@ export function Onboarding() {
                   <div className="rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/30 dark:bg-emerald-500/5 p-4">
                     <div className="text-[10px] uppercase tracking-widest text-emerald-700 dark:text-emerald-400 font-semibold">생성된 콘텐츠</div>
                     <ul className="mt-2 space-y-1.5 text-xs">
-                      <li className="flex items-center gap-2"><Check className="h-3 w-3 text-emerald-600" />인스타 릴스 30초 (8컷)</li>
-                      <li className="flex items-center gap-2"><Check className="h-3 w-3 text-emerald-600" />릴스 캡션 + 해시태그 12개</li>
-                      <li className="flex items-center gap-2"><Check className="h-3 w-3 text-emerald-600" />썸네일 1:1 / 9:16</li>
+                      <li className="flex items-center gap-2"><Check className="h-3 w-3 text-emerald-600" />{industryLabel} 인스타 릴스 30초 (8컷, 업로드 사진 기반)</li>
+                      <li className="flex items-center gap-2"><Check className="h-3 w-3 text-emerald-600" />브랜드 톤 캡션 + 해시태그 12개</li>
+                      <li className="flex items-center gap-2"><Check className="h-3 w-3 text-emerald-600" />썸네일 1:1 / 9:16 (추출 팔레트 적용)</li>
                       <li className="flex items-center gap-2"><Check className="h-3 w-3 text-emerald-600" />카드뉴스 6장 (캐러셀)</li>
                       <li className="flex items-center gap-2"><Check className="h-3 w-3 text-emerald-600" />네이버 블로그 본문 1편</li>
                     </ul>
                   </div>
+                  {/* 적용된 사용자 데이터 요약 */}
+                  <div className="rounded-xl border border-zinc-100 dark:border-zinc-800 p-4">
+                    <div className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">반영된 사장님 데이터</div>
+                    <ul className="mt-2.5 space-y-1.5 text-[11.5px] text-zinc-600 dark:text-zinc-400">
+                      <li>업종: <span className="text-zinc-900 dark:text-zinc-100 font-medium">{industryLabel}</span></li>
+                      {moodTag && <li>무드: <span className="text-zinc-900 dark:text-zinc-100 font-medium">{moodTag}</span></li>}
+                      <li>업로드 사진: <span className="text-zinc-900 dark:text-zinc-100 font-medium">{photos.length}장</span></li>
+                      <li>추출 팔레트: <span className="text-zinc-900 dark:text-zinc-100 font-medium">{extractedPalette.length}개 컬러</span></li>
+                    </ul>
+                    {extractedPalette.length > 0 && (
+                      <div className="mt-2.5 flex gap-1">
+                        {extractedPalette.map((c) => (
+                          <div
+                            key={c.hex}
+                            className="h-4 flex-1 rounded-sm border border-zinc-100 dark:border-zinc-800"
+                            style={{ background: c.hex }}
+                            title={`${c.name} · ${c.hex}`}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="mt-10 flex items-center justify-end">
-                <Link href="/dashboard" className="text-sm font-medium px-6 py-3 rounded-md bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900">
+                <button
+                  onClick={() => {
+                    // 온보딩 결과를 영속화 → BrandProvider 가 자동으로 사용자 브랜드로 활성화
+                    if (!industry) {
+                      router.push("/dashboard");
+                      return;
+                    }
+                    const brandId = `me-${Date.now().toString(36)}`;
+                    const moodTag = (mood && MOODS.find((m) => m.id === mood)?.tag) || "My Brand";
+                    const cleanMenu = signatureMenu.map((m) => m.trim()).filter(Boolean);
+                    saveUserBrand({
+                      id: brandId,
+                      name: shopName.trim() || "내 브랜드",
+                      industry: industry as IndustryType,
+                      industryLabel: INDUSTRY_LABEL[industry] ?? industry,
+                      city: INDUSTRY_DEFAULT_CITY[industry] ?? "서울",
+                      moodId: (mood ?? "warm") as MoodIdType,
+                      moodTag,
+                      palette: extractedPalette,
+                      photos: photos.map((p) => ({ url: p.url, name: p.name })),
+                      hook,
+                      toneText:
+                        (industry && INDUSTRY_TONE[industry]) ??
+                        "사장님의 브랜드 결을 단정한 톤으로 담습니다",
+                      tagline: tagline.trim() || undefined,
+                      signatureMenu: cleanMenu.length ? cleanMenu : undefined,
+                      ownerName: ownerName.trim() || undefined,
+                      ownerEmail: ownerEmail.trim() || undefined,
+                      createdAt: Date.now(),
+                    });
+                    // BrandProvider 동기화 알림
+                    if (typeof window !== "undefined") {
+                      window.dispatchEvent(new Event("briq:user-brand-updated"));
+                    }
+                    router.push("/dashboard");
+                  }}
+                  className="text-sm font-medium px-6 py-3 rounded-md bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900 hover:opacity-90"
+                >
                   대시보드로 들어가기 →
-                </Link>
+                </button>
               </div>
             </motion.section>
-          )}
+            );
+          })()}
         </AnimatePresence>
       </main>
     </div>

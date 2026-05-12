@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useBrand } from "@/components/brand/BrandProvider";
 import { useToast } from "@/components/ui/toast";
 import { getBrandDetail } from "@/lib/dummy/brand-detail";
+import { usePublishQueue } from "@/lib/queue/publish-queue";
 
 const CHANNELS = [
   { id: "instagram", name: "Instagram", icon: "IG", grad: "from-fuchsia-500 to-orange-400", state: "● 연결 · 4 계정", count: 7 },
@@ -64,7 +65,7 @@ export function ScheduleScreen() {
   const toast = useToast();
   const bestTimes = BEST_TIMES[brand.id] ?? BEST_TIMES.miokdang;
 
-  // 큐 상태 — 브랜드 전환 시 리셋
+  // 큐 상태 — 더미 brand-detail 의 upcoming 예시 + 사용자가 직접 추가한 예약
   const [queue, setQueue] = React.useState<QueueItem[]>(() =>
     (detail?.upcoming ?? []).map((u, i) => ({
       id: `q-${i}`,
@@ -80,6 +81,38 @@ export function ScheduleScreen() {
     const next = getBrandDetail(brand.id)?.upcoming ?? [];
     setQueue(next.map((u, i) => ({ id: `q-${i}`, title: u.title, channel: u.channel, date: u.date, time: u.time, status: "scheduled" })));
   }, [brand.id]);
+
+  // ★ 실제 발행 큐 — /reels /cardnews 에서 등록한 아이템
+  const realQueue = usePublishQueue(brand.id);
+  // 표시용으로 QueueItem 형태에 맞춰 변환
+  const realItemsForDisplay = React.useMemo<QueueItem[]>(
+    () =>
+      realQueue.map((it) => {
+        const d = it.scheduledFor ? new Date(it.scheduledFor) : new Date(it.createdAt);
+        const dateLabel = `${d.getMonth() + 1}/${d.getDate()}`;
+        const timeLabel = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+        const channelMap: Record<string, string> = {
+          instagram: "Instagram", "naver-blog": "네이버 블로그", threads: "Threads",
+          kakao: "카카오 채널", "naver-place": "네이버 플레이스",
+        };
+        const channelLabel = (it.channels?.[0] && channelMap[it.channels[0]]) ?? "Instagram";
+        return {
+          id: it.id,
+          title: `${it.typeLabel} · ${it.title}`,
+          channel: channelLabel,
+          date: dateLabel,
+          time: timeLabel,
+          status: it.status === "scheduled" ? "scheduled" : "paused",
+        };
+      }),
+    [realQueue],
+  );
+
+  // 표시: 실제 큐 + 데모 큐 합쳐서 (실제가 위)
+  const displayQueue = React.useMemo<QueueItem[]>(
+    () => [...realItemsForDisplay, ...queue],
+    [realItemsForDisplay, queue],
+  );
 
   // 다이얼로그
   const [dialogOpen, setDialogOpen] = React.useState(false);
@@ -127,7 +160,15 @@ export function ScheduleScreen() {
   const submitBooking = (e: React.FormEvent) => {
     e.preventDefault();
     const channelLabel = CHANNELS.find((c) => c.id === form.channel)?.name ?? "Instagram";
-    const dateLabel = form.date ? form.date.slice(5).replace("-", "/") : "오늘";
+    // form.date 가 ISO "YYYY-MM-DD" 인지 검증 후 표시용 라벨로 변환
+    // 잘못된 형식이면 오늘 날짜 사용 (절대 " /" 같은 깨진 라벨 안 만듦)
+    const isoMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(form.date.trim());
+    const dateLabel = isoMatch
+      ? `${parseInt(isoMatch[2], 10)}/${parseInt(isoMatch[3], 10)}`
+      : (() => {
+          const d = new Date();
+          return `${d.getMonth() + 1}/${d.getDate()}`;
+        })();
     const titleClean = form.title.trim() || "새 콘텐츠";
 
     if (editingId) {
@@ -228,7 +269,7 @@ export function ScheduleScreen() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         <Card className="lg:col-span-2 overflow-hidden">
           <div className="px-5 py-3 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
-            <h3 className="text-sm font-semibold">{brand.name} · 큐 ({queue.length}건)</h3>
+            <h3 className="text-sm font-semibold">{brand.name} · 큐 ({displayQueue.length}건)</h3>
             <div className="flex items-center gap-2 text-[11px]">
               <button
                 onClick={() => toast.info("시간순으로 정렬됨")}
@@ -244,7 +285,7 @@ export function ScheduleScreen() {
           </div>
           <AnimatePresence mode="popLayout">
             <ul key={brand.id} className="divide-y divide-zinc-100 dark:divide-zinc-800">
-              {queue.map((u, i) => (
+              {displayQueue.map((u, i) => (
                 <motion.li
                   key={u.id}
                   layout
@@ -311,7 +352,7 @@ export function ScheduleScreen() {
                   </div>
                 </motion.li>
               ))}
-              {queue.length === 0 && (
+              {displayQueue.length === 0 && (
                 <li className="p-12 text-center text-sm text-zinc-500">
                   예약된 콘텐츠가 없습니다.
                   <div className="mt-3">

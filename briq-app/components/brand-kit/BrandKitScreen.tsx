@@ -2,13 +2,14 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Download, RefreshCw, Plus, FileImage, X, Trash2 } from "lucide-react";
+import { Download, RefreshCw, Plus, FileImage, X, Trash2, Sparkles, Loader2, Upload } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useBrand } from "@/components/brand/BrandProvider";
 import { useToast } from "@/components/ui/toast";
 import { getBrandDetail } from "@/lib/dummy/brand-detail";
+import { extractPaletteFromPhotos } from "@/lib/colors/extract-palette";
 
 const FONT_PAIRS: Record<string, { headline: { name: string; family: string; note: string }; body: { name: string; family: string; note: string } }> = {
   miokdang: {
@@ -49,23 +50,118 @@ const SAMPLE_BY_BRAND: Record<string, { headline: string; body: string }> = {
 type ColorEntry = { name: string; hex: string };
 
 export function BrandKitScreen() {
-  const { brand } = useBrand();
+  const { brand, userBrand } = useBrand();
   const toast = useToast();
   const detail = getBrandDetail(brand.id);
   const fonts = FONT_PAIRS[brand.id] ?? FONT_PAIRS.miokdang;
   const sample = SAMPLE_BY_BRAND[brand.id] ?? SAMPLE_BY_BRAND.miokdang;
+  const isUserBrand = !!userBrand && brand.id === userBrand.id;
 
   // 브랜드 컬러 — 상태로 관리해 추가/삭제 가능
-  const [colors, setColors] = React.useState<ColorEntry[]>(detail?.colorPalette ?? []);
+  // 우선순위: (활성 = 온보딩 브랜드) userBrand.palette > sessionStorage > 더미 brand-detail
+  const [colors, setColors] = React.useState<ColorEntry[]>(() => {
+    if (isUserBrand && userBrand && userBrand.palette.length > 0) {
+      return userBrand.palette.map((c) => ({ name: c.name, hex: c.hex }));
+    }
+    return detail?.colorPalette ?? [];
+  });
+  const PALETTE_KEY = `briq:palette-${brand.id}`;
+
   React.useEffect(() => {
+    // 사용자 브랜드면 온보딩 팔레트 우선
+    if (isUserBrand && userBrand && userBrand.palette.length > 0) {
+      setColors(userBrand.palette.map((c) => ({ name: c.name, hex: c.hex })));
+      return;
+    }
+    const key = `briq:palette-${brand.id}`;
+    try {
+      const saved = sessionStorage.getItem(key);
+      if (saved) {
+        const parsed = JSON.parse(saved) as ColorEntry[];
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setColors(parsed);
+          return;
+        }
+      }
+    } catch {
+      // 무시
+    }
     setColors(getBrandDetail(brand.id)?.colorPalette ?? []);
-  }, [brand.id]);
+  }, [brand.id, isUserBrand, userBrand]);
+
+  // colors 변경 시 sessionStorage 동기화 (개별 추가/삭제 + 추출 결과 영속)
+  const persistColors = (next: ColorEntry[]) => {
+    try {
+      sessionStorage.setItem(PALETTE_KEY, JSON.stringify(next));
+    } catch {
+      // 무시
+    }
+  };
+
+  // === 사진에서 컬러 추출 ===
+  const [extracting, setExtracting] = React.useState(false);
+  const [extractProgress, setExtractProgress] = React.useState(0);
+  const extractInputRef = React.useRef<HTMLInputElement>(null);
+
+  const openExtractPicker = () => {
+    if (extracting) return;
+    extractInputRef.current?.click();
+  };
+
+  const onExtractFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []).filter((f) => f.type.startsWith("image/"));
+    if (e.target) e.target.value = "";
+    if (!files.length) return;
+    if (files.length < 2) {
+      toast.warn("정확한 추출을 위해 2장 이상 권장합니다");
+    }
+    setExtracting(true);
+    setExtractProgress(0);
+    try {
+      // 파일 → DataURL
+      const urls = await Promise.all(
+        files.slice(0, 12).map(
+          (f) =>
+            new Promise<string>((resolve, reject) => {
+              const r = new FileReader();
+              r.onload = () => resolve(String(r.result));
+              r.onerror = () => reject(new Error("읽기 실패"));
+              r.readAsDataURL(f);
+            }),
+        ),
+      );
+      toast.info(`${urls.length}장에서 Pinterest 톤 추출 중...`);
+      const extracted = await extractPaletteFromPhotos(urls, (p) => setExtractProgress(p));
+      const next: ColorEntry[] = extracted.map((c) => ({ name: c.name, hex: c.hex }));
+      setColors(next);
+      persistColors(next);
+      toast.success(`${next.length}가지 컬러 추출 완료 · ${brand.name} 팔레트 업데이트`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.warn(`추출 실패: ${msg}`);
+    } finally {
+      setExtracting(false);
+      setExtractProgress(0);
+    }
+  };
+
+  const resetToDefault = () => {
+    const def = getBrandDetail(brand.id)?.colorPalette ?? [];
+    setColors(def);
+    try {
+      sessionStorage.removeItem(PALETTE_KEY);
+    } catch {
+      // 무시
+    }
+    toast.info("기본 팔레트로 복원");
+  };
 
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [draft, setDraft] = React.useState<ColorEntry>({ name: "", hex: "#7B2D26" });
 
-  const primaryColor = colors[0]?.hex ?? "#7B2D26";
-  const secondaryColor = colors[1]?.hex ?? "#E9DCC0";
+  // 폴백: 빈 팔레트면 현재 브랜드의 brandColors 사용 (하드코딩 회피)
+  const primaryColor = colors[0]?.hex ?? brand.brandColors?.primary ?? "#7B2D26";
+  const secondaryColor = colors[1]?.hex ?? brand.brandColors?.secondary ?? "#E9DCC0";
 
   const isValidHex = (s: string) => /^#?[0-9A-Fa-f]{6}$/.test(s.trim());
   const normalizeHex = (s: string) => (s.startsWith("#") ? s : `#${s}`).toUpperCase();
@@ -87,14 +183,22 @@ export function BrandKitScreen() {
       toast.warn("이미 팔레트에 있는 컬러입니다");
       return;
     }
-    setColors((prev) => [...prev, { name: trimmedName, hex }]);
+    setColors((prev) => {
+      const next = [...prev, { name: trimmedName, hex }];
+      persistColors(next);
+      return next;
+    });
     toast.success(`"${trimmedName}" 컬러가 ${brand.name} 팔레트에 추가됨`);
     setDialogOpen(false);
   };
 
   const removeColor = (hex: string) => {
     const target = colors.find((c) => c.hex === hex);
-    setColors((prev) => prev.filter((c) => c.hex !== hex));
+    setColors((prev) => {
+      const next = prev.filter((c) => c.hex !== hex);
+      persistColors(next);
+      return next;
+    });
     if (target) toast.info(`"${target.name}" 컬러 제거됨`);
   };
 
@@ -113,9 +217,28 @@ export function BrandKitScreen() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => toast.info(`${brand.name} 브랜드 키트 재학습 중...`)}>
-            <RefreshCw className="h-3.5 w-3.5" />재학습
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={openExtractPicker}
+            disabled={extracting}
+            className="text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-900/50"
+          >
+            {extracting ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Sparkles className="h-3.5 w-3.5" />
+            )}
+            {extracting ? `추출 중 ${Math.round(extractProgress * 100)}%` : "사진에서 추출"}
           </Button>
+          <input
+            ref={extractInputRef}
+            type="file"
+            multiple
+            accept="image/*"
+            className="hidden"
+            onChange={onExtractFiles}
+          />
           <Button size="sm" onClick={() => toast.success(`${brand.name}-brand-kit.pdf 다운로드 완료`)}>
             <Download className="h-3.5 w-3.5" />PDF 다운로드
           </Button>
@@ -150,14 +273,33 @@ export function BrandKitScreen() {
 
       {/* Color palette */}
       <Card className="p-5 mb-4">
-        <div className="flex items-center justify-between mb-4">
-          <div>
+        <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
+          <div className="min-w-0">
             <h3 className="text-sm font-semibold">컬러 팔레트</h3>
-            <p className="text-[11px] text-zinc-500 mt-0.5">로고 + 사진에서 자동 추출 · 6 컬러</p>
+            <p className="text-[11px] text-zinc-500 mt-0.5">
+              Pinterest 톤 자동 추출 · {colors.length} 컬러 · 어두운 톤 → 밝은 톤 정렬
+            </p>
+            {extracting && (
+              <div className="mt-2 w-48 h-1.5 rounded-full bg-zinc-100 dark:bg-zinc-900 overflow-hidden">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-violet-500 to-pink-500"
+                  animate={{ width: `${extractProgress * 100}%` }}
+                  transition={{ duration: 0.2 }}
+                />
+              </div>
+            )}
           </div>
-          <Button variant="ghost" size="sm" onClick={openAddColor}>
-            <Plus className="h-3.5 w-3.5" />컬러 추가
-          </Button>
+          <div className="flex items-center gap-1.5">
+            <Button variant="outline" size="sm" onClick={openExtractPicker} disabled={extracting}>
+              <Upload className="h-3.5 w-3.5" />사진 추출
+            </Button>
+            <Button variant="ghost" size="sm" onClick={openAddColor}>
+              <Plus className="h-3.5 w-3.5" />추가
+            </Button>
+            <Button variant="ghost" size="sm" onClick={resetToDefault} title="기본 팔레트 복원">
+              <RefreshCw className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {colors.map((c, i) => (

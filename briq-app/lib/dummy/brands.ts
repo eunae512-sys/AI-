@@ -15,6 +15,7 @@ export const brands: Brand[] = [
     followers: 12400,
     saveRate: 5.4,
     reachThisMonth: 68_000,
+    isDemo: true,
   },
   {
     id: "roastery-1985",
@@ -30,6 +31,7 @@ export const brands: Brand[] = [
     followers: 8200,
     saveRate: 4.7,
     reachThisMonth: 41_200,
+    isDemo: true,
   },
   {
     id: "seochon-stay",
@@ -45,6 +47,7 @@ export const brands: Brand[] = [
     followers: 5800,
     saveRate: 6.1,
     reachThisMonth: 28_400,
+    isDemo: true,
   },
   {
     id: "dolce-dessert",
@@ -60,6 +63,7 @@ export const brands: Brand[] = [
     followers: 18600,
     saveRate: 7.2,
     reachThisMonth: 92_000,
+    isDemo: true,
   },
   {
     id: "luna-hair",
@@ -75,6 +79,7 @@ export const brands: Brand[] = [
     followers: 14200,
     saveRate: 4.2,
     reachThisMonth: 52_800,
+    isDemo: true,
   },
   {
     id: "forum-fashion",
@@ -90,6 +95,7 @@ export const brands: Brand[] = [
     followers: 24800,
     saveRate: 3.8,
     reachThisMonth: 78_600,
+    isDemo: true,
   },
 ];
 

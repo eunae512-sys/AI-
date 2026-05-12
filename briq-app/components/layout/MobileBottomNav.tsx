@@ -4,16 +4,16 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
-import { Home, FileImage, Film, CheckCircle2, Menu, type LucideIcon } from "lucide-react";
+import { Home, Sparkles, Film, FileImage, Menu, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Tab = { href: string; icon: LucideIcon; label: string };
 
 const TABS: Tab[] = [
   { href: "/dashboard", icon: Home, label: "홈" },
-  { href: "/cardnews", icon: FileImage, label: "카드뉴스" },
+  { href: "/shorts", icon: Sparkles, label: "자동 홍보" },
   { href: "/reels", icon: Film, label: "릴스" },
-  { href: "/review-queue", icon: CheckCircle2, label: "검토" },
+  { href: "/cardnews", icon: FileImage, label: "카드뉴스" },
 ];
 
 export function MobileBottomNav() {

@@ -6,9 +6,12 @@ import { ChevronDown, Check } from "lucide-react";
 import { useBrand } from "@/components/brand/BrandProvider";
 import { cn } from "@/lib/utils";
 
+const HIDE_DEMO_KEY = "briq:hide-demo-brands";
+
 export function BrandPicker() {
   const { brand, brandId, setBrandId, allBrands } = useBrand();
   const [open, setOpen] = React.useState(false);
+  const [hideDemo, setHideDemo] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -18,6 +21,37 @@ export function BrandPicker() {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  // 데모 숨김 설정 동기화
+  React.useEffect(() => {
+    try {
+      setHideDemo(localStorage.getItem(HIDE_DEMO_KEY) === "1");
+    } catch {
+      // 무시
+    }
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === HIDE_DEMO_KEY) setHideDemo(e.newValue === "1");
+    };
+    const onCustom = () => {
+      try {
+        setHideDemo(localStorage.getItem(HIDE_DEMO_KEY) === "1");
+      } catch {
+        // 무시
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    window.addEventListener("briq:hide-demo-updated", onCustom);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("briq:hide-demo-updated", onCustom);
+    };
+  }, []);
+
+  // 현재 활성 브랜드는 항상 보여줘야 함 (선택은 유지)
+  const visibleBrands = React.useMemo(
+    () => allBrands.filter((b) => !hideDemo || !b.isDemo || b.id === brandId),
+    [allBrands, hideDemo, brandId],
+  );
 
   return (
     <div ref={ref} className="relative">
@@ -55,13 +89,30 @@ export function BrandPicker() {
             className="absolute right-0 top-full mt-1.5 w-[min(288px,calc(100vw-24px))] rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-xl z-50 overflow-hidden"
             role="listbox"
           >
-            <div className="px-3 py-2 border-b border-zinc-100 dark:border-zinc-900">
+            <div className="px-3 py-2 border-b border-zinc-100 dark:border-zinc-900 flex items-center justify-between gap-2">
               <div className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">
-                관리 중인 브랜드 · {allBrands.length}
+                관리 중인 브랜드 · {visibleBrands.length}{hideDemo ? ` / ${allBrands.length}` : ""}
               </div>
+              <button
+                onClick={() => {
+                  const next = !hideDemo;
+                  setHideDemo(next);
+                  try {
+                    if (next) localStorage.setItem(HIDE_DEMO_KEY, "1");
+                    else localStorage.removeItem(HIDE_DEMO_KEY);
+                    window.dispatchEvent(new Event("briq:hide-demo-updated"));
+                  } catch {
+                    // 무시
+                  }
+                }}
+                className="text-[10px] text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+                title="데모 브랜드 숨김 토글"
+              >
+                {hideDemo ? "데모 보이기" : "데모 숨김"}
+              </button>
             </div>
             <div className="max-h-80 overflow-y-auto py-1">
-              {allBrands.map((b) => {
+              {visibleBrands.map((b) => {
                 const active = b.id === brandId;
                 return (
                   <button
@@ -86,7 +137,14 @@ export function BrandPicker() {
                       {b.letter}
                     </span>
                     <span className="flex-1 min-w-0">
-                      <span className="block text-xs font-medium truncate">{b.name}</span>
+                      <span className="flex items-center gap-1.5 truncate">
+                        <span className="text-xs font-medium truncate">{b.name}</span>
+                        {b.isDemo && (
+                          <span className="text-[9px] uppercase tracking-wider px-1 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-500 font-semibold shrink-0">
+                            데모
+                          </span>
+                        )}
+                      </span>
                       <span className="block text-[10px] text-zinc-500 truncate">
                         {b.industryLabel} · 톤 v{b.toneVersion} · {b.campaign}
                       </span>
@@ -97,7 +155,7 @@ export function BrandPicker() {
               })}
             </div>
             <div className="px-3 py-2 border-t border-zinc-100 dark:border-zinc-900 text-[10px] text-zinc-500">
-              모든 페이지의 콘텐츠가 선택된 브랜드 기준으로 업데이트됩니다
+              데모는 BRIQ가 미리 만든 예시 브랜드입니다. 사장님 브랜드는 온보딩으로 추가하세요.
             </div>
           </motion.div>
         )}

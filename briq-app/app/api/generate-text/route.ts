@@ -67,19 +67,18 @@ export async function POST(req: NextRequest) {
   const n = (k: string, fallback: number) =>
     typeof body[k] === "number" ? (body[k] as number) : fallback;
 
-  const brand = s("brand", "미옥당 본점");
-  const industry = s("industry", "한정식 (음식점)");
-  const location = s("location", "서울 종로구 수송동 · 광화문역 7번 출구 도보 6분");
-  const campaign = s("campaign", "5월 봄나물 코스 런칭");
-  const goal = s("goal", "평일 점심 신규 고객 유입 + 사전 예약 전환");
-  const target = s("target", "30~50대 직장인 + 가족 모임 주최자");
-  const promotion = s(
-    "promotion",
-    "5월 한정 봄나물 코스(시금치·두릅·머위) · 사전예약 시 후식 추가 · 가족 단체석 별도 안내",
-  );
-  const tone = s("tone", "정성, 고즈넉, 전통, 단정한 존댓말 (~합니다 / 모십니다)");
-  const forbidden = s("forbidden", "최고, 100%, 유일, 대박, 싸고, JMT, 맛집");
-  const must_say = s("must_say", "한정식, 코스, 한 상");
+  // 모든 디폴트는 업종 중립적으로 — 클라이언트가 industry-specific 컨텍스트를 넘기지 않으면
+  // GPT 가 "${industry}" 만 보고 알맞게 작성하도록 (기존엔 한정식 디폴트가 들어가 다른 업종 결과가 어색했음)
+  const brand = s("brand", "브랜드");
+  const industry = s("industry", "소상공인");
+  const location = s("location", "한국");
+  const campaign = s("campaign", "신규 캠페인");
+  const goal = s("goal", "신규 고객 유입 + 전환");
+  const target = s("target", "20~50대 일반 소비자");
+  const promotion = s("promotion", "시즌 한정 콘텐츠 · 사전 안내");
+  const tone = s("tone", "단정한 존댓말, 절제, 신뢰");
+  const forbidden = s("forbidden", "최고, 100%, 유일, 대박, JMT, 맛집");
+  const must_say = s("must_say", "");
   const slide_count = n("slide_count", 6);
   const model = s("model", process.env.TEXT_MODEL || "gpt-4o");
 
@@ -103,8 +102,25 @@ export async function POST(req: NextRequest) {
   const startedAt = Date.now();
   const openai = new OpenAI({ apiKey });
 
+  // 슬라이드 역할 — slide_count 에 맞춰 자동 구성
+  // 6장: title / hook / story / menu / menu / cta
+  // 4~5장: title / hook / story / menu / cta
+  // 7~10장: title / hook / story / menu / menu / detail / detail / ... / cta
+  const buildRoles = (count: number): string[] => {
+    if (count <= 4) return ["title", "hook", "story", "cta"].slice(0, count);
+    if (count === 5) return ["title", "hook", "story", "menu", "cta"];
+    if (count === 6) return ["title", "hook", "story", "menu", "menu", "cta"];
+    const mid: string[] = ["title", "hook", "story"];
+    const middleCount = count - 4;
+    for (let i = 0; i < middleCount; i++) mid.push(i < 2 ? "menu" : "detail");
+    mid.push("cta");
+    return mid;
+  };
+  const roles = buildRoles(slide_count);
+  const roleGuide = roles.map((r, i) => `${i + 1}. ${r}`).join("\n");
+
   const systemPrompt = `당신은 10년차 한국 광고대행사 AE 겸 카피라이터입니다.
-한국 소상공인 광고대행사에서 클라이언트 카드뉴스를 만듭니다.
+한국 소상공인 광고대행사에서 클라이언트의 인스타그램 카드뉴스를 만듭니다.
 
 ==== 브랜드 정보 ====
 - 브랜드: ${brand}
@@ -121,39 +137,45 @@ export async function POST(req: NextRequest) {
 - 프로모션: ${promotion}
 
 ==== 출력 규격 ====
-인스타그램 카드뉴스 ${slide_count}장의 텍스트.
+인스타그램 카드뉴스 정확히 ${slide_count}장.
 
 각 슬라이드는 3개 필드:
-- label: 카테고리/번호 (예: "미옥당 · 5월 한정", "02 · 새벽", "06 · 예약")
-- title: 큰 헤드라인 (10~25자 권장, 줄바꿈은 \\n)
-- sub: 보조/디테일 (15~40자 권장)
+- label: 카테고리·번호 (예: "${brand} · 시즌", "02 · 후크", "${slide_count.toString().padStart(2, "0")} · 예약") — 2~12자
+- title: 큰 헤드라인. 10~22자. 두 줄까지 가능 (줄바꿈은 \\n 사용)
+- sub: 보조 디테일. 12~36자. 한 문장으로 마침
 
-슬라이드 역할 순서 (필수):
-1. title (표지) — 캠페인 핵심 메시지 한 줄
-2. hook (후크) — 감각적 도입, 호기심 유발
-3. story (브랜드/스토리) — 신뢰의 근거 (예: 30년 전통)
-4. menu (메뉴 1) — 핵심 상품 1
-5. menu (메뉴 2) — 핵심 상품 2
-6. cta (예약/CTA) — 행동 유도
+슬라이드 역할 순서 (정확히 이대로):
+${roleGuide}
 
-==== 카피 규칙 ====
-1. 한국어, 단정한 존댓말 (~합니다 / ~드립니다 / ~모십니다)
-2. 표시광고법/의료광고법 금지어 절대 금지
-3. 절제·고즈넉·신뢰의 톤. 영어식 직역 회피
-4. 이모지·특수문자 사용 금지 (· 와 줄바꿈만 OK)
-5. 매장의 실제 사실(위치·기간·메뉴)을 자연스럽게 녹임
-6. AI 클리셰 회피 ("최고의 경험", "특별한 순간" 같은 빈말 금지)
+역할 설명:
+- title: 표지. 캠페인 핵심 메시지 한 줄. "${brand}" 이름·업종이 자연스럽게 보이게.
+- hook: 감각적 도입. 시간·장면·소재 묘사. 광고티 X.
+- story: 신뢰 근거. 매장의 사실(연차·위치·생산지·운영방식). 모르는 사실은 만들지 말 것.
+- menu: 핵심 상품·메뉴. 슬라이드 간 반드시 서로 다른 상품을 다룰 것.
+- detail: 부가 디테일 (분위기·픽업/예약 안내·접근성). menu 와 겹치면 안 됨.
+- cta: 예약·문의·방문 행동 유도. 운영시간·예약 채널 안내.
+
+==== 절대 규칙 ====
+1. 한국어 단정한 존댓말 (~합니다 / ~드립니다 / ~모십니다)
+2. 표시광고법/의료광고법 금지어 사용 금지
+3. 절제·신뢰의 톤. 영어식 직역·AI 클리셰 금지 ("최고의 경험", "특별한 순간", "잊지 못할" 등 빈말 금지)
+4. 이모지·특수문자 금지 (· 와 줄바꿈만 OK)
+5. **반복 금지** — title, sub, label 어느 필드든 이전 슬라이드와 같거나 비슷한 표현을 쓰지 말 것. 같은 단어가 여러 슬라이드에 나오면 다른 맥락으로만.
+6. **사실 추정 금지** — 알려주지 않은 가격·시간·메뉴명·인증·전화번호를 만들어 쓰지 말 것. 모르면 일반 표현 ("사전 예약 권장", "운영시간 안내" 등) 으로 대체.
+7. **업종 일관성** — 위 "업종: ${industry}" 에서 벗어난 표현 금지 (예: 카페면 한정식 표현 금지).
+8. label 은 슬라이드마다 반드시 달라야 함 (번호 포함).
 
 ==== 출력 형식 ====
-오직 JSON 만 출력. 설명/마크다운 금지.
+오직 JSON 만 출력. 설명·마크다운 금지.
 
 {
   "slides": [
-    { "role": "title", "label": "...", "title": "...", "sub": "..." }
+    { "role": "title", "label": "...", "title": "...", "sub": "..." },
+    ...정확히 ${slide_count}개...
   ]
 }`;
 
-  const userPrompt = `${campaign} 카드뉴스 ${slide_count}장 텍스트를 생성해주세요. 각 슬라이드의 role 은 위 규격 순서대로 정확히 채워주세요.`;
+  const userPrompt = `위 규격에 따라 "${campaign}" 카드뉴스 ${slide_count}장의 JSON 을 생성해 주세요. 각 슬라이드는 위 역할 순서대로 role 을 정확히 채우고, 슬라이드 간 내용 반복이 없도록 해 주세요. ${brand}(${industry}) 의 실제 상황에 맞는 카피를 써 주세요.`;
 
   try {
     const result = await openai.chat.completions.create({

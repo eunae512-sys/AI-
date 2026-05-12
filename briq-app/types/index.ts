@@ -15,6 +15,7 @@ export type Brand = {
   followers: number;
   saveRate: number;
   reachThisMonth: number;
+  isDemo?: boolean;
 };
 
 export type ContentItem = {

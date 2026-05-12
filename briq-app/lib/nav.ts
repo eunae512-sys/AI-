@@ -5,13 +5,18 @@ import {
   Layers,
   Film,
   FileImage,
+  FileText,
+  MessageSquare,
   Calendar,
   CheckCircle2,
   MessageSquareHeart,
   Send,
   BarChart3,
   Globe2,
+  Search,
   Palette,
+  Plug,
+  Sparkles,
   Wand2,
   Settings,
   type LucideIcon,
@@ -39,9 +44,18 @@ export const navGroups: NavGroup[] = [
   {
     title: "AI 콘텐츠",
     items: [
+      { label: "AI 자동 홍보", href: "/shorts", icon: Sparkles },
       { label: "AI 릴스", href: "/reels", icon: Film },
       { label: "카드뉴스", href: "/cardnews", icon: FileImage },
+      { label: "쓰레드", href: "/threads", icon: MessageSquare },
+      { label: "네이버 블로그", href: "/blog", icon: FileText },
       { label: "콘텐츠 캘린더", href: "/calendar", icon: Calendar },
+    ],
+  },
+  {
+    title: "채널",
+    items: [
+      { label: "SNS 연결", href: "/channels", icon: Plug },
     ],
   },
   {
@@ -57,6 +71,7 @@ export const navGroups: NavGroup[] = [
     items: [
       { label: "성과 분석", href: "/analytics", icon: BarChart3 },
       { label: "지역 트렌드", href: "/trends", icon: Globe2 },
+      { label: "검색·AI 노출", href: "/discover", icon: Search },
     ],
   },
   {
