@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { isPlaceholderKey } from "@/lib/api/demo-images";
+import { buildViralMandate, detectCliches, type Voice } from "@/lib/viral/system-prompt";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -48,6 +49,9 @@ export async function POST(req: NextRequest) {
   const forbidden = s("forbidden", "100% 보장, 무조건, 만병통치, 완치, 최고, 대박");
   let targetChars = Number(body["targetChars"]) || 1800; // 1500~2500
   const model = s("model", process.env.TEXT_MODEL || "gpt-4o");
+  // 블로그는 정중체가 자연스럽지만 옵션 — 사용자가 "viral 톤 블로그" 시도해볼 수 있게
+  const voiceParam = (typeof body["voice"] === "string" ? body["voice"] : "formal") as Voice;
+  const voice: Voice = voiceParam === "viral" ? "viral" : "formal";
 
   // SERP 분석 결과 (선택) — /api/analyze-naver-blogs 응답을 그대로 받음
   type SerpAnalysis = {
@@ -206,7 +210,9 @@ ${keywordsLine}
 
 {
   "body": "본문 전체. 문단 사이는 \\n\\n 로 구분."
-}`;
+}
+
+${buildViralMandate({ voice, platform: "naver" })}`;
 
   const userPrompt = `위 규격으로 "${topic}" 주제의 네이버 블로그 본문 JSON 을 만들어 주세요. ${brand}(${industry}) 의 실제 상황에 맞게, ${targetChars}자 내외로 자연스럽게.`;
 
@@ -280,17 +286,25 @@ ${keywordsLine}
       }
     }
 
-    // 금지어 검사
+    // 금지어 + (viral 모드일 때) AI 클리셰 검사
     const forbiddenList = forbidden
       .split(/[,，]/)
       .map((x) => x.trim())
       .filter(Boolean);
-    const flagged: { word: string; count: number }[] = [];
+    const flagged: { word: string; count: number; kind: "forbidden" | "cliche" }[] = [];
     forbiddenList.forEach((f) => {
       const re = new RegExp(f.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
       const matches = bodyText.match(re);
-      if (matches && matches.length > 0) flagged.push({ word: f, count: matches.length });
+      if (matches && matches.length > 0) flagged.push({ word: f, count: matches.length, kind: "forbidden" });
     });
+    if (voice === "viral") {
+      const cliches = detectCliches(bodyText);
+      cliches.forEach((c) => {
+        const re = new RegExp(c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
+        const cnt = (bodyText.match(re) ?? []).length;
+        if (cnt > 0) flagged.push({ word: c, count: cnt, kind: "cliche" });
+      });
+    }
 
     const latencyMs = Date.now() - startedAt;
     const usage = result.usage || ({} as { prompt_tokens?: number; completion_tokens?: number });

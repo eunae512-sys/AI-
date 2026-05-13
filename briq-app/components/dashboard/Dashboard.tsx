@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { Sparkles, Plus, Plug, FileImage, Calendar, ArrowRight, Play, Loader2, RefreshCw } from "lucide-react";
+import { Sparkles, Plus, Plug, FileImage, Calendar, ArrowRight, Play, Loader2, RefreshCw, Upload, Film, FileText, Image as ImageIcon } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAssistant } from "@/components/ai-assistant/AssistantProvider";
@@ -46,47 +46,77 @@ export function DashboardScreen() {
 
   return (
     <div>
-      {/* Hero strip */}
+      {/* Hero — "오늘 뭐 올릴까?" 톤 + 큰 업로드 영역 */}
       <motion.section className="px-4 sm:px-6 pt-5 sm:pt-8 pb-3 sm:pb-4" {...fade()} key={brand.id}>
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 sm:gap-6">
-          <div className="min-w-0">
-            <div className="text-xs font-medium text-zinc-500 mb-1.5">{today} · ☁️ 24°C 흐림</div>
-            <h1 className="text-[26px] sm:text-3xl md:text-4xl font-semibold tracking-tight leading-[1.1]">
-              <span className="gradient-text">{brand.name}</span>,<br className="sm:hidden" /> 어서 오세요
-            </h1>
-            <p className="mt-2 sm:mt-3 text-sm text-zinc-600 dark:text-zinc-400 max-w-2xl leading-relaxed">
-              {isUserBrand ? (
-                <>
-                  <span className="hidden sm:inline">
-                    {brand.industryLabel} · {brand.city} · 온보딩 완료 · 추출 팔레트 {userBrand?.palette.length ?? 0}개 컬러 · 업로드 사진 {userBrand?.photos.length ?? 0}장.
-                    오른쪽 카드에서 SNS 연결부터 시작해 주세요.
-                  </span>
-                  <span className="sm:hidden">
-                    {brand.industryLabel} · {brand.city} · 온보딩 완료. 다음 단계를 진행해 주세요.
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className="hidden sm:inline">
-                    {brand.industryLabel} · {brand.city} · 톤 v{brand.toneVersion} · 현재 캠페인 <b>{brand.campaign}</b>.
-                    오늘 BRIQ가 6개 클라이언트를 대신 운영합니다 — 검토 대기 3 · 예약 12 · 톤 경고 2.
-                  </span>
-                  <span className="sm:hidden">
-                    현재 캠페인 <b>{brand.campaign}</b> · 검토 3 · 예약 12 · 톤 경고 2
-                  </span>
-                </>
-              )}
-            </p>
-          </div>
-          <div className="flex items-center gap-2 -mx-1 sm:mx-0 overflow-x-auto sm:overflow-visible">
-            <Button variant="outline" size="sm" onClick={open} className="shrink-0">
-              <Sparkles className="h-3.5 w-3.5" />AI 빠른 실행
-            </Button>
-            <Button asChild size="sm" className="shrink-0">
-              <Link href={isUserBrand ? "/channels" : "/reels"}>
-                <Plus className="h-3.5 w-3.5" />{isUserBrand ? "SNS 연결" : "새 콘텐츠"}
-              </Link>
-            </Button>
+        <div className="text-xs font-medium text-zinc-500 mb-1.5">{today}</div>
+        <h1 className="text-[26px] sm:text-3xl md:text-4xl font-semibold tracking-tight leading-[1.1]">
+          {brand.name} 사장님,<br className="sm:hidden" />
+          <span className="gradient-text"> 오늘 뭐 올릴까요?</span>
+        </h1>
+        <p className="mt-2 sm:mt-3 text-sm text-zinc-600 dark:text-zinc-400 max-w-2xl leading-relaxed">
+          사진 한 장 올리시면 인스타·틱톡·쇼츠·블로그까지 한 번에 만들어드려요. 어떤 거 올리실지 정해두지 않아도 OK — AI가 알아서 정합니다.
+        </p>
+
+        {/* 큰 업로드 + 빠른 진입 카드 (대표 CTA) */}
+        <div className="mt-4 sm:mt-5 grid grid-cols-1 md:grid-cols-5 gap-3">
+          {/* 메인 — 사진 1장 → 홍보 만들기 */}
+          <Link
+            href="/shorts"
+            className="md:col-span-3 group rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 hover:border-violet-500 dark:hover:border-violet-500 bg-gradient-to-br from-violet-50/40 to-white dark:from-violet-500/[0.06] dark:to-zinc-950 p-5 sm:p-6 transition-all hover:shadow-md min-h-[160px] flex items-center gap-4 sm:gap-5"
+          >
+            <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-violet-100 dark:bg-violet-500/15 grid place-items-center shrink-0 group-hover:bg-violet-200 dark:group-hover:bg-violet-500/25 transition-colors">
+              <Upload className="h-7 w-7 sm:h-8 sm:w-8 text-violet-600 dark:text-violet-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[11px] uppercase tracking-wider font-semibold text-violet-600 dark:text-violet-400">
+                대표 흐름 · 1분 완성
+              </div>
+              <div className="mt-0.5 text-lg sm:text-xl font-semibold tracking-tight">
+                사진 1장 → 오늘 홍보 끝
+              </div>
+              <div className="mt-1 text-xs sm:text-sm text-zinc-500 leading-relaxed">
+                인스타 · 틱톡 · 쇼츠 · 네이버 4채널 카피 자동 — 사장님은 복사·발행만
+              </div>
+              <div className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-violet-700 dark:text-violet-300">
+                시작 <ArrowRight className="h-3 w-3" />
+              </div>
+            </div>
+          </Link>
+
+          {/* 보조 — 다른 콘텐츠 타입 */}
+          <div className="md:col-span-2 grid grid-cols-2 gap-2">
+            <Link
+              href="/reels"
+              className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-3 hover:border-zinc-900 dark:hover:border-zinc-100 transition-colors"
+            >
+              <Film className="h-4 w-4 text-rose-500" />
+              <div className="mt-1.5 text-[12.5px] font-semibold">릴스 만들기</div>
+              <div className="text-[10px] text-zinc-500 mt-0.5">사진 여러 장 → 30초 영상</div>
+            </Link>
+            <Link
+              href="/cardnews"
+              className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-3 hover:border-zinc-900 dark:hover:border-zinc-100 transition-colors"
+            >
+              <ImageIcon className="h-4 w-4 text-amber-500" />
+              <div className="mt-1.5 text-[12.5px] font-semibold">카드뉴스</div>
+              <div className="text-[10px] text-zinc-500 mt-0.5">주제 한 줄 → 6장 자동</div>
+            </Link>
+            <Link
+              href="/blog"
+              className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-3 hover:border-zinc-900 dark:hover:border-zinc-100 transition-colors"
+            >
+              <FileText className="h-4 w-4 text-emerald-500" />
+              <div className="mt-1.5 text-[12.5px] font-semibold">블로그</div>
+              <div className="text-[10px] text-zinc-500 mt-0.5">주제 → 1500자 본문</div>
+            </Link>
+            <Link
+              href="/calendar"
+              className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-3 hover:border-zinc-900 dark:hover:border-zinc-100 transition-colors"
+            >
+              <Calendar className="h-4 w-4 text-sky-500" />
+              <div className="mt-1.5 text-[12.5px] font-semibold">콘텐츠 달력</div>
+              <div className="text-[10px] text-zinc-500 mt-0.5">이달의 추천</div>
+            </Link>
           </div>
         </div>
       </motion.section>
@@ -96,10 +126,10 @@ export function DashboardScreen() {
         <section className="px-4 sm:px-6 pb-2">
           {(() => {
             const kpis = [
-              { label: `${brand.name} 팔로워`, value: formatNumber(brand.followers), delta: "+8.4%", note: `${brand.industryLabel} 평균 5.2K 대비` },
-              { label: "이번달 도달", value: formatNumber(brand.reachThisMonth), delta: "+47%", note: "인스타 + 블로그 + 릴스 합산" },
-              { label: "평균 저장률", value: `${brand.saveRate}%`, delta: "↑ 1.1%p", note: "업종 평균 2.3% 대비 ★" },
-              { label: "절감 시간", value: "42h", delta: "≈ ₩1.4M", note: "이번달 BRIQ 자동화 누적" },
+              { label: "팔로워", value: formatNumber(brand.followers), delta: "+8.4%", note: "지난주보다 더 늘었어요" },
+              { label: "내 가게 본 사람", value: formatNumber(brand.reachThisMonth), delta: "+47%", note: "이번달 인스타·블로그 합산" },
+              { label: "저장한 사람", value: `${brand.saveRate}%`, delta: "↑ 1.1%p", note: "동네 평균보다 높아요 ★" },
+              { label: "AI 가 대신 한 일", value: "42h", delta: "≈ ₩1.4M", note: "이번달 사장님 시간 절약됨" },
             ];
             return (
               <div className="grid grid-cols-2 xs:grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">

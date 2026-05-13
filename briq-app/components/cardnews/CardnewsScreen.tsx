@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { hexToPexelsColor } from "@/lib/api/demo-images";
 import {
@@ -21,6 +21,8 @@ import {
   ShieldCheck,
   ClipboardCheck,
   PenLine,
+  Wand2,
+  LayoutTemplate,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -31,10 +33,36 @@ import { getBrandDetail } from "@/lib/dummy/brand-detail";
 import { NextStepCard } from "@/components/layout/RoadmapStrip";
 import { addToQueue as enqueuePublish } from "@/lib/queue/publish-queue";
 import { useAutoSaveDraft, formatSavedAt } from "@/lib/drafts/auto-save";
+import {
+  type LayoutId,
+  LAYOUT_SPECS,
+  DEFAULT_LAYOUT_SEQUENCE,
+  getTitleClass,
+  getContainerClass,
+} from "@/lib/cardnews/layouts";
+import { getContext } from "@/lib/viral/context";
+import { cn } from "@/lib/utils";
 
 type Source = "pexels" | "codex" | "ai";
 
-type SlideCopy = { label: string; title: string; sub: string };
+type SlideCopy = {
+  label: string;
+  title: string;
+  sub: string;
+  layoutId?: LayoutId;
+  body?: string;
+  items?: string[];
+  footer?: string;
+};
+
+type ImageCandidate = {
+  url: string;
+  photoId?: number;
+  photographer?: string;
+  photographerUrl?: string;
+  pexelsUrl?: string;
+  alt?: string;
+};
 
 type SlideImage = {
   status: "idle" | "loading" | "ready" | "error";
@@ -43,10 +71,13 @@ type SlideImage = {
   notice?: string;
   error?: string;
   meta?: { latencyMs?: number; costKrw?: number; photographer?: string };
+  // 3가지 변형 후보 (Pexels returnCandidates 응답)
+  candidates?: ImageCandidate[];
 };
 
 type FactCheckIssue = { slide: number; word: string };
-type EditTarget = { idx: number; field: "label" | "title" | "sub" } | null;
+type EditField = "label" | "title" | "sub" | "body" | "footer" | "item";
+type EditTarget = { idx: number; field: EditField; itemIdx?: number } | null;
 
 // 브랜드별 카드뉴스 6장 폴백 카피
 const SLIDES_BY_BRAND: Record<string, SlideCopy[]> = {
@@ -262,6 +293,27 @@ export function CardnewsScreen() {
   const [keyMissing, setKeyMissing] = useState<string | null>(null);
   const [bannerDismissed, setBannerDismissed] = useState(false);
 
+  // 주제 입력 모드 — 주제 한 줄 → 슬라이드 + 레이아웃 자동 구성
+  const [topicInput, setTopicInput] = useState("");
+  const [composing, setComposing] = useState(false);
+  // 톤 모드 — viral 이 기본 (반말체·바이럴), formal 은 정중 존댓말
+  const [voice, setVoice] = useState<"viral" | "formal">("viral");
+
+  // 지금 컨텍스트 — 자동으로 GPT 프롬프트에 들어감, 사용자에게 배지로 노출
+  const ctx = useMemo(() => getContext(), []);
+  const ctxLabel = useMemo(() => {
+    const season = { spring: "봄", summer: "여름", fall: "가을", winter: "겨울" }[ctx.season];
+    const slot = {
+      morning: "오전", lunch: "점심", afternoon: "오후",
+      evening: "저녁", night: "밤", lateNight: "심야",
+    }[ctx.daySlot];
+    const week = {
+      weekday: "평일", weekend: "주말",
+      monFatigue: "월요일", fridayHype: "금요일",
+    }[ctx.weekSlot];
+    return `${season} · ${slot} · ${week}`;
+  }, [ctx]);
+
   // 자동 저장 — slides + approved + source (이미지는 dataURL 이라 빼고; 다시 생성하면 됨)
   const { lastSavedAt: draftSavedAt } = useAutoSaveDraft({
     scope: "cardnews",
@@ -309,8 +361,9 @@ export function CardnewsScreen() {
   }, []);
 
   const generateOne = useCallback(
-    async (idx: number, src: Source): Promise<SlideImage> => {
-      const slide = slides[idx];
+    async (idx: number, src: Source, slideParam?: SlideCopy): Promise<SlideImage> => {
+      // slideParam 우선 (compose 직후처럼 state 가 아직 반영 안 됐을 때) → 없으면 state 에서
+      const slide = slideParam ?? slides[idx];
       const slideId = idx + 1;
 
       if (src === "pexels") {
@@ -326,6 +379,7 @@ export function CardnewsScreen() {
             perPage: 24,
             color: pexelsColor,
             slideId,
+            returnCandidates: true,
           }),
         });
         const data = await res.json();
@@ -336,6 +390,7 @@ export function CardnewsScreen() {
           source: data.meta?.source,
           notice: data.meta?.notice,
           meta: { latencyMs: data.meta?.latencyMs, photographer: data.meta?.photographer },
+          candidates: Array.isArray(data.candidates) ? data.candidates : undefined,
         };
       }
 
@@ -377,35 +432,44 @@ export function CardnewsScreen() {
     [brand.id, brand.industryLabel, brand.campaign, slides, queries, colors],
   );
 
+  // 임의의 slides 배열에 대해 6장 이미지 일괄 생성 — compose 직후처럼 state 가 아직 반영 안 됐을 때 슬라이드 인라인 전달
+  const generateImagesForSlides = useCallback(
+    async (slidesToUse: SlideCopy[], silent = false): Promise<SlideImage[]> => {
+      setBusy(true);
+      setImages(slidesToUse.map(() => ({ status: "loading" })));
+      if (!silent) toast.info(`${brand.name} · 6장 ${SOURCE_LABEL[source].label} 로 생성 시작`);
+      const results = await Promise.all(
+        slidesToUse.map(async (s, i) => {
+          try {
+            return await generateOne(i, source, s);
+          } catch (e) {
+            const err = e instanceof Error ? e.message : String(e);
+            return { status: "error" as const, error: err };
+          }
+        }),
+      );
+      setImages(results);
+      setBusy(false);
+      const okCount = results.filter((r) => r.status === "ready").length;
+      const demoCount = results.filter((r) => r.source === "demo-fallback").length;
+      if (okCount === slidesToUse.length) {
+        if (demoCount > 0) {
+          toast.warn(`${okCount}/${slidesToUse.length} 완료 · ${demoCount}장은 데모 폴백 (API 키 확인)`);
+        } else {
+          toast.success(`${brand.name} · ${okCount}장 ${SOURCE_LABEL[source].label} 완료`);
+        }
+      } else {
+        toast.warn(`${okCount}/${slidesToUse.length} 완료 · 일부 실패`);
+      }
+      return results;
+    },
+    [brand.name, source, generateOne, toast],
+  );
+
   const regenerateAll = useCallback(async () => {
     if (busy || generatingText) return;
-    setBusy(true);
-    setImages(slides.map(() => ({ status: "loading" })));
-    toast.info(`${brand.name} · 6장 ${SOURCE_LABEL[source].label}로 생성 시작`);
-    const results = await Promise.all(
-      slides.map(async (_, i) => {
-        try {
-          return await generateOne(i, source);
-        } catch (e) {
-          const err = e instanceof Error ? e.message : String(e);
-          return { status: "error" as const, error: err };
-        }
-      }),
-    );
-    setImages(results);
-    setBusy(false);
-    const okCount = results.filter((r) => r.status === "ready").length;
-    const demoCount = results.filter((r) => r.source === "demo-fallback").length;
-    if (okCount === slides.length) {
-      if (demoCount > 0) {
-        toast.warn(`${okCount}/${slides.length} 완료 · ${demoCount}장은 데모 폴백 (API 키 확인)`);
-      } else {
-        toast.success(`${brand.name} · ${okCount}장 ${SOURCE_LABEL[source].label} 완료`);
-      }
-    } else {
-      toast.warn(`${okCount}/${slides.length} 완료 · 일부 실패`);
-    }
-  }, [slides, source, brand.name, generateOne, toast, busy, generatingText]);
+    await generateImagesForSlides(slides);
+  }, [busy, generatingText, generateImagesForSlides, slides]);
 
   const regenerateOne = useCallback(
     async (idx: number) => {
@@ -501,6 +565,91 @@ export function CardnewsScreen() {
     }
   };
 
+  // 주제 → 슬라이드 6장 + 페이지별 레이아웃 자동 구성
+  const composeFromTopic = useCallback(async () => {
+    if (composing || busy || generatingText) return;
+    const topic = topicInput.trim();
+    if (!topic) {
+      toast.warn("어떤 주제로 카드뉴스를 만들지 한 줄 적어주세요");
+      return;
+    }
+    setComposing(true);
+    toast.info(`"${topic}" 주제 — 6장 + 페이지 디자인 자동 구성 중...`);
+    try {
+      const ind = INDUSTRY_PROMPT_DEFAULTS[brand.industry] ?? INDUSTRY_PROMPT_DEFAULTS.restaurant;
+      const userMenu = isUserBrand && userBrand?.signatureMenu
+        ? userBrand.signatureMenu.filter(Boolean).join(", ")
+        : "";
+      const userTagline = isUserBrand && userBrand?.tagline ? userBrand.tagline : "";
+      const res = await fetch("/api/compose-cardnews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          brand: brand.name,
+          industry: brand.industryLabel,
+          location: brand.city,
+          topic,
+          tagline: userTagline,
+          signatureMenu: userMenu,
+          tone: detail?.toneSummary ?? ind.tone,
+          forbidden: (detail?.forbiddenWords ?? []).join(", "),
+          slideCount: 6,
+          voice,
+        }),
+      });
+      const data = await res.json();
+      if (!data?.ok) {
+        toast.warn(`자동 구성 실패: ${data?.error ?? "알 수 없음"}`);
+        return;
+      }
+      const rawSlides = (data.slides as Array<{
+        role?: string;
+        layoutId?: LayoutId;
+        label?: string;
+        title?: string;
+        sub?: string;
+        body?: string;
+        items?: string[];
+        footer?: string;
+      }>) ?? [];
+      const newSlides: SlideCopy[] = rawSlides.slice(0, 6).map((s, i) => ({
+        label: s.label ?? "",
+        title: s.title ?? "",
+        sub: s.sub ?? "",
+        layoutId: s.layoutId ?? DEFAULT_LAYOUT_SEQUENCE[i] ?? "hero",
+        body: s.body,
+        items: Array.isArray(s.items) ? s.items : undefined,
+        footer: s.footer,
+      }));
+      while (newSlides.length < 6) {
+        const i = newSlides.length;
+        newSlides.push({ label: "", title: "", sub: "", layoutId: DEFAULT_LAYOUT_SEQUENCE[i] ?? "hero" });
+      }
+      setSlides(newSlides);
+      setApproved(newSlides.map(() => false));
+      setFactCheck(null);
+      setEditing(null);
+      const cost = data.meta?.costKrw ?? 0;
+      const demo = data.meta?.demoMode ? " (데모)" : "";
+      toast.success(`6장 구성 완료${demo} · 각 슬라이드 레이아웃 자동 선택 · ₩${cost}`);
+      if (Array.isArray(data.flagged) && data.flagged.length) {
+        const issues: FactCheckIssue[] = data.flagged.map(
+          (f: { slide: number; word: string }) => ({ slide: f.slide, word: f.word }),
+        );
+        setFactCheck(issues);
+        toast.warn(`${issues.length}건 금지어/클리셰 검출 — 검수 결과 확인`);
+      }
+      // ★ 자동 이미지 트리거 — 텍스트 직후 이미지까지 한 번에
+      toast.info("이미지도 자동 채우는 중...");
+      await generateImagesForSlides(newSlides, true);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast.warn(`자동 구성 오류: ${msg}`);
+    } finally {
+      setComposing(false);
+    }
+  }, [topicInput, brand, detail, isUserBrand, userBrand, busy, composing, generatingText, toast, voice, generateImagesForSlides]);
+
   const generateText = useCallback(async () => {
     if (generatingText || busy) return;
     setGeneratingText(true);
@@ -530,6 +679,7 @@ export function CardnewsScreen() {
         // 시그니처 메뉴는 must_say 최상단 — GPT 가 우선 반영
         must_say: [userMenuMustSay, detailMustSay, ind.mustSay].filter(Boolean).join(", "),
         slide_count: slides.length || 6,
+        voice,
       };
       const res = await fetch("/api/generate-text", {
         method: "POST",
@@ -593,8 +743,19 @@ export function CardnewsScreen() {
     else toast.warn(`${issues.length}건 검출 — 검수 결과 카드 확인`);
   }, [slides, detail, toast]);
 
-  const updateField = (idx: number, field: "label" | "title" | "sub", value: string) => {
+  const updateField = (idx: number, field: "label" | "title" | "sub" | "body" | "footer", value: string) => {
     setSlides((prev) => prev.map((s, i) => (i === idx ? { ...s, [field]: value } : s)));
+  };
+
+  const updateItem = (idx: number, itemIdx: number, value: string) => {
+    setSlides((prev) =>
+      prev.map((s, i) => {
+        if (i !== idx) return s;
+        const items = [...(s.items ?? [])];
+        items[itemIdx] = value;
+        return { ...s, items };
+      }),
+    );
   };
 
   const toggleApprove = (idx: number) => {
@@ -791,6 +952,143 @@ export function CardnewsScreen() {
         </div>
       </div>
 
+      {/* 주제 한 줄 입력 → 6장 + 페이지 디자인 자동 구성 (대표 흐름) */}
+      <Card className="p-4 sm:p-5 mb-4 border-violet-200 dark:border-violet-900/40 bg-gradient-to-br from-violet-50/60 to-white dark:from-violet-500/5 dark:to-zinc-950">
+        <div className="flex items-start gap-3 flex-wrap mb-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <Wand2 className="h-3.5 w-3.5 text-violet-500" />
+              <span className="text-[11px] uppercase tracking-wider font-semibold text-violet-700 dark:text-violet-300">
+                주제 한 줄 → 카드뉴스 6장 자동 구성
+              </span>
+              <Badge tone="violet">신규</Badge>
+              <Badge tone="amber">지금: {ctxLabel}</Badge>
+            </div>
+            <p className="text-[12.5px] text-zinc-600 dark:text-zinc-400 mt-1">
+              주제만 적으면 글 + <b>페이지별 레이아웃</b>까지 AI 가 결정 — 표지·인용·메뉴 리스트·단계·CTA 가 모두 다른 디자인으로 짜집니다.
+            </p>
+            <p className="text-[11px] text-amber-700 dark:text-amber-300 mt-1">
+              지금 컨텍스트 ({ctxLabel}) 가 자동으로 카피 톤에 반영됩니다. 예: 비/저녁/주말 → 분위기 강조, 여름 → 시원함 강조.
+            </p>
+          </div>
+          {/* 톤 모드 토글 — viral(반말체 바이럴) / formal(정중 존댓말) */}
+          <div className="flex gap-1 p-1 rounded-md bg-zinc-100 dark:bg-zinc-900 shrink-0">
+            <button
+              onClick={() => setVoice("viral")}
+              className={cn(
+                "text-[11px] px-2.5 py-1 rounded transition-colors font-medium",
+                voice === "viral"
+                  ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100",
+              )}
+              title="반말체 · 저장각 · 바이럴 SNS 톤"
+            >
+              🔥 바이럴
+            </button>
+            <button
+              onClick={() => setVoice("formal")}
+              className={cn(
+                "text-[11px] px-2.5 py-1 rounded transition-colors font-medium",
+                voice === "formal"
+                  ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100",
+              )}
+              title="정중 존댓말 톤"
+            >
+              ✒ 정중
+            </button>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <input
+            value={topicInput}
+            onChange={(e) => setTopicInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && topicInput.trim() && !composing) composeFromTopic();
+            }}
+            placeholder="예: 어버이날 한정식 코스 안내 · 5월 봄나물 신메뉴 소개 · 주말 한옥스테이 1박"
+            className="flex-1 px-3 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-violet-500"
+            disabled={composing}
+          />
+          <Button
+            onClick={composeFromTopic}
+            disabled={composing || busy || generatingText || !topicInput.trim()}
+            className="sm:w-auto bg-violet-600 hover:bg-violet-700"
+          >
+            {composing ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                구성 중...
+              </>
+            ) : (
+              <>
+                <LayoutTemplate className="h-3.5 w-3.5" />
+                글 + 디자인 자동 생성
+              </>
+            )}
+          </Button>
+        </div>
+        {/* 활성 레이아웃 시퀀스 — 사용자가 현재 구성을 한눈에 */}
+        <div className="mt-3 flex items-center gap-1.5 flex-wrap text-[10px]">
+          <span className="text-zinc-500 mr-1">현재 6장 레이아웃:</span>
+          {slides.map((s, i) => {
+            const layoutId = s.layoutId ?? DEFAULT_LAYOUT_SEQUENCE[i] ?? "hero";
+            const spec = LAYOUT_SPECS[layoutId];
+            return (
+              <span
+                key={i}
+                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
+              >
+                <span className="text-zinc-400 tabular-nums">{i + 1}</span>
+                {spec.label}
+              </span>
+            );
+          })}
+        </div>
+
+        {/* ★ 내 사진 직접 업로드 (드래그앤드롭 큰 영역) */}
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.currentTarget.classList.add("border-emerald-500", "bg-emerald-50/60", "dark:bg-emerald-500/10");
+          }}
+          onDragLeave={(e) => {
+            e.currentTarget.classList.remove("border-emerald-500", "bg-emerald-50/60", "dark:bg-emerald-500/10");
+          }}
+          onDrop={async (e) => {
+            e.preventDefault();
+            e.currentTarget.classList.remove("border-emerald-500", "bg-emerald-50/60", "dark:bg-emerald-500/10");
+            const files = Array.from(e.dataTransfer.files).filter((f) => f.type.startsWith("image/"));
+            if (!files.length) return;
+            const dt = new DataTransfer();
+            files.forEach((f) => dt.items.add(f));
+            if (uploadAllRef.current) {
+              uploadAllRef.current.files = dt.files;
+              const evt = new Event("change", { bubbles: true });
+              uploadAllRef.current.dispatchEvent(evt);
+            }
+          }}
+          className="mt-3 rounded-lg border-2 border-dashed border-zinc-300 dark:border-zinc-700 hover:border-emerald-400 dark:hover:border-emerald-500 transition-colors p-3 flex items-center gap-3 cursor-pointer"
+          onClick={onUploadAll}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === "Enter") onUploadAll(); }}
+        >
+          <div className="h-10 w-10 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 grid place-items-center shrink-0">
+            <Upload className="h-4 w-4 text-emerald-700 dark:text-emerald-300" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-[12.5px] font-semibold text-zinc-900 dark:text-zinc-100">
+              내 사진 직접 업로드 (6장 한 번에 OK)
+            </div>
+            <div className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+              드래그하거나 클릭 · 슬라이드 순서대로 적용됨 · 각 슬라이드 호버해 한 장씩도 교체 가능
+            </div>
+          </div>
+          <div className="text-[10px] text-zinc-400 dark:text-zinc-600 hidden sm:block">JPG / PNG / WEBP</div>
+        </div>
+      </Card>
+
       {/* 자동 저장 상태 — 사용자 신뢰 */}
       <div className="mt-2 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
         ✓ {formatSavedAt(draftSavedAt)} · 카피·승인 상태 자동 보존됨
@@ -852,9 +1150,9 @@ export function CardnewsScreen() {
       <Card className="p-5 mb-4">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold">6장 캐러셀</h3>
-          <span className="text-[11px] text-zinc-500">9:16 · 인스타 캐러셀 · 발행 전 검수 자동</span>
+          <span className="text-[11px] text-zinc-500">4:5 · 인스타 캐러셀 · 발행 전 검수 자동</span>
         </div>
-        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {slides.map((s, i) => {
             const c = colors[i % (colors.length || 1)];
             const img = images[i] ?? { status: "idle" };
@@ -868,7 +1166,7 @@ export function CardnewsScreen() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className={`relative aspect-[4/5] rounded-xl overflow-hidden bg-gradient-to-br ${gradient} border border-zinc-100 dark:border-zinc-800 group`}
+                className={`cardnews-slide relative aspect-[4/5] rounded-2xl overflow-hidden bg-gradient-to-br ${gradient} border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm hover:shadow-md transition-shadow group`}
                 style={img.status !== "ready" ? fallbackBg : undefined}
               >
                 {img.status === "ready" && img.url && (
@@ -880,49 +1178,87 @@ export function CardnewsScreen() {
                   />
                 )}
 
-                {/* dark overlay for text readability when image is loaded */}
+                {/* 매거진 톤 dual gradient — 위(헤더 가독성), 아래(타이틀 가독성) 따로 */}
                 {img.status === "ready" && (
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-black/20 pointer-events-none" />
+                  <>
+                    <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/45 via-black/15 to-transparent pointer-events-none" />
+                    <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/75 via-black/35 to-transparent pointer-events-none" />
+                  </>
                 )}
 
-                <div className="absolute top-2 left-2 flex items-center gap-1 max-w-[80%]">
-                  {editing?.idx === i && editing.field === "label" ? (
-                    <input
-                      autoFocus
-                      value={s.label}
-                      onChange={(ev) => updateField(i, "label", ev.target.value)}
-                      onBlur={() => setEditing(null)}
-                      onKeyDown={(ev) => {
-                        if (ev.key === "Enter" || ev.key === "Escape") setEditing(null);
+                {/* 매거진 letterhead — 브랜드 마크 + 슬라이드 번호 (모든 layout 공통) */}
+                <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2 z-10">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span
+                      className="h-5 w-5 rounded-full shrink-0 grid place-items-center text-[8px] font-bold text-white"
+                      style={{
+                        background: c
+                          ? `linear-gradient(135deg, ${c.hex}, ${colors[(i + 1) % Math.max(1, colors.length)]?.hex ?? c.hex})`
+                          : undefined,
+                        backgroundColor: c ? undefined : "rgba(255,255,255,0.15)",
                       }}
-                      className="text-[9px] font-bold uppercase tracking-widest text-white bg-black/60 backdrop-blur px-1.5 py-0.5 rounded outline-none ring-1 ring-white/40 w-32"
-                    />
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setEditing({ idx: i, field: "label" })}
-                      className="text-[9px] font-bold uppercase tracking-widest text-white/90 bg-black/40 backdrop-blur px-1.5 py-0.5 rounded hover:bg-black/60 transition-colors"
-                      title="라벨 편집"
                     >
-                      {String(i + 1).padStart(2, "0")} · {s.label || "—"}
-                    </button>
-                  )}
+                      {brand.letter}
+                    </span>
+                    <div className="min-w-0">
+                      {editing?.idx === i && editing.field === "label" ? (
+                        <input
+                          autoFocus
+                          value={s.label}
+                          onChange={(ev) => updateField(i, "label", ev.target.value)}
+                          onBlur={() => setEditing(null)}
+                          onKeyDown={(ev) => {
+                            if (ev.key === "Enter" || ev.key === "Escape") setEditing(null);
+                          }}
+                          className="cardnews-label-uppercase text-[10px] sm:text-[9px] text-white bg-black/60 backdrop-blur px-1.5 py-0.5 rounded outline-none ring-1 ring-white/40 w-28"
+                        />
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setEditing({ idx: i, field: "label" })}
+                          className="block max-w-[140px] sm:max-w-[120px] truncate text-left cardnews-label-uppercase text-[10px] sm:text-[9px] text-white/85 hover:text-white transition-colors"
+                          title="라벨 편집"
+                        >
+                          {s.label || `${String(i + 1).padStart(2, "0")} ·`}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  {/* 페이지 카운터 — 매거진 톤 */}
+                  <div className="cardnews-label-uppercase text-[10px] sm:text-[9px] text-white/70 tabular-nums shrink-0">
+                    {String(i + 1).padStart(2, "0")} / {String(slides.length).padStart(2, "0")}
+                  </div>
+                </div>
+
+                {/* DEMO / UPLOAD / 승인 배지 — 카드 좌하단 */}
+                <div className="absolute top-10 left-3 flex flex-wrap gap-1 z-10">
                   {img.source === "demo-fallback" && (
-                    <span className="text-[8px] font-semibold uppercase tracking-widest text-white/90 bg-amber-600/80 backdrop-blur px-1.5 py-0.5 rounded">
+                    <span className="cardnews-label-uppercase text-[8px] text-white/90 bg-amber-600/80 backdrop-blur px-1.5 py-0.5 rounded">
                       DEMO
                     </span>
                   )}
                   {img.source === "upload" && (
-                    <span className="text-[8px] font-semibold uppercase tracking-widest text-white/90 bg-emerald-600/80 backdrop-blur px-1.5 py-0.5 rounded">
+                    <span className="cardnews-label-uppercase text-[8px] text-white/90 bg-emerald-600/80 backdrop-blur px-1.5 py-0.5 rounded">
                       UPLOAD
                     </span>
                   )}
                   {approved[i] && (
-                    <span className="text-[8px] font-semibold uppercase tracking-widest text-white bg-emerald-700/90 backdrop-blur px-1.5 py-0.5 rounded inline-flex items-center gap-0.5">
+                    <span className="cardnews-label-uppercase text-[8px] text-white bg-emerald-700/90 backdrop-blur px-1.5 py-0.5 rounded inline-flex items-center gap-0.5">
                       <Check className="h-2.5 w-2.5" />
                     </span>
                   )}
                 </div>
+
+                {/* 하단 브랜드 accent line — palette 의 첫 컬러 사용 */}
+                <div
+                  className="absolute inset-x-0 bottom-0 h-[3px] z-10"
+                  style={{
+                    background: c
+                      ? `linear-gradient(90deg, ${c.hex}, ${colors[(i + 1) % Math.max(1, colors.length)]?.hex ?? c.hex})`
+                      : "rgba(255,255,255,0.4)",
+                  }}
+                  aria-hidden
+                />
 
                 {img.status === "loading" && (
                   <div className="absolute inset-0 grid place-items-center bg-black/30 backdrop-blur-sm">
@@ -940,72 +1276,284 @@ export function CardnewsScreen() {
                   </div>
                 )}
 
-                <div className="absolute bottom-3 left-3 right-3 text-white">
-                  {editing?.idx === i && editing.field === "title" ? (
-                    <textarea
-                      autoFocus
-                      value={s.title}
-                      onChange={(ev) => updateField(i, "title", ev.target.value)}
-                      onBlur={() => setEditing(null)}
-                      onKeyDown={(ev) => {
-                        if (ev.key === "Escape") setEditing(null);
-                      }}
-                      rows={3}
-                      className="w-full text-base font-bold leading-tight bg-black/50 backdrop-blur text-white p-1 rounded outline-none ring-1 ring-white/50 resize-none"
-                      style={{
-                        fontFamily:
-                          brand.id === "miokdang" || brand.id === "seochon-stay"
-                            ? "'Nanum Myeongjo', serif"
-                            : undefined,
-                      }}
-                    />
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setEditing({ idx: i, field: "title" })}
-                      className="block w-full text-left text-base font-bold leading-tight whitespace-pre-line drop-shadow-lg hover:bg-black/20 rounded transition-colors"
-                      style={{
-                        fontFamily:
-                          brand.id === "miokdang" || brand.id === "seochon-stay"
-                            ? "'Nanum Myeongjo', serif"
-                            : undefined,
-                      }}
-                      title="제목 편집 (Esc 종료)"
-                    >
-                      {s.title || <span className="opacity-60">제목 추가</span>}
-                    </button>
-                  )}
-
-                  {editing?.idx === i && editing.field === "sub" ? (
-                    <input
-                      autoFocus
-                      value={s.sub}
-                      onChange={(ev) => updateField(i, "sub", ev.target.value)}
-                      onBlur={() => setEditing(null)}
-                      onKeyDown={(ev) => {
-                        if (ev.key === "Enter" || ev.key === "Escape") setEditing(null);
-                      }}
-                      className="mt-1 w-full text-[10px] bg-black/50 backdrop-blur text-white px-1 py-0.5 rounded outline-none ring-1 ring-white/50"
-                    />
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setEditing({ idx: i, field: "sub" })}
-                      className="mt-1 block w-full text-left text-[10px] opacity-90 line-clamp-2 drop-shadow hover:opacity-100 hover:bg-black/20 rounded transition-all"
-                      title="부제 편집"
-                    >
-                      {s.sub || <span className="opacity-60">부제 추가</span>}
-                    </button>
-                  )}
-
-                  {img.status === "ready" && img.meta && (img.meta.latencyMs || img.meta.costKrw) ? (
+                {/* 레이아웃 분기 렌더링 — layoutId 별로 다른 디자인 */}
+                {(() => {
+                  const layoutId = s.layoutId ?? DEFAULT_LAYOUT_SEQUENCE[i] ?? "hero";
+                  const isEditingTitle = editing?.idx === i && editing.field === "title";
+                  const isEditingSub = editing?.idx === i && editing.field === "sub";
+                  const titleFont =
+                    brand.id === "miokdang" || brand.id === "seochon-stay"
+                      ? "'Nanum Myeongjo', serif"
+                      : layoutId === "quote"
+                        ? "'Nanum Myeongjo', serif"
+                        : undefined;
+                  const renderTitle = (extraCls: string) =>
+                    isEditingTitle ? (
+                      <textarea
+                        autoFocus
+                        value={s.title}
+                        onChange={(ev) => updateField(i, "title", ev.target.value)}
+                        onBlur={() => setEditing(null)}
+                        onKeyDown={(ev) => { if (ev.key === "Escape") setEditing(null); }}
+                        rows={3}
+                        className={`w-full ${extraCls} bg-black/50 backdrop-blur text-white p-1 rounded outline-none ring-1 ring-white/50 resize-none`}
+                        style={{ fontFamily: titleFont }}
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setEditing({ idx: i, field: "title" })}
+                        className={`block w-full text-left ${extraCls} whitespace-pre-line drop-shadow-lg hover:bg-black/20 rounded transition-colors`}
+                        style={{ fontFamily: titleFont }}
+                        title="제목 편집 (Esc 종료)"
+                      >
+                        {s.title || <span className="opacity-60">제목 추가</span>}
+                      </button>
+                    );
+                  const renderSub = (extraCls: string) =>
+                    isEditingSub ? (
+                      <input
+                        autoFocus
+                        value={s.sub}
+                        onChange={(ev) => updateField(i, "sub", ev.target.value)}
+                        onBlur={() => setEditing(null)}
+                        onKeyDown={(ev) => { if (ev.key === "Enter" || ev.key === "Escape") setEditing(null); }}
+                        className={`w-full ${extraCls} bg-black/50 backdrop-blur text-white px-1 py-0.5 rounded outline-none ring-1 ring-white/50`}
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setEditing({ idx: i, field: "sub" })}
+                        className={`block w-full text-left ${extraCls} drop-shadow hover:opacity-100 hover:bg-black/20 rounded transition-all`}
+                        title="부제 편집"
+                      >
+                        {s.sub || <span className="opacity-60">부제</span>}
+                      </button>
+                    );
+                  const meta = img.status === "ready" && img.meta && (img.meta.latencyMs || img.meta.costKrw) ? (
                     <div className="mt-1.5 flex items-center gap-1 text-[8px] uppercase tracking-wider text-white/75">
                       {img.meta.latencyMs ? <span>{(img.meta.latencyMs / 1000).toFixed(1)}s</span> : null}
                       {img.meta.costKrw ? <span>· ₩{img.meta.costKrw}</span> : null}
                       {img.meta.photographer ? <span className="truncate">· {img.meta.photographer}</span> : null}
                     </div>
-                  ) : null}
-                </div>
+                  ) : null;
+
+                  // ── COVER — 잡지 표지 (Cormorant Garamond display) ──
+                  if (layoutId === "cover") {
+                    return (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-7 sm:px-6 text-white">
+                        {/* 작은 운영자 라벨 - 톤 강조 */}
+                        <div className="cardnews-label-uppercase text-[10px] sm:text-[9px] text-white/75 mb-3">
+                          {brand.industryLabel} · {brand.city}
+                        </div>
+                        {/* 큰 표지 타이틀 — Cormorant Garamond italic */}
+                        {renderTitle("cardnews-title-display text-[32px] sm:text-[30px] md:text-[36px] leading-[1.05]")}
+                        {/* 가는 디바이더 */}
+                        <div className="cardnews-divider w-12 my-3.5" />
+                        <div className="w-full max-w-[85%] sm:max-w-[80%]">
+                          {renderSub("text-[14px] sm:text-[13px] text-white/85 leading-snug line-clamp-2")}
+                        </div>
+                        {meta && <div className="absolute bottom-3 right-3">{meta}</div>}
+                      </div>
+                    );
+                  }
+                  // ── QUOTE — 잡지 인용 (큰 curly quote + 명조체) ──
+                  if (layoutId === "quote") {
+                    const isEditingBody = editing?.idx === i && editing.field === "body";
+                    const isEditingFooter = editing?.idx === i && editing.field === "footer";
+                    return (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-7 sm:px-6 text-white">
+                        {/* 매거진 sized opening curly quote */}
+                        <div className="cardnews-title-display text-[76px] sm:text-[68px] md:text-[72px] leading-[0.65] text-white/40 mb-3 select-none">
+                          &ldquo;
+                        </div>
+                        {isEditingBody ? (
+                          <textarea
+                            autoFocus
+                            value={s.body ?? ""}
+                            onChange={(ev) => updateField(i, "body", ev.target.value)}
+                            onBlur={() => setEditing(null)}
+                            onKeyDown={(ev) => { if (ev.key === "Escape") setEditing(null); }}
+                            rows={3}
+                            className="cardnews-quote w-[90%] text-[20px] sm:text-[18px] md:text-[19px] bg-black/50 backdrop-blur text-white p-1.5 rounded outline-none ring-1 ring-white/50 resize-none text-center"
+                          />
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setEditing({ idx: i, field: "body" })}
+                            className="cardnews-quote text-[20px] sm:text-[18px] md:text-[19px] max-w-[90%] sm:max-w-[88%] whitespace-pre-line drop-shadow-lg hover:bg-white/5 rounded transition-colors px-2"
+                            title="인용 편집"
+                          >
+                            {s.body || s.title || <span className="opacity-60 not-italic">인용 추가</span>}
+                          </button>
+                        )}
+                        <div className="cardnews-divider w-10 my-3.5" />
+                        {isEditingFooter ? (
+                          <input
+                            autoFocus
+                            value={s.footer ?? ""}
+                            onChange={(ev) => updateField(i, "footer", ev.target.value)}
+                            onBlur={() => setEditing(null)}
+                            onKeyDown={(ev) => { if (ev.key === "Enter" || ev.key === "Escape") setEditing(null); }}
+                            className="cardnews-label-uppercase w-[70%] text-[11px] sm:text-[10px] bg-black/50 backdrop-blur text-white px-1.5 py-1 rounded outline-none ring-1 ring-white/50 text-center"
+                          />
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setEditing({ idx: i, field: "footer" })}
+                            className="cardnews-label-uppercase text-[11px] sm:text-[10px] text-white/85 hover:text-white transition-colors px-1"
+                            title="발언 주체 편집"
+                          >
+                            {s.footer || s.sub || <span className="opacity-60 normal-case tracking-normal">— 발언 주체</span>}
+                          </button>
+                        )}
+                        {meta && <div className="absolute bottom-3 right-3">{meta}</div>}
+                      </div>
+                    );
+                  }
+                  // ── LIST — 매거진 메뉴 리스트 (oldstyle numerals + 명조 타이틀) ──
+                  if (layoutId === "list") {
+                    const items = s.items ?? [];
+                    return (
+                      <>
+                        <div className="absolute top-14 left-6 right-6 sm:left-5 sm:right-5 text-white">
+                          {renderTitle("cardnews-title-serif text-[23px] sm:text-[20px] md:text-[22px] leading-tight")}
+                          <div className="mt-1.5">{renderSub("text-[12.5px] sm:text-[11px] text-white/80 leading-snug line-clamp-1")}</div>
+                          <div className="cardnews-divider w-10 mt-3" />
+                        </div>
+                        <div className="absolute left-6 right-6 sm:left-5 sm:right-5 bottom-6 text-white">
+                          <ul className="space-y-3 sm:space-y-2.5">
+                            {items.slice(0, 5).map((it, k) => {
+                              const editingItem =
+                                editing?.idx === i && editing.field === "item" && editing.itemIdx === k;
+                              return (
+                                <li key={k} className="text-[14.5px] sm:text-[13px] leading-snug flex items-baseline gap-3 drop-shadow">
+                                  <span className="cardnews-numeral text-[20px] sm:text-[18px] text-white/70 shrink-0 leading-none w-6 text-right">
+                                    {String(k + 1).padStart(2, "0")}
+                                  </span>
+                                  {editingItem ? (
+                                    <input
+                                      autoFocus
+                                      value={it}
+                                      onChange={(ev) => updateItem(i, k, ev.target.value)}
+                                      onBlur={() => setEditing(null)}
+                                      onKeyDown={(ev) => { if (ev.key === "Enter" || ev.key === "Escape") setEditing(null); }}
+                                      className="flex-1 bg-black/50 backdrop-blur text-white px-1.5 py-0.5 rounded outline-none ring-1 ring-white/50 text-[14.5px] sm:text-[13px]"
+                                    />
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditing({ idx: i, field: "item", itemIdx: k })}
+                                      className="flex-1 text-left line-clamp-1 hover:bg-white/5 rounded transition-colors px-1"
+                                      title={`항목 ${k + 1} 편집`}
+                                    >
+                                      {it}
+                                    </button>
+                                  )}
+                                </li>
+                              );
+                            })}
+                            {items.length === 0 && (
+                              <li className="text-[12px] sm:text-[11px] opacity-60">리스트 항목 (자동 생성 또는 직접 입력)</li>
+                            )}
+                          </ul>
+                          {meta}
+                        </div>
+                      </>
+                    );
+                  }
+                  // ── PROCESS — 매거진 단계 (세로 흐름, oldstyle numerals) ──
+                  if (layoutId === "process") {
+                    const items = s.items ?? [];
+                    return (
+                      <>
+                        <div className="absolute top-14 left-6 right-6 sm:left-5 sm:right-5 text-white">
+                          {renderTitle("cardnews-title-serif text-[23px] sm:text-[20px] md:text-[22px] leading-tight")}
+                          <div className="mt-1.5">{renderSub("text-[12.5px] sm:text-[11px] text-white/80 leading-snug line-clamp-1")}</div>
+                          <div className="cardnews-divider w-10 mt-3" />
+                        </div>
+                        <div className="absolute left-6 right-6 sm:left-5 sm:right-5 bottom-6 text-white">
+                          <ol className="space-y-3 sm:space-y-2.5">
+                            {items.slice(0, 4).map((it, k) => {
+                              const editingItem =
+                                editing?.idx === i && editing.field === "item" && editing.itemIdx === k;
+                              return (
+                                <li key={k} className="flex items-start gap-3 drop-shadow">
+                                  <span className="cardnews-numeral text-[20px] sm:text-[18px] text-white/70 leading-none mt-0.5 shrink-0 w-6">
+                                    {String(k + 1).padStart(2, "0")}
+                                  </span>
+                                  {editingItem ? (
+                                    <input
+                                      autoFocus
+                                      value={it}
+                                      onChange={(ev) => updateItem(i, k, ev.target.value)}
+                                      onBlur={() => setEditing(null)}
+                                      onKeyDown={(ev) => { if (ev.key === "Enter" || ev.key === "Escape") setEditing(null); }}
+                                      className="flex-1 text-[14.5px] sm:text-[13px] bg-black/50 backdrop-blur text-white px-1.5 py-0.5 rounded outline-none ring-1 ring-white/50"
+                                    />
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditing({ idx: i, field: "item", itemIdx: k })}
+                                      className="flex-1 text-left text-[14.5px] sm:text-[13px] leading-snug hover:bg-white/5 rounded transition-colors px-1"
+                                      title={`단계 ${k + 1} 편집`}
+                                    >
+                                      {it}
+                                    </button>
+                                  )}
+                                </li>
+                              );
+                            })}
+                            {items.length === 0 && (
+                              <li className="text-[12px] sm:text-[11px] opacity-60">단계 항목 (자동 생성)</li>
+                            )}
+                          </ol>
+                          {meta}
+                        </div>
+                      </>
+                    );
+                  }
+                  // ── CTA — 잡지 마무리 (큰 display 타이틀 + 디바이더 + 운영 정보) ──
+                  if (layoutId === "cta") {
+                    const isEditingFooter = editing?.idx === i && editing.field === "footer";
+                    return (
+                      <div className="absolute inset-x-0 bottom-0 px-7 pb-7 sm:px-6 sm:pb-6 text-center text-white">
+                        {renderTitle("cardnews-title-display text-[28px] sm:text-[26px] md:text-[28px] leading-[1.05]")}
+                        <div className="mt-2.5">{renderSub("text-[14px] sm:text-[12.5px] md:text-[13px] text-white/85 leading-snug line-clamp-2")}</div>
+                        <div className="cardnews-divider w-12 mx-auto my-3.5" />
+                        {isEditingFooter ? (
+                          <input
+                            autoFocus
+                            value={s.footer ?? ""}
+                            onChange={(ev) => updateField(i, "footer", ev.target.value)}
+                            onBlur={() => setEditing(null)}
+                            onKeyDown={(ev) => { if (ev.key === "Enter" || ev.key === "Escape") setEditing(null); }}
+                            className="cardnews-label-uppercase w-[80%] text-[11px] sm:text-[10px] bg-black/50 backdrop-blur text-white px-1.5 py-1 rounded outline-none ring-1 ring-white/50 text-center"
+                          />
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setEditing({ idx: i, field: "footer" })}
+                            className="cardnews-label-uppercase inline-block text-[11px] sm:text-[10px] text-white/80 hover:text-white transition-colors px-1"
+                            title="운영 정보 편집"
+                          >
+                            {s.footer || <span className="opacity-60 normal-case tracking-normal">운영 안내 추가</span>}
+                          </button>
+                        )}
+                        {meta && <div className="absolute bottom-3 right-3">{meta}</div>}
+                      </div>
+                    );
+                  }
+                  // ── HERO (default) — 잡지 분위기 컷 (하단 큰 명조 타이틀) ──
+                  return (
+                    <div className="absolute bottom-6 left-6 right-6 sm:left-5 sm:right-5 text-white">
+                      {renderTitle("cardnews-title-serif text-[24px] sm:text-[19px] md:text-[21px] leading-[1.15]")}
+                      <div className="mt-2 sm:mt-1.5">{renderSub("text-[13px] sm:text-[11px] text-white/85 leading-snug line-clamp-2")}</div>
+                      <div className="cardnews-divider w-8 mt-3" />
+                      {meta}
+                    </div>
+                  );
+                })()}
 
                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 flex-wrap justify-end">
                   <button
@@ -1049,6 +1597,63 @@ export function CardnewsScreen() {
                     <RefreshCw className="h-2.5 w-2.5" /> 재생성
                   </button>
                 </div>
+
+                {/* ★ 3개 후보 + 업로드 — 호버 시 하단 중앙에 작게 노출 (슬라이드 내부) */}
+                {img.status === "ready" && img.candidates && img.candidates.length > 0 && (
+                  <div className="absolute inset-x-0 bottom-0 p-1.5 flex items-center justify-center gap-1 z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-black/70 to-transparent">
+                    {img.candidates.slice(0, 3).map((cand, k) => {
+                      const isActive = cand.url === img.url;
+                      return (
+                        <button
+                          key={cand.photoId ?? k}
+                          type="button"
+                          onClick={(ev) => {
+                            ev.stopPropagation();
+                            setImages((prev) =>
+                              prev.map((s, j) =>
+                                j === i
+                                  ? {
+                                      ...s,
+                                      url: cand.url,
+                                      source: "pexels",
+                                      meta: { ...(s.meta ?? {}), photographer: cand.photographer },
+                                    }
+                                  : s,
+                              ),
+                            );
+                            toast.success(`슬라이드 ${i + 1} · 변형 ${k + 1} 적용`);
+                          }}
+                          className={`relative h-8 w-8 rounded overflow-hidden ring-2 transition-all ${
+                            isActive
+                              ? "ring-violet-400"
+                              : "ring-white/40 hover:ring-white"
+                          }`}
+                          title={`변형 ${k + 1}${cand.photographer ? ` · ${cand.photographer}` : ""}`}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={cand.url} alt={`변형 ${k + 1}`} className="h-full w-full object-cover" />
+                          {isActive && (
+                            <div className="absolute inset-0 grid place-items-center bg-violet-500/40">
+                              <Check className="h-3 w-3 text-white drop-shadow" />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={(ev) => {
+                        ev.stopPropagation();
+                        onUploadOneClick(i);
+                      }}
+                      className="h-8 w-8 rounded ring-2 ring-dashed ring-white/60 hover:ring-emerald-300 hover:bg-emerald-500/20 grid place-items-center text-white/90 hover:text-emerald-200 transition-colors disabled:opacity-50"
+                      title="내 사진 직접 업로드"
+                    >
+                      <Upload className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                )}
               </motion.article>
             );
           })}

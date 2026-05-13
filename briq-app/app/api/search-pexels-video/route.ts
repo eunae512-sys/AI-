@@ -100,8 +100,26 @@ export async function POST(req: NextRequest) {
   const url = `https://api.pexels.com/videos/search?${params.toString()}`;
   const startedAt = Date.now();
 
+  // 네트워크 일시 실패 (Pexels 측 트로틀링/타임아웃) 대응 — 3회 retry, exponential backoff
+  const fetchWithRetry = async (attempt = 0): Promise<Response> => {
+    try {
+      const r = await fetch(url, {
+        headers: { Authorization: apiKey },
+        signal: AbortSignal.timeout(8000),
+      });
+      return r;
+    } catch (e) {
+      if (attempt < 2) {
+        const delay = 300 * Math.pow(2, attempt); // 300ms, 600ms
+        await new Promise((res) => setTimeout(res, delay));
+        return fetchWithRetry(attempt + 1);
+      }
+      throw e;
+    }
+  };
+
   try {
-    const r = await fetch(url, { headers: { Authorization: apiKey } });
+    const r = await fetchWithRetry();
     if (!r.ok) {
       const txt = await r.text();
       return NextResponse.json(

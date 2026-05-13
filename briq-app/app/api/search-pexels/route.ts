@@ -135,9 +135,25 @@ export async function POST(req: NextRequest) {
     }
     const imageUrl = pick.src.large2x || pick.src.large || pick.src.original;
 
+    // returnCandidates: true 이면 top 3 후보를 추가로 반환
+    const returnCandidates = body.returnCandidates === true;
+    const candidates = returnCandidates
+      ? scored
+          .slice(0, 3)
+          .map(({ p }) => ({
+            url: p.src.large2x || p.src.large || p.src.original,
+            photoId: p.id,
+            photographer: p.photographer,
+            photographerUrl: p.photographer_url,
+            pexelsUrl: p.url,
+            alt: p.alt || cleanedQuery,
+          }))
+      : undefined;
+
     return NextResponse.json({
       ok: true,
       image: imageUrl,
+      candidates,
       meta: {
         source: "pexels",
         photoId: pick.id,

@@ -1,9 +1,35 @@
 // 숏폼 자동 홍보 — 업종 × 톤 × 플랫폼 컨텐츠 생성기
 // 사진 1장 업로드 → 인스타 릴스 / 틱톡 / 유튜브 쇼츠 / 네이버 플레이스 동시 작성
 // 룰 베이스 (LLM 호출 X — 빠르게 미리보기 가능, 추후 GPT 교체 가능)
+//
+// v2: 바이럴 톤. lib/viral/voice-bank + context + recent-hooks 사용.
+// 플랫폼별 grammar 완전 분리:
+//   Reels(감성·저장각) / TikTok(1초 훅·반말) / Shorts(검색형) / Naver(지역 리뷰형)
+
+import {
+  HOOK_BANK,
+  MID_BANK,
+  CTA_BANK,
+  VIRAL_HASHTAGS,
+  INDUSTRY_SHORT,
+  fillSlots,
+  isClean,
+  type Grammar as VoiceGrammar,
+} from "@/lib/viral/voice-bank";
+import { pickFreshHookSeeded, recordHook } from "@/lib/viral/recent-hooks";
+import { getContext, contextualHookPrefix, inferContextualMood, contextualHashtags } from "@/lib/viral/context";
+import type { Industry } from "@/lib/ai-gen/model-scenes";
 
 export type ToneId = "emotional" | "info" | "event" | "discount" | "review";
 export type PlatformId = "reels" | "tiktok" | "shorts" | "naver";
+
+// PlatformId → voice-bank Grammar (1:1 매핑)
+const PLATFORM_TO_GRAMMAR: Record<PlatformId, VoiceGrammar> = {
+  reels: "reels",
+  tiktok: "tiktok",
+  shorts: "shorts",
+  naver: "naver",
+};
 
 export const TONES: { id: ToneId; label: string; emoji: string; desc: string }[] = [
   { id: "emotional", label: "감성", emoji: "🌿", desc: "분위기·정성·시간 묘사" },
@@ -274,6 +300,35 @@ export type PlatformOutput = {
   charCount: number;
 };
 
+// 슬롯 채우기 — {brand}, {city}, {district}, {menu}, {industryShort}
+function buildSlots(args: {
+  brandName: string;
+  city: string;
+  signatureMenu?: string[];
+  industry: string;
+}): Record<string, string> {
+  // city 에서 동/구 추출 시도 — "서울 종로 광화문" → district = "광화문"
+  const parts = args.city.split(/\s+/).filter(Boolean);
+  const district = parts[parts.length - 1] ?? args.city;
+  const menu = args.signatureMenu?.[0] ?? "";
+  const industry = args.industry as Industry;
+  return {
+    brand: args.brandName,
+    city: args.city,
+    district,
+    menu,
+    industryShort: INDUSTRY_SHORT[industry] ?? "",
+  };
+}
+
+// 브랜드별 결정론적 seed — 호출마다 동일 입력이면 동일 결과 (UI 일관성)
+function brandSeed(brandName: string, platform: PlatformId, salt = 0): number {
+  let h = 0;
+  const s = `${brandName}::${platform}::${salt}`;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  return h;
+}
+
 export function generateForPlatform(args: {
   platform: PlatformId;
   industry: string;
@@ -287,22 +342,63 @@ export function generateForPlatform(args: {
   themeDesc?: string;
   themeHooks?: string[];
   themeKeyword?: string;
+  // variation seed — variation 클릭 시 증가시켜 다른 hook 픽
+  variationSeed?: number;
 }): PlatformOutput {
   const core = INDUSTRY_CORE[args.industry] ?? INDUSTRY_CORE.restaurant;
   const meta = PLATFORMS.find((p) => p.id === args.platform)!;
-  const shape = shapeBy(args.tone, core, {
+  const grammar = PLATFORM_TO_GRAMMAR[args.platform];
+  const industry = (args.industry as Industry) || "restaurant";
+  const slots = buildSlots({
     brandName: args.brandName,
     city: args.city,
-    tagline: args.tagline,
     signatureMenu: args.signatureMenu,
-    themeTitle: args.themeTitle,
-    themeDesc: args.themeDesc,
-    themeHooks: args.themeHooks,
-    themeKeyword: args.themeKeyword,
+    industry: args.industry,
   });
 
-  const base = `${shape.hookLine}\n\n${shape.midLine}\n${shape.detailLine}`;
-  // 해시태그 우선순위: 테마 키워드 > 시그니처 메뉴 > 업종 베이스
+  // ─── 1) HOOK 픽 ────────────────────────────────
+  //   우선순위: theme hook > viral HOOK_BANK[grammar][industry] (anti-repetition)
+  const ctx = getContext();
+  const mood = inferContextualMood(ctx, args.themeKeyword);
+  const moodPrefixOptions = contextualHookPrefix(mood);
+  const seed = brandSeed(args.brandName, args.platform, args.variationSeed ?? 0);
+
+  const hookPool = HOOK_BANK[grammar][industry] ?? HOOK_BANK[grammar].restaurant;
+  // 슬롯 치환 → isClean 필터링 (시그니처 메뉴 없을 때 {menu} 가 빈칸 되는 후크 제거)
+  const filledHooks = hookPool
+    .map((tpl) => fillSlots(tpl, slots))
+    .filter(isClean);
+  const finalPool = filledHooks.length > 0 ? filledHooks : hookPool.map((tpl) => fillSlots(tpl, { ...slots, menu: slots.menu || "오늘의 메뉴", industryShort: slots.industryShort || "가게" }));
+
+  // 테마 hook 우선 (캘린더에서 들어온 경우), 없으면 viral 풀에서 anti-repetition pick
+  const themeFirst = args.themeHooks?.[0];
+  let pickedHook = themeFirst && isClean(themeFirst)
+    ? themeFirst.replace(/[,.]$/, "")
+    : pickFreshHookSeeded(`${args.brandName}::${args.platform}`, finalPool, seed);
+
+  // 컨텍스트 prefix (비/밤/주말 등) — 30% 확률로 prepend, 너무 길어지지 않게
+  if (moodPrefixOptions.length > 0 && pickedHook.length < 20 && (seed & 7) >= 5) {
+    const prefix = moodPrefixOptions[Math.abs(seed) % moodPrefixOptions.length];
+    if (!pickedHook.toLowerCase().includes(prefix.toLowerCase())) {
+      pickedHook = `${prefix} ${pickedHook}`;
+    }
+  }
+
+  // ─── 2) MID 픽 — themeDesc 또는 MID_BANK ────────
+  const midPool = (MID_BANK[industry] ?? MID_BANK.restaurant)
+    .map((tpl) => fillSlots(tpl, slots))
+    .filter(isClean);
+  const midLine = args.themeDesc && isClean(args.themeDesc)
+    ? args.themeDesc.replace(/[.]$/, "")
+    : midPool.length > 0
+      ? midPool[Math.abs(seed >> 3) % midPool.length]
+      : args.tagline ?? core.highlight;
+
+  // ─── 3) CTA 픽 — viral CTA_BANK ────────────────
+  const ctaPool = CTA_BANK[grammar];
+  const ctaLine = ctaPool[Math.abs(seed >> 6) % ctaPool.length];
+
+  // ─── 4) 해시태그 — viral + signature menu + context ──
   const themeTags = args.themeKeyword
     ? [`#${args.themeKeyword.replace(/\s/g, "")}`]
     : [];
@@ -310,15 +406,20 @@ export function generateForPlatform(args: {
     .map((m) => m.trim())
     .filter(Boolean)
     .map((m) => `#${m.replace(/\s/g, "")}`);
-  const hashtagsAll = [
+  const ctxTags = contextualHashtags(ctx).slice(0, 2).map((t) => `#${t}`);
+  const viralTagsRaw = VIRAL_HASHTAGS[grammar].slice(0, 4);
+  const viralTags = viralTagsRaw.map((t) => `#${t}`);
+
+  const allHashtags = [
     ...themeTags,
-    ...menuTags,
-    ...core.hashtagBase,
+    ...menuTags.slice(0, 2),
+    ...viralTags,
+    ...ctxTags,
     `#${args.brandName.replace(/\s/g, "")}`,
-    `#${args.city}`,
-    `#${args.city}${core.cityHint}`,
+    `#${slots.district || args.city}${core.cityHint}`,
   ];
 
+  // ─── 5) 플랫폼별 최종 조립 ───────────────────────
   let title = "";
   let caption = "";
   let subtitle = "";
@@ -327,54 +428,52 @@ export function generateForPlatform(args: {
 
   switch (args.platform) {
     case "reels": {
-      // 감성·저장 유도. 캡션 길게 OK, 해시태그 8개
-      title = shape.hookLine;
-      caption = `${base}\n\n${shape.ctaLine}`;
-      subtitle = shape.hookLine.replace(/[—,].+$/, "").trim(); // 영상 위 자막은 짧게
-      cta = `저장 · 공유 부탁드립니다 — ${shape.ctaLine}`;
-      hashtags = hashtagsAll.slice(0, meta.hashtagCount).map((h) => h.startsWith("#") ? h : `#${h}`);
+      // 감성·저장 유도. caption 길게 OK
+      title = pickedHook;
+      caption = `${pickedHook}\n\n${midLine}.\n\n${ctaLine}`;
+      subtitle = pickedHook.replace(/[—,].+$/, "").trim();
+      cta = ctaLine;
+      hashtags = allHashtags.slice(0, meta.hashtagCount);
       break;
     }
     case "tiktok": {
-      // 강한 첫 줄 · 짧은 본문. 해시태그 5개 trending
-      title = `${shape.hookLine}`;
-      caption = `${shape.hookLine}\n${shape.midLine}\n👇 ${shape.ctaLine}`;
-      subtitle = shape.hookLine.split(".")[0]; // 한 단문
-      cta = `좋아요·공유로 응원 부탁드립니다.`;
-      hashtags = [
-        ...hashtagsAll.slice(0, 3),
-        "#fyp",
-        "#포유",
-      ].map((h) => h.startsWith("#") ? h : `#${h}`);
+      // 1초 훅 · 짧은 본문 · trending tag
+      title = pickedHook;
+      caption = `${pickedHook}\n${midLine}.\n👇 ${ctaLine}`;
+      subtitle = pickedHook;
+      cta = ctaLine;
+      hashtags = [...allHashtags.slice(0, 3), "#fyp", "#포유"];
       break;
     }
     case "shorts": {
-      // SEO 제목 (60자 내) + 설명 길게
-      const seoLead = core.seoKeywords[0] ?? core.subject;
-      title = `${args.city} ${seoLead} — ${shape.hookLine}`.slice(0, 60);
-      caption = `${shape.hookLine}\n\n${shape.midLine}\n${shape.detailLine}\n\n${shape.ctaLine}\n\n관련 검색: ${core.seoKeywords.slice(0, 3).join(", ")}`;
-      subtitle = `${args.city} ${seoLead}`;
-      cta = `구독 · 알림 설정으로 다음 영상도 만나보세요.`;
+      // SEO 제목 — 검색형 grammar 의 hook 자체가 이미 "{city} 카페 BEST" 식이라 그대로
+      title = pickedHook.length <= 60 ? pickedHook : pickedHook.slice(0, 58) + "…";
+      caption = `${pickedHook}\n\n${midLine}.\n\n${ctaLine}\n\n관련 검색: ${core.seoKeywords.slice(0, 3).join(", ")}`;
+      subtitle = pickedHook;
+      cta = ctaLine;
       hashtags = [
         ...core.seoKeywords.slice(0, 2).map((k) => `#${k.replace(/\s/g, "")}`),
-        ...hashtagsAll.slice(0, 2),
+        ...allHashtags.slice(0, 3),
       ];
       break;
     }
     case "naver": {
-      // 지역 + 방문 유도. 짧게.
-      title = `${args.city} ${args.brandName} · ${shape.hookLine}`;
-      caption = `${shape.hookLine}\n\n${shape.midLine}\n${shape.detailLine}\n\n${shape.ctaLine}`;
-      subtitle = `${args.city} ${core.cityHint}`;
-      cta = `네이버 예약·길찾기로 바로 이동하세요.`;
+      // 지역형 · 리뷰형 · 짧게
+      title = pickedHook;
+      caption = `${pickedHook}\n\n${midLine}.\n\n${ctaLine}`;
+      subtitle = `${slots.district || args.city} ${core.cityHint}`;
+      cta = ctaLine;
       hashtags = [
-        `#${args.city}${core.cityHint}`,
+        `#${slots.district || args.city}${core.cityHint}`,
         `#${args.brandName.replace(/\s/g, "")}`,
         `#${core.seoKeywords[0]?.replace(/\s/g, "") ?? core.cityHint}`,
       ];
       break;
     }
   }
+
+  // 사용한 hook 을 recent 에 기록 (variation 시 다음 호출에서 회피)
+  recordHook(`${args.brandName}::${args.platform}`, pickedHook);
 
   return {
     platform: args.platform,
@@ -399,6 +498,7 @@ export function generateAllPlatforms(args: {
   themeDesc?: string;
   themeHooks?: string[];
   themeKeyword?: string;
+  variationSeed?: number;
 }): PlatformOutput[] {
   return PLATFORMS.map((p) =>
     generateForPlatform({
@@ -413,6 +513,7 @@ export function generateAllPlatforms(args: {
       themeDesc: args.themeDesc,
       themeHooks: args.themeHooks,
       themeKeyword: args.themeKeyword,
+      variationSeed: args.variationSeed,
     }),
   );
 }

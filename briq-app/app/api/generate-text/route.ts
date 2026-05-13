@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { isPlaceholderKey } from "@/lib/api/demo-images";
+import { buildViralMandate, detectCliches, type Voice } from "@/lib/viral/system-prompt";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -81,6 +82,9 @@ export async function POST(req: NextRequest) {
   const must_say = s("must_say", "");
   const slide_count = n("slide_count", 6);
   const model = s("model", process.env.TEXT_MODEL || "gpt-4o");
+  // viral 톤이 기본 — 카드뉴스/스레드 모두 동일
+  const voiceParam = (typeof body["voice"] === "string" ? body["voice"] : "viral") as Voice;
+  const voice: Voice = voiceParam === "formal" ? "formal" : "viral";
 
   if (placeholder) {
     return NextResponse.json({
@@ -173,7 +177,9 @@ ${roleGuide}
     { "role": "title", "label": "...", "title": "...", "sub": "..." },
     ...정확히 ${slide_count}개...
   ]
-}`;
+}
+
+${buildViralMandate({ voice, platform: "general" })}`;
 
   const userPrompt = `위 규격에 따라 "${campaign}" 카드뉴스 ${slide_count}장의 JSON 을 생성해 주세요. 각 슬라이드는 위 역할 순서대로 role 을 정확히 채우고, 슬라이드 간 내용 반복이 없도록 해 주세요. ${brand}(${industry}) 의 실제 상황에 맞는 카피를 써 주세요.`;
 
@@ -211,12 +217,17 @@ ${roleGuide}
       .split(/[,，]/)
       .map((x) => x.trim())
       .filter(Boolean);
-    const flagged: { slide: number; word: string }[] = [];
+    const flagged: { slide: number; word: string; kind?: "forbidden" | "cliche" }[] = [];
     slides.forEach((sl, idx) => {
       const text = `${sl.label || ""} ${sl.title || ""} ${sl.sub || ""}`;
       forbiddenList.forEach((f) => {
-        if (text.includes(f)) flagged.push({ slide: idx + 1, word: f });
+        if (text.includes(f)) flagged.push({ slide: idx + 1, word: f, kind: "forbidden" });
       });
+      if (voice === "viral") {
+        detectCliches(text).forEach((c) =>
+          flagged.push({ slide: idx + 1, word: c, kind: "cliche" }),
+        );
+      }
     });
 
     const latencyMs = Date.now() - startedAt;

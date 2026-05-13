@@ -67,6 +67,8 @@ export function ShortsScreen() {
   const [results, setResults] = React.useState<PlatformOutput[] | null>(null);
   const [copiedKey, setCopiedKey] = React.useState<string | null>(null);
   const [sourceMode, setSourceMode] = React.useState<SourceMode>("upload");
+  // 변형 횟수 — regenerate 클릭마다 증가, voice-bank pickFreshHookSeeded 에 전달돼 다른 hook 픽
+  const [variationSeed, setVariationSeed] = React.useState(0);
   // 캘린더에서 보낸 테마 — 카피 생성에 직접 전달됨 (hooks + keyword + desc)
   type CalendarPreset = {
     themeTitle: string;
@@ -174,6 +176,7 @@ export function ShortsScreen() {
         themeDesc: preset?.themeDesc,
         themeHooks: preset?.themeHooks,
         themeKeyword: preset?.themeKeyword,
+        variationSeed,
       });
       setResults(annotateForAi(out));
       toast.success(
@@ -193,6 +196,9 @@ export function ShortsScreen() {
       return;
     }
     setAnalyzing(true);
+    // 변형 호출 시마다 seed 증가 — 다른 hook 가 픽됨 (반복 방지)
+    const nextSeed = variationSeed + 1;
+    setVariationSeed(nextSeed);
     try {
       await new Promise((r) => setTimeout(r, 500));
       const out = generateAllPlatforms({
@@ -206,9 +212,10 @@ export function ShortsScreen() {
         themeDesc: preset?.themeDesc,
         themeHooks: preset?.themeHooks,
         themeKeyword: preset?.themeKeyword,
+        variationSeed: nextSeed,
       });
       setResults(annotateForAi(out));
-      toast.success("다시 작성 완료");
+      toast.success(`#${nextSeed} 변형 — 최근 후크 회피, 다른 톤으로 다시 작성됨`);
     } finally {
       setAnalyzing(false);
     }

@@ -20,6 +20,8 @@ import type { Industry, SceneRole } from "@/lib/ai-gen/model-scenes";
 import { getRecommendedScenes, getScenesForIndustry } from "@/lib/ai-gen/model-scenes";
 import type { MusicMood } from "@/lib/ai-gen/music-presets";
 import { suggestForWeeklyStyle } from "@/lib/trends/style-mapping";
+import { HOOK_BANK, fillSlots, isClean } from "@/lib/viral/voice-bank";
+import { pickFreshHookSeeded } from "@/lib/viral/recent-hooks";
 import { cn } from "@/lib/utils";
 
 const TEMPLATES = [
@@ -82,6 +84,37 @@ export function ReelsScreen() {
   const [activeTpl, setActiveTpl] = React.useState(defaultTpl);
   const [activeHook, setActiveHook] = React.useState(0);
   const [activeBgm, setActiveBgm] = React.useState(0);
+
+  // ─── 첫 3초 viral 훅 추천 — HOOK_BANK[reels][industry] 에서 3개 (변형 시 다음 3개) ───
+  const [viralSeed, setViralSeed] = React.useState(0);
+  const viralHooks = React.useMemo(() => {
+    const parts = (brand.city ?? "").split(/\s+/).filter(Boolean);
+    const district = parts[parts.length - 1] ?? brand.city;
+    const slots = {
+      brand: brand.name,
+      city: brand.city,
+      district,
+      menu: (isUserBrand && userBrand?.signatureMenu?.[0]) || "오늘의 메뉴",
+      industryShort: "",
+    };
+    const ind = (brand.industry as Industry) || "restaurant";
+    const pool = (HOOK_BANK.reels[ind] ?? HOOK_BANK.reels.restaurant)
+      .map((tpl) => fillSlots(tpl, slots))
+      .filter(isClean);
+    const picks: string[] = [];
+    const seen = new Set<string>();
+    let s = viralSeed;
+    while (picks.length < 3 && seen.size < pool.length) {
+      const h = pickFreshHookSeeded(`${brand.id}::viral3sec::${s}`, pool, s + brand.id.length);
+      if (!seen.has(h)) {
+        picks.push(h);
+        seen.add(h);
+      }
+      s += 7;
+    }
+    return picks;
+  }, [brand.id, brand.industry, brand.city, brand.name, isUserBrand, userBrand?.signatureMenu, viralSeed]);
+  const rerollViralHooks = () => setViralSeed((s) => s + 1);
 
   const DEFAULT_PHOTOS = [
     "from-amber-200 to-rose-300",
@@ -983,9 +1016,59 @@ export function ReelsScreen() {
             </div>
           </Card>
 
+          {/* ★ 첫 3초 viral 훅 추천 — voice-bank reels grammar 기반 */}
+          <Card className="p-4 border-violet-200 dark:border-violet-900/40 bg-gradient-to-br from-violet-50/40 to-white dark:from-violet-500/[0.05] dark:to-zinc-950">
+            <div className="flex items-center justify-between mb-2 gap-2">
+              <div className="text-[11px] uppercase tracking-widest font-semibold text-violet-700 dark:text-violet-300 flex items-center gap-1.5">
+                <Sparkles className="h-3 w-3" />첫 3초 — 손가락 멈추는 훅
+              </div>
+              <button
+                type="button"
+                onClick={rerollViralHooks}
+                className="text-[10px] text-violet-600 dark:text-violet-400 hover:underline inline-flex items-center gap-0.5"
+              >
+                <RefreshCw className="h-3 w-3" /> 다른 거
+              </button>
+            </div>
+            <p className="text-[10px] text-zinc-500 mb-2.5">
+              인스타 릴스 첫 1초에 손가락이 멈춰야 합니다. 아래 중 마음에 드는 거 클릭 → 컷 1의 자막으로
+            </p>
+            <div className="space-y-1.5">
+              {viralHooks.map((h, i) => (
+                <button
+                  key={`${viralSeed}-${i}`}
+                  onClick={() => {
+                    // 첫 컷 캡션으로 적용 + 기본 활성 후크로
+                    setPhotos((prev) => {
+                      let uploadIdx = 0;
+                      return prev.map((p) => {
+                        if (p.kind !== "upload") return p;
+                        const next = uploadIdx === 0 ? { ...p, caption: h } : p;
+                        uploadIdx += 1;
+                        return next;
+                      });
+                    });
+                    if (compiled?.url) {
+                      URL.revokeObjectURL(compiled.url);
+                      setCompiled(null);
+                    }
+                    toast.success(`첫 컷 자막: "${h.slice(0, 24)}${h.length > 24 ? "…" : ""}"`);
+                  }}
+                  className="w-full text-left text-[12.5px] px-3 py-2.5 rounded-md border border-violet-200/60 dark:border-violet-900/40 bg-white dark:bg-zinc-950 hover:border-violet-500 dark:hover:border-violet-500 hover:bg-violet-50/40 dark:hover:bg-violet-500/10 transition-colors leading-snug"
+                >
+                  <span className="text-violet-500 mr-1.5 tabular-nums">{String(i + 1).padStart(2, "0")}</span>
+                  {h}
+                </button>
+              ))}
+            </div>
+            <div className="mt-2.5 text-[10px] text-zinc-500">
+              실제 SNS에서 자주 보이는 패턴 기반 · 클리셰 X
+            </div>
+          </Card>
+
           <Card className="p-4">
             <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold mb-1 flex items-center gap-2">
-              <Type className="h-3 w-3" />후크 문구
+              <Type className="h-3 w-3" />후크 문구 (기존 풀)
             </div>
             <p className="text-[10px] text-zinc-500 mb-3">
               {uploadedPhotos.length > 0
