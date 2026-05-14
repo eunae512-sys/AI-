@@ -171,6 +171,9 @@ export function RoadmapStrip({
     };
   }, [pathname]);
 
+  // 대시보드는 "직원 보고" 톤이라 5단계 가이드 숨김 — 첫 화면에서 도구 느낌이 나면 안 됨.
+  if (pathname === "/dashboard" || pathname === "/") return null;
+
   // 현재 페이지가 어느 단계인지 — match 배열 안의 prefix 와 일치하면
   const currentStep = WORKFLOW_STEPS.find((s) =>
     s.match.some((m) => pathname === m || pathname.startsWith(m + "/") || pathname.startsWith(m)),

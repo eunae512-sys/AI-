@@ -372,15 +372,21 @@ const RECOMMENDED_BY_INDUSTRY: Record<Industry, SceneRole[]> = {
   dessert: ["staff", "customer", "product", "owner"],
   stay: ["owner", "customer", "product", "staff"],
   beauty: ["staff", "customer", "owner", "product"],
-  local: ["owner", "customer", "product", "owner"],
+  local: ["owner", "customer", "product"],
 };
 
 export function getRecommendedScenes(industry: Industry): ModelScene[] {
   const all = getScenesForIndustry(industry);
   const order = RECOMMENDED_BY_INDUSTRY[industry] || ["staff", "customer", "owner", "product"];
+  const seen = new Set<string>();
   return order
     .map((role) => all.find((s) => s.role === role))
-    .filter((s): s is ModelScene => !!s);
+    .filter((s): s is ModelScene => {
+      if (!s) return false;
+      if (seen.has(s.id)) return false;
+      seen.add(s.id);
+      return true;
+    });
 }
 
 // 한국어 라벨 매핑

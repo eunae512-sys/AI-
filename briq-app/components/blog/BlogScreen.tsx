@@ -57,6 +57,52 @@ const BODY_TONE: Record<string, string> = {
   local: "절제된 영문 + 한국어 혼용 · 원단·실루엣",
 };
 
+// 블로그 화자 — 3종
+type BlogPerspective = "visitor" | "brand-owner" | "brand-curator";
+
+const PERSPECTIVE_OPTIONS: { id: BlogPerspective; label: string; hint: string; example: string }[] = [
+  {
+    id: "visitor",
+    label: "방문 후기",
+    hint: "단골 손님이 다녀와서 쓰는 파워블로거 톤",
+    example: "오랜만에 친구랑 다녀왔어요. 12시 30분쯤 도착했는데…",
+  },
+  {
+    id: "brand-owner",
+    label: "사장님 일기",
+    hint: "사장님 본인이 1주 1편 직접 쓰는 칼럼 톤",
+    example: "이번 겨울 메뉴를 정할 때 가장 오래 고민한 건 국물의 무게였습니다.",
+  },
+  {
+    id: "brand-curator",
+    label: "브랜드 매거진",
+    hint: "잡지 기자가 3인칭 평서체로 가게를 소개하는 톤",
+    example: "골목 안쪽에 자리한 이 작은 가게는, 도시의 속도에서 한 걸음 비껴 서 있다.",
+  },
+];
+
+const PERSPECTIVE_STORAGE_PREFIX = "briq:blog-perspective:";
+
+function readSavedPerspective(brandId: string): BlogPerspective {
+  if (typeof window === "undefined") return "visitor";
+  try {
+    const v = localStorage.getItem(PERSPECTIVE_STORAGE_PREFIX + brandId);
+    if (v === "visitor" || v === "brand-owner" || v === "brand-curator") return v;
+  } catch {
+    // 무시
+  }
+  return "visitor";
+}
+
+function savePerspective(brandId: string, p: BlogPerspective) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(PERSPECTIVE_STORAGE_PREFIX + brandId, p);
+  } catch {
+    // 무시
+  }
+}
+
 export function BlogScreen() {
   const { brand, userBrand } = useBrand();
   const isUserBrand = !!userBrand && brand.id === userBrand.id;
@@ -70,6 +116,16 @@ export function BlogScreen() {
   const [body, setBody] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
+
+  // 화자(perspective) — 방문 후기 / 사장님 일기 / 브랜드 매거진
+  const [perspective, setPerspective] = React.useState<BlogPerspective>("visitor");
+  React.useEffect(() => {
+    setPerspective(readSavedPerspective(brand.id));
+  }, [brand.id]);
+  const changePerspective = (p: BlogPerspective) => {
+    setPerspective(p);
+    savePerspective(brand.id, p);
+  };
 
   // SERP 분석 결과 + 진행 상태
   type SerpPost = { rank: number; title: string; bloggerName: string; postDate: string; snippet: string; blogUrl: string };
@@ -202,6 +258,7 @@ export function BlogScreen() {
           signatureMenu: ctxSignature,
           keywords: keywords.join(", "),
           tone: `${tone}${detail?.toneSummary ? ` · ${detail.toneSummary}` : ""}`,
+          perspective,
           forbidden: "100% 보장, 무조건, 만병통치, 완치, 부작용 없음, 최고, 대박, JMT",
           // 샘플 검증 시: 가게에 대해 확정된 공개 사실 — 이 외엔 추정 금지
           knownFacts: sampleBrand?.knownFacts ?? undefined,
@@ -462,6 +519,41 @@ export function BlogScreen() {
               placeholder="제목을 입력하거나 위 추천에서 선택"
               className="w-full text-[13px] px-3 py-2.5 rounded-md border border-zinc-200 dark:border-zinc-800 bg-transparent resize-none focus:outline-none focus:ring-1 focus:ring-zinc-400"
             />
+
+            {/* 화자 선택 — 같은 가게라도 누구 시점인지가 결정적 */}
+            <div className="mt-4 border-t border-zinc-100 dark:border-zinc-900 pt-4">
+              <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-600 font-semibold mb-2">
+                누가 쓰나
+              </div>
+              <div className="grid grid-cols-3 gap-1.5">
+                {PERSPECTIVE_OPTIONS.map((opt) => {
+                  const active = opt.id === perspective;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => changePerspective(opt.id)}
+                      title={opt.hint}
+                      className={cn(
+                        "rounded-md border px-2.5 py-2 text-left transition-all",
+                        active
+                          ? "border-zinc-900 dark:border-zinc-100 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
+                          : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 hover:border-zinc-400 dark:hover:border-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-100",
+                      )}
+                    >
+                      <div className="text-[12px] font-semibold">{opt.label}</div>
+                      <div className={cn("text-[10px] mt-0.5 leading-snug line-clamp-2", active ? "text-white/80 dark:text-zinc-900/70" : "text-zinc-500")}>
+                        {opt.hint}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="mt-2 text-[11px] text-zinc-500 italic line-clamp-2">
+                예: {PERSPECTIVE_OPTIONS.find((o) => o.id === perspective)?.example}
+              </div>
+            </div>
+
             <div className="mt-3 text-[11px] text-zinc-500 space-y-1">
               <div>톤 가이드: <span className="text-zinc-700 dark:text-zinc-300">{tone}</span></div>
               <div>지역: <span className="text-zinc-700 dark:text-zinc-300">{brand.city}</span></div>

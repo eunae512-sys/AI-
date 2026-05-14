@@ -60,11 +60,13 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const page = typeof body.page === "number" && body.page > 0 ? Math.floor(body.page) : 1;
   const params = new URLSearchParams({
     query: cleanedQuery,
     orientation,
     size,
     per_page: String(perPage),
+    page: String(page),
     locale: "en-US",
   });
   if (color) params.set("color", color);
@@ -135,11 +137,15 @@ export async function POST(req: NextRequest) {
     }
     const imageUrl = pick.src.large2x || pick.src.large || pick.src.original;
 
-    // returnCandidates: true 이면 top 3 후보를 추가로 반환
+    // returnCandidates: true 이면 top N 후보를 추가로 반환 (기본 3, max 9)
     const returnCandidates = body.returnCandidates === true;
+    const candidateCount =
+      typeof body.candidateCount === "number"
+        ? Math.max(1, Math.min(9, Math.floor(body.candidateCount)))
+        : 3;
     const candidates = returnCandidates
       ? scored
-          .slice(0, 3)
+          .slice(0, candidateCount)
           .map(({ p }) => ({
             url: p.src.large2x || p.src.large || p.src.original,
             photoId: p.id,
