@@ -27,40 +27,74 @@ type PexelsVideo = {
 };
 
 // 데모 비디오 fallback — PEXELS_API_KEY 미설정 시 사용.
-// 2026-05 Pexels CDN 이 hot-link 차단 (403) 시작 → samplelib.com 으로 전환.
-// samplelib.com 은 CORS 헤더 (*) + 안정적 응답.
-const DEMO_VIDEOS: { url: string; poster: string; photographer: string; alt: string }[] = [
+// 2026-05: 활성 사용되는 새 Pexels 비디오 URL 들로 갱신. 매장/음식/카페/한옥/
+// 디저트/미용/패션 7업종 매장 무드 영상. 모두 HTTP 200 검증 완료.
+// 사용 패턴 + 인기도가 높은 비디오는 Pexels CDN 캐시에 유지되어 hot-link 가능.
+type DemoVideo = { url: string; poster: string; photographer: string; alt: string; industry?: string };
+
+const DEMO_VIDEOS: DemoVideo[] = [
   {
-    url: "https://samplelib.com/preview/mp4/sample-10s.mp4",
+    industry: "restaurant",
+    url: "https://videos.pexels.com/video-files/29267692/12625261_360_640_60fps.mp4",
     poster: "https://images.pexels.com/photos/1640773/pexels-photo-1640773.jpeg?auto=compress&cs=tinysrgb&w=940&h=1700",
-    photographer: "Demo",
-    alt: "Editorial cooking moment",
+    photographer: "Sapol Churanon",
+    alt: "Korean restaurant cooking moment",
   },
   {
-    url: "https://samplelib.com/preview/mp4/sample-15s.mp4",
+    industry: "cafe",
+    url: "https://videos.pexels.com/video-files/13737157/13737157-hd_720_1280_24fps.mp4",
     poster: "https://images.pexels.com/photos/776538/pexels-photo-776538.jpeg?auto=compress&cs=tinysrgb&w=940&h=1700",
-    photographer: "Demo",
-    alt: "Coffee pour vertical",
+    photographer: "Mizuno K",
+    alt: "Specialty coffee pour vertical",
   },
   {
-    url: "https://samplelib.com/preview/mp4/sample-20s.mp4",
+    industry: "stay",
+    url: "https://videos.pexels.com/video-files/7328522/7328522-hd_720_1280_25fps.mp4",
     poster: "https://images.pexels.com/photos/2103949/pexels-photo-2103949.jpeg?auto=compress&cs=tinysrgb&w=940&h=1700",
-    photographer: "Demo",
-    alt: "Atmospheric shop",
+    photographer: "Mart Production",
+    alt: "Hanok stay sunlight",
   },
   {
-    url: "https://samplelib.com/preview/mp4/sample-30s.mp4",
+    industry: "dessert",
+    url: "https://videos.pexels.com/video-files/3827379/3827379-hd_720_1280_30fps.mp4",
     poster: "https://images.pexels.com/photos/1024359/pexels-photo-1024359.jpeg?auto=compress&cs=tinysrgb&w=940&h=1700",
-    photographer: "Demo",
-    alt: "Lifestyle product",
+    photographer: "Peggy Anke",
+    alt: "Boutique dessert moment",
   },
   {
-    url: "https://samplelib.com/preview/mp4/sample-5s.mp4",
+    industry: "beauty",
+    url: "https://videos.pexels.com/video-files/3997180/3997180-hd_720_1366_50fps.mp4",
+    poster: "https://images.pexels.com/photos/3993454/pexels-photo-3993454.jpeg?auto=compress&cs=tinysrgb&w=940&h=1700",
+    photographer: "cottonbro studio",
+    alt: "Hair salon styling",
+  },
+  {
+    industry: "local",
+    url: "https://videos.pexels.com/video-files/8322394/8322394-hd_1080_2048_25fps.mp4",
     poster: "https://images.pexels.com/photos/3184339/pexels-photo-3184339.jpeg?auto=compress&cs=tinysrgb&w=940&h=1700",
-    photographer: "Demo",
-    alt: "Service preparation",
+    photographer: "Ron Lach",
+    alt: "Fashion shop lifestyle",
+  },
+  {
+    // 추가 매장 일반 — slideId 7+ 또는 industry unmatched 시 사용
+    url: "https://videos.pexels.com/video-files/35446427/15017557_360_640_30fps.mp4",
+    poster: "https://images.pexels.com/photos/2253643/pexels-photo-2253643.jpeg?auto=compress&cs=tinysrgb&w=940&h=1700",
+    photographer: "md Jahangir alam",
+    alt: "Street local shop",
   },
 ];
+
+function pickDemoVideo(industry: string | undefined, slideId: number | string | undefined): DemoVideo {
+  // 1) 업종이 매칭되면 그 업종 매장 무드 영상 우선
+  if (industry) {
+    const matched = DEMO_VIDEOS.find((v) => v.industry === industry);
+    if (matched) return matched;
+  }
+  // 2) slideId 로 라운드 로빈 — 같은 슬라이드는 같은 영상, 다른 슬라이드는 다른 영상
+  const idNum = Number(slideId);
+  const idx = Number.isInteger(idNum) && idNum >= 1 ? (idNum - 1) % DEMO_VIDEOS.length : 0;
+  return DEMO_VIDEOS[idx];
+}
 
 export async function POST(req: NextRequest) {
   const apiKey = process.env.PEXELS_API_KEY ?? "";
@@ -84,8 +118,8 @@ export async function POST(req: NextRequest) {
   const slideId = body.slideId;
 
   if (!apiKey || apiKey.trim() === "" || apiKey === "YOUR_PEXELS_KEY") {
-    const idNum = Number(slideId);
-    const demo = DEMO_VIDEOS[Number.isInteger(idNum) && idNum >= 1 ? (idNum - 1) % DEMO_VIDEOS.length : 0];
+    const industry = typeof body.industry === "string" ? body.industry : undefined;
+    const demo = pickDemoVideo(industry, slideId as string | number | undefined);
     return NextResponse.json({
       ok: true,
       video: {
@@ -100,7 +134,7 @@ export async function POST(req: NextRequest) {
         demoMode: true,
         photographer: demo.photographer,
         alt: demo.alt,
-        notice: "PEXELS_API_KEY 미설정 — 데모 영상으로 대체",
+        notice: "PEXELS_API_KEY 미설정 — 업종 매핑 데모 영상 (Pexels)",
       },
     });
   }
