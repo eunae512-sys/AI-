@@ -1,182 +1,422 @@
 "use client";
 
+// /pricing — 3티어 가격 페이지 (매거진 톤).
+//
+// 핵심 구조:
+//   · 헤더 — Cormorant Italic 헤드라인 + 연간/월간 토글
+//   · 산업별 추천 (사장님 셀렉터)
+//   · 4 카드 가격 매트릭스 (Free / Pro / Studio / Agency)
+//   · ROI 비교 (외주 vs BRIQ)
+//   · FAQ + 부가 수익원 안내
+//   · 결제 안내 (Toss 진입 자리)
+
+import * as React from "react";
 import Link from "next/link";
-import { motion } from "motion/react";
-import { Check, X } from "lucide-react";
+import { Check, X, Minus } from "lucide-react";
 import { LandingNav } from "@/components/landing/Nav";
-import { Button } from "@/components/ui/button";
+import { PLANS, ANNUAL_DISCOUNT, INDUSTRY_RECOMMEND, formatKrw, type Plan } from "@/lib/billing/plans";
 import { cn } from "@/lib/utils";
 
-const PLANS = [
-  {
-    id: "free",
-    name: "FREE",
-    price: "₩0",
-    sub: "처음 BRIQ를 써보시는 분",
-    cta: "무료 시작",
-    highlight: false,
-    features: [
-      { text: "1 브랜드", on: true },
-      { text: "월 3건 릴스", on: true },
-      { text: "월 10건 카드뉴스", on: true },
-      { text: "브랜드 톤 메모리 v1", on: true },
-      { text: "AI Assistant 30회/월", on: true },
-      { text: "예약 발행", on: false },
-      { text: "리뷰 자동 답변", on: false },
-      { text: "성과 분석", on: false },
-    ],
-  },
-  {
-    id: "starter",
-    name: "STARTER",
-    price: "₩39,000",
-    sub: "1인 자영업 · 카페 · 디저트샵",
-    cta: "시작하기",
-    highlight: false,
-    features: [
-      { text: "1 브랜드", on: true },
-      { text: "월 30건 릴스", on: true },
-      { text: "무제한 카드뉴스", on: true },
-      { text: "브랜드 톤 메모리 v3", on: true },
-      { text: "AI Assistant 500회/월", on: true },
-      { text: "예약 발행 (3 채널)", on: true },
-      { text: "콘텐츠 캘린더", on: true },
-      { text: "기본 성과 분석", on: true },
-    ],
-  },
-  {
-    id: "pro",
-    name: "PRO",
-    price: "₩99,000",
-    sub: "5인 미만 매장 · 단골 운영",
-    cta: "PRO 시작",
-    highlight: true,
-    features: [
-      { text: "3 브랜드", on: true },
-      { text: "무제한 콘텐츠", on: true },
-      { text: "톤 메모리 진화 무제한", on: true },
-      { text: "AI Assistant 무제한", on: true },
-      { text: "예약 발행 (5 채널)", on: true },
-      { text: "리뷰 자동 답변 (4 채널)", on: true },
-      { text: "성과 분석 풀 + ROI", on: true },
-      { text: "지역 트렌드 1km", on: true },
-      { text: "자동 브랜드 키트", on: true },
-    ],
-  },
-  {
-    id: "agency",
-    name: "AGENCY",
-    price: "₩299,000",
-    sub: "광고대행사 · 다 브랜드 운영",
-    cta: "상담 신청",
-    highlight: false,
-    features: [
-      { text: "10 브랜드", on: true },
-      { text: "모든 PRO 기능", on: true },
-      { text: "팀 협업 5 시트", on: true },
-      { text: "화이트라벨", on: true },
-      { text: "API 액세스", on: true },
-      { text: "커스텀 톤 격리", on: true },
-      { text: "전담 매니저", on: true },
-      { text: "월간 리포트", on: true },
-    ],
-  },
+type Cycle = "monthly" | "annual";
+
+const INDUSTRY_OPTIONS: { id: keyof typeof INDUSTRY_RECOMMEND; label: string }[] = [
+  { id: "restaurant", label: "식당·한식당" },
+  { id: "cafe", label: "카페" },
+  { id: "beauty", label: "미용실" },
+  { id: "dessert", label: "디저트·공방" },
+  { id: "stay", label: "숙소·한옥스테이" },
+  { id: "local", label: "소품샵·패션" },
 ];
 
 export default function PricingPage() {
+  const [cycle, setCycle] = React.useState<Cycle>("monthly");
+  const [industry, setIndustry] = React.useState<keyof typeof INDUSTRY_RECOMMEND>("restaurant");
+  const recommended = INDUSTRY_RECOMMEND[industry];
+
   return (
     <>
       <LandingNav />
-      <main className="pt-20">
-        <section className="px-6 pb-10 text-center">
-          <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">PRICING</div>
-          <h1 className="mt-3 text-4xl sm:text-5xl font-semibold tracking-tight">
-            소상공인이 부담 없이
+      <main className="pt-20 bg-[color:var(--bg)] min-h-screen">
+        {/* 헤더 */}
+        <section className="max-w-[1180px] mx-auto px-5 sm:px-10 md:px-14 pt-12 sm:pt-16 pb-10 sm:pb-12">
+          <div className="editorial-label">Pricing · 가격</div>
+          <h1
+            className="mt-4 text-[36px] sm:text-[52px] md:text-[64px] leading-[0.95] tracking-[-0.02em]"
+            style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 500 }}
+          >
+            디자이너 외주 1편 비용으로,
             <br />
-            <span className="gradient-text">시작하는 가격</span>
+            <em style={{ fontStyle: "italic" }}>한 달 무한 발행.</em>
           </h1>
-          <p className="mt-5 text-base text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto">
-            광고대행사 월 ₩200~500만원이 부담스러우셨다면. 신용카드 없이 무료로 시작하세요.
+          <p className="mt-6 max-w-[640px] text-[15px] leading-[1.65] text-zinc-600 dark:text-zinc-400">
+            카드뉴스 만들고, 캡션 쓰고, 해시태그 고르고, 네이버 블로그 본문까지 — 매주 6-8시간 걸리던 일이 10분으로.
+            14일 무료 체험 후 결정하세요. 신용카드 입력 없이 시작 가능합니다.
           </p>
-        </section>
 
-        <section className="px-6 pb-16">
-          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            {PLANS.map((p, i) => (
-              <motion.div
-                key={p.id}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.06 }}
+          {/* 결제 주기 토글 */}
+          <div className="mt-10 inline-flex border border-zinc-200 dark:border-zinc-800 p-1">
+            {(["monthly", "annual"] as Cycle[]).map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setCycle(c)}
                 className={cn(
-                  "rounded-2xl p-7 transition-all hover:-translate-y-1",
-                  p.highlight
-                    ? "border-2 border-transparent bg-gradient-to-b from-white to-white dark:from-[#0f0f12] dark:to-[#0f0f12] relative shadow-[0_30px_60px_-20px_rgba(99,102,241,0.4)]"
-                    : "border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-[#0f0f12] hover:border-zinc-400 dark:hover:border-zinc-600"
+                  "px-5 py-2 text-[12px] tracking-[0.08em] uppercase transition-colors",
+                  cycle === c
+                    ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
+                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100",
                 )}
-                style={
-                  p.highlight
-                    ? {
-                        backgroundImage:
-                          "linear-gradient(var(--bg-card),var(--bg-card)),linear-gradient(135deg,#6366f1,#ec4899)",
-                        backgroundOrigin: "border-box",
-                        backgroundClip: "padding-box,border-box",
-                      }
-                    : undefined
-                }
               >
-                {p.highlight && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold px-3 py-1 rounded-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white shadow-lg">
-                    가장 인기 ★
-                  </div>
+                {c === "monthly" ? "월간 결제" : "연간 결제"}
+                {c === "annual" && (
+                  <span className="ml-2 text-[10px] text-emerald-500">−{Math.round(ANNUAL_DISCOUNT * 100)}%</span>
                 )}
-                <div className={cn("text-xs font-semibold uppercase tracking-wider", p.highlight ? "gradient-text" : "text-zinc-500")}>
-                  {p.name}
-                </div>
-                <div className="mt-3">
-                  <span className="text-4xl font-semibold tabular-nums">{p.price}</span>
-                  <span className="text-sm text-zinc-500"> / 월</span>
-                </div>
-                <p className="mt-3 text-xs text-zinc-500 leading-relaxed">{p.sub}</p>
-                <Button
-                  asChild
-                  variant={p.highlight ? "default" : "outline"}
-                  className="mt-6 w-full"
-                  size="lg"
-                >
-                  <Link href="/onboarding">{p.cta}</Link>
-                </Button>
-                <ul className="mt-7 space-y-2.5 text-xs">
-                  {p.features.map((f) => (
-                    <li key={f.text} className="flex gap-2">
-                      {f.on ? (
-                        <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                      ) : (
-                        <X className="h-3.5 w-3.5 text-zinc-300 dark:text-zinc-700 shrink-0 mt-0.5" />
-                      )}
-                      <span className={cn(!f.on && "text-zinc-400 dark:text-zinc-600")}>{f.text}</span>
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
+              </button>
             ))}
           </div>
         </section>
 
-        <section className="py-20 px-6 bg-zinc-50/40 dark:bg-zinc-950/40 border-y border-zinc-100 dark:border-zinc-900">
-          <div className="max-w-3xl mx-auto rounded-2xl border border-zinc-100 dark:border-zinc-800 p-8 text-center bg-white dark:bg-[#0d0d10]">
-            <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">간단 ROI</div>
-            <h3 className="mt-2 text-2xl font-semibold tracking-tight">PRO 가입 시, 매월 절감되는 가치</h3>
-            <div className="mt-6 grid grid-cols-3 gap-4">
-              <div><div className="text-3xl font-semibold tabular-nums text-emerald-600">₩1,400,000</div><div className="text-[11px] text-zinc-500 mt-1">광고대행사 외주 절감</div></div>
-              <div><div className="text-3xl font-semibold tabular-nums text-emerald-600">42h</div><div className="text-[11px] text-zinc-500 mt-1">사장님 시간 절감</div></div>
-              <div><div className="text-3xl font-semibold tabular-nums text-emerald-600">+147%</div><div className="text-[11px] text-zinc-500 mt-1">인스타 도달 평균</div></div>
+        {/* 산업별 추천 */}
+        <section className="max-w-[1180px] mx-auto px-5 sm:px-10 md:px-14 py-10 border-y border-zinc-200 dark:border-zinc-800">
+          <div className="flex flex-wrap items-baseline gap-x-6 gap-y-4">
+            <div>
+              <div className="editorial-label">사장님 산업</div>
+              <p className="mt-1 text-[12px] text-zinc-500">선택하시면 맞춤 플랜을 추천드립니다</p>
             </div>
-            <div className="mt-7 text-xs text-zinc-500">PRO 월 ₩99,000 → 실 ROI <b>1,414%</b> · 투자 1원당 14원 회수.</div>
+            <div className="flex flex-wrap gap-1.5">
+              {INDUSTRY_OPTIONS.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setIndustry(opt.id)}
+                  className={cn(
+                    "px-3 h-8 text-[11.5px] border transition-colors",
+                    industry === opt.id
+                      ? "border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-900"
+                      : "border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100",
+                  )}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
+          <div className="mt-5 text-[13px] text-zinc-600 dark:text-zinc-400">
+            <span className="text-zinc-500">추천 플랜 →</span>{" "}
+            <span
+              className="text-zinc-900 dark:text-zinc-100"
+              style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: "20px", fontWeight: 500 }}
+            >
+              {PLANS.find((p) => p.id === recommended.plan)?.name}
+            </span>
+            <span className="ml-3 text-zinc-500">— {recommended.reason}</span>
+          </div>
+        </section>
+
+        {/* 가격 카드 4개 */}
+        <section className="max-w-[1380px] mx-auto px-5 sm:px-10 md:px-14 pt-12 pb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+            {PLANS.map((plan) => (
+              <PlanCard
+                key={plan.id}
+                plan={plan}
+                cycle={cycle}
+                isRecommended={recommended.plan === plan.id}
+              />
+            ))}
+          </div>
+          <p className="mt-6 text-[11px] text-zinc-400 text-center">
+            VAT 포함. 결제는 Toss Payments 로 안전하게 진행됩니다.
+          </p>
+          <p className="mt-1.5 text-[10.5px] text-amber-600 dark:text-amber-400 text-center">
+            ※ 현재 베타 — 결제 연동은 준비 중입니다. 가입 후 14일 무료 체험 동안 모든 기능 사용 가능.
+          </p>
+        </section>
+
+        {/* ROI 비교 — 외주 vs BRIQ */}
+        <section className="bg-zinc-50/60 dark:bg-zinc-950/60 border-y border-zinc-200 dark:border-zinc-800 py-16">
+          <div className="max-w-[1180px] mx-auto px-5 sm:px-10 md:px-14">
+            <div className="editorial-label">ROI · 가성비</div>
+            <h2
+              className="mt-3 text-[32px] sm:text-[40px] leading-[1] tracking-tight"
+              style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 500 }}
+            >
+              디자이너 외주 1편 비용으로,
+              <br />
+              <em style={{ fontStyle: "italic" }}>한 달 무한 발행.</em>
+            </h2>
+
+            <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* 외주 */}
+              <div className="border border-zinc-200 dark:border-zinc-800 p-7 bg-white dark:bg-zinc-950">
+                <div className="editorial-label">외주 · 직접 운영</div>
+                <h3 className="mt-3 text-[24px] tracking-tight" style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 500 }}>
+                  월 ₩400,000-700,000
+                </h3>
+                <ul className="mt-6 space-y-2 text-[13px] text-zinc-600 dark:text-zinc-400">
+                  <CostRow label="카드뉴스 디자이너 (편당)" value="₩50,000-100,000" />
+                  <CostRow label="네이버 블로그 본문 외주 (편당)" value="₩70,000-150,000" />
+                  <CostRow label="8개 채널 변환 시간" value="6-8h / 캠페인" />
+                  <CostRow label="발행 일정 관리" value="매일 20분" />
+                </ul>
+                <div className="mt-6 pt-5 border-t border-zinc-100 dark:border-zinc-900 text-[12px] text-zinc-500">
+                  사장님 직접 운영 시 → 매주 6-8시간 소모
+                </div>
+              </div>
+
+              {/* BRIQ Pro */}
+              <div className="border-2 border-zinc-900 dark:border-zinc-100 p-7 bg-white dark:bg-zinc-950">
+                <div className="editorial-label">BRIQ Pro</div>
+                <h3 className="mt-3 text-[24px] tracking-tight" style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 500 }}>
+                  월 ₩49,000
+                </h3>
+                <ul className="mt-6 space-y-2 text-[13px] text-zinc-700 dark:text-zinc-300">
+                  <CostRow label="카드뉴스 7컷 자동 생성" value="무제한" emerald />
+                  <CostRow label="네이버 블로그 본문 (1500+자)" value="월 8편" emerald />
+                  <CostRow label="8 채널 자동 변환" value="10초 / 캠페인" emerald />
+                  <CostRow label="발행 자동화 (Webhook · 수동)" value="원클릭" emerald />
+                </ul>
+                <div className="mt-6 pt-5 border-t border-zinc-100 dark:border-zinc-900 text-[12px] text-emerald-600 dark:text-emerald-400">
+                  10배 가성비 · 매주 6시간 절약 = 한 달 24시간
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 부가 수익원 / 애드온 */}
+        <section className="max-w-[1180px] mx-auto px-5 sm:px-10 md:px-14 py-16">
+          <div className="editorial-label">Add-on · 부가 옵션</div>
+          <h2
+            className="mt-3 text-[28px] sm:text-[36px] leading-tight tracking-tight"
+            style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 500 }}
+          >
+            필요할 때만, 한도 초과 시
+          </h2>
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0 border-y border-zinc-200 dark:border-zinc-800">
+            <AddonCell
+              label="ChatGPT 이미지 추가"
+              price="₩9,000 / 100장"
+              note="Pro 의 월 50장 초과 시. 1장당 약 ₩90."
+            />
+            <AddonCell
+              label="추가 브랜드"
+              price="₩19,000 / 브랜드 · 월"
+              note="Pro 가입자가 2번째 매장 추가할 때."
+            />
+            <AddonCell
+              label="카카오 알림톡"
+              price="₩9 / 건"
+              note="자동 응답·예약 알림 발송. Studio 부터 포함."
+            />
+            <AddonCell
+              label="첫 셋업 컨설팅"
+              price="₩99,000 / 1회"
+              note="3시간 줌, BRIQ 셋업 + 브랜드 톤 정의."
+            />
+            <AddonCell
+              label="PDF 매거진 인쇄본"
+              price="₩29,000 / 권"
+              note="클라이언트·지인 선물용 종이 책자 (월 1회)."
+            />
+            <AddonCell
+              label="산업별 카피 라이브러리"
+              price="₩59,000 / 1회"
+              note="그 산업 검증 카피 500문장 묶음 구매."
+            />
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section className="bg-zinc-50/60 dark:bg-zinc-950/60 border-t border-zinc-200 dark:border-zinc-800 py-16">
+          <div className="max-w-[860px] mx-auto px-5 sm:px-10">
+            <div className="editorial-label">FAQ · 자주 묻는 질문</div>
+            <div className="mt-8 divide-y divide-zinc-200 dark:divide-zinc-800 border-y border-zinc-200 dark:border-zinc-800">
+              <FaqRow q="14일 체험 후 자동 결제되나요?">
+                아니요. 체험 종료 3일 전 메일로 안내드리고, 사장님이 직접 결제를 선택하신 후에만 청구됩니다. 자동 결제 X.
+              </FaqRow>
+              <FaqRow q="중간에 해지하면 환불되나요?">
+                결제 후 7일 이내는 100% 환불. 그 이후엔 남은 일수 기준 일할 환불 가능합니다.
+              </FaqRow>
+              <FaqRow q="브랜드를 여러 개 운영하려면?">
+                Pro 는 브랜드 1개 한도. 추가 브랜드는 ₩19,000/월 또는 Studio (10개 포함) 권장.
+              </FaqRow>
+              <FaqRow q="ChatGPT 구독이 따로 필요한가요?">
+                아니요. Pro 이상은 BRIQ 가 ChatGPT 이미지 생성 한도를 제공합니다 (Pro 50장 / Studio 300장 / Agency 무제한).
+              </FaqRow>
+              <FaqRow q="인스타그램 자동 발행이 되나요?">
+                Studio 이상에서 Instagram Graph API 직결 발행 지원. Pro 는 Webhook (Make/Zapier) 위임 또는 수동 발행 (클립보드 + 새 탭 자동 오픈) 으로 운영하실 수 있습니다.
+              </FaqRow>
+              <FaqRow q="세금계산서·현금영수증 발급되나요?">
+                네. 사업자등록증으로 가입하시면 세금계산서, 개인사장님은 현금영수증(소득공제용) 자동 발급됩니다.
+              </FaqRow>
+            </div>
+          </div>
+        </section>
+
+        {/* 마지막 CTA */}
+        <section className="max-w-[860px] mx-auto px-5 sm:px-10 py-20 text-center">
+          <h2
+            className="text-[36px] sm:text-[44px] leading-[1] tracking-tight"
+            style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 500 }}
+          >
+            오늘 가입하고,
+            <br />
+            <em style={{ fontStyle: "italic" }}>내일 첫 카드뉴스를 발행하세요.</em>
+          </h2>
+          <p className="mt-5 text-[14px] text-zinc-600 dark:text-zinc-400">
+            신용카드 입력 없이 14일 무료 체험. 마음에 안 드시면 그냥 탈퇴하시면 됩니다.
+          </p>
+          <Link
+            href="/onboarding"
+            className="mt-8 inline-block px-8 h-12 leading-[3rem] bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[13px] tracking-[0.1em] uppercase font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
+          >
+            14일 무료로 시작 →
+          </Link>
         </section>
       </main>
     </>
+  );
+}
+
+// ─── 가격 카드 ─────────────────────────────────────────────────────────────
+
+function PlanCard({ plan, cycle, isRecommended }: { plan: Plan; cycle: Cycle; isRecommended: boolean }) {
+  const isAgency = plan.id === "agency";
+  const isFree = plan.id === "free";
+  const monthlyPrice = cycle === "annual" ? plan.priceAnnualMonthly : plan.priceMonthly;
+  const isHighlighted = plan.badge === "가장 많이 선택" || isRecommended;
+
+  return (
+    <article
+      className={cn(
+        "border bg-white dark:bg-zinc-950 flex flex-col relative",
+        isHighlighted
+          ? "border-zinc-900 dark:border-zinc-100 shadow-[0_20px_50px_-25px_rgba(0,0,0,0.3)]"
+          : "border-zinc-200 dark:border-zinc-800",
+      )}
+    >
+      {/* 추천 뱃지 */}
+      {(plan.badge || isRecommended) && (
+        <div
+          className={cn(
+            "absolute -top-3 left-5 px-2.5 py-0.5 text-[10px] tracking-[0.12em] uppercase",
+            isRecommended
+              ? "bg-emerald-500 text-white"
+              : "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900",
+          )}
+        >
+          {isRecommended ? "사장님께 추천" : plan.badge}
+        </div>
+      )}
+
+      <header className="px-6 pt-7 pb-5 border-b border-zinc-100 dark:border-zinc-900">
+        <div className="editorial-label">{plan.name}</div>
+        <h3
+          className="mt-2 text-[22px] tracking-tight"
+          style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontWeight: 500 }}
+        >
+          {plan.tagline}
+        </h3>
+
+        <div className="mt-5 flex items-baseline gap-1.5">
+          {isFree ? (
+            <span className="text-[38px] tabular-nums tracking-tight font-medium">₩0</span>
+          ) : isAgency ? (
+            <span className="text-[22px] text-zinc-700 dark:text-zinc-300">요청 견적</span>
+          ) : (
+            <>
+              <span className="text-[14px] text-zinc-500">₩</span>
+              <span className="text-[38px] tabular-nums tracking-tight font-medium">{formatKrw(monthlyPrice)}</span>
+              <span className="text-[12px] text-zinc-500"> / 월</span>
+            </>
+          )}
+        </div>
+        {!isFree && !isAgency && cycle === "annual" && (
+          <div className="mt-1 text-[11px] text-emerald-600 dark:text-emerald-400">
+            연간 결제 — 월 ₩{formatKrw(plan.priceMonthly - plan.priceAnnualMonthly)} 절약
+          </div>
+        )}
+        {isAgency && (
+          <div className="mt-1 text-[11px] text-zinc-500">시작가 월 ₩{formatKrw(plan.priceMonthly)} —</div>
+        )}
+
+        <Link
+          href={plan.cta.href}
+          className={cn(
+            "mt-6 block text-center h-11 leading-[2.75rem] text-[12px] tracking-[0.1em] uppercase font-medium transition-colors",
+            isHighlighted
+              ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200"
+              : "border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900",
+          )}
+        >
+          {plan.cta.label}
+        </Link>
+      </header>
+
+      <ul className="px-6 py-6 space-y-2.5 flex-1">
+        {plan.features.map((f, i) => (
+          <li key={i} className="flex items-start gap-2 text-[12.5px]">
+            {f.included ? (
+              <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-[3px]" />
+            ) : (
+              <X className="h-3.5 w-3.5 text-zinc-300 dark:text-zinc-700 shrink-0 mt-[3px]" />
+            )}
+            <div className={cn("leading-[1.5]", !f.included && "text-zinc-400 dark:text-zinc-600")}>
+              <span className={cn(f.included ? "text-zinc-800 dark:text-zinc-200" : "")}>{f.label}</span>
+              {f.detail && f.included && (
+                <span className="block text-[11px] text-zinc-500 dark:text-zinc-500">{f.detail}</span>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </article>
+  );
+}
+
+// ─── 작은 컴포넌트들 ───────────────────────────────────────────────────────
+
+function CostRow({ label, value, emerald }: { label: string; value: string; emerald?: boolean }) {
+  return (
+    <li className="flex items-baseline justify-between gap-3 py-1">
+      <span>{label}</span>
+      <span className={cn("tabular-nums", emerald ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-zinc-500")}>
+        {value}
+      </span>
+    </li>
+  );
+}
+
+function AddonCell({ label, price, note }: { label: string; price: string; note: string }) {
+  return (
+    <div className="p-6 border-r border-b border-zinc-200 dark:border-zinc-800 last:border-r-0">
+      <div className="editorial-label">{label}</div>
+      <div className="mt-3 text-[20px] tracking-tight" style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 500 }}>
+        {price}
+      </div>
+      <p className="mt-3 text-[12px] text-zinc-500 leading-relaxed">{note}</p>
+    </div>
+  );
+}
+
+function FaqRow({ q, children }: { q: string; children: React.ReactNode }) {
+  const [open, setOpen] = React.useState(false);
+  return (
+    <details
+      open={open}
+      onToggle={(e) => setOpen((e.target as HTMLDetailsElement).open)}
+      className="group"
+    >
+      <summary className="flex items-center justify-between py-5 cursor-pointer list-none">
+        <span className="text-[14.5px] tracking-tight text-zinc-900 dark:text-zinc-100">{q}</span>
+        <span className="text-zinc-400">
+          {open ? <Minus className="h-4 w-4" /> : <span className="text-[18px] leading-none">+</span>}
+        </span>
+      </summary>
+      <div className="pb-5 text-[13.5px] leading-[1.7] text-zinc-600 dark:text-zinc-400">
+        {children}
+      </div>
+    </details>
   );
 }
