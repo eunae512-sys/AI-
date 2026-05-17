@@ -85,6 +85,8 @@ export function ReelsPreview({ clip: initial, title, handle, industry }: Props) 
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             query,
+            // industry 전달 → demo fallback 모드도 업종 매칭 영상 + 다른 컷 순환
+            industry,
             orientation: "portrait",
             size: "large",
             perPage: 24,

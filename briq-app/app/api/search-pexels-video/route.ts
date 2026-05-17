@@ -84,16 +84,31 @@ const DEMO_VIDEOS: DemoVideo[] = [
   },
 ];
 
-function pickDemoVideo(industry: string | undefined, slideId: number | string | undefined): DemoVideo {
-  // 1) 업종이 매칭되면 그 업종 매장 무드 영상 우선
+// videoId 안정 해시 — URL 에서 숫자 ID 추출 (Pexels video-files/{id}/...).
+// "다른 컷" 클릭 시 호출자가 excludeIds 로 누적 → 매번 다른 영상을 받도록.
+function demoVideoId(v: DemoVideo): number {
+  const m = v.url.match(/video-files\/(\d+)\//);
+  return m ? Number(m[1]) : 0;
+}
+
+function pickDemoVideo(
+  industry: string | undefined,
+  slideId: number | string | undefined,
+  excludeIds: number[] = [],
+): DemoVideo {
+  // 1) 제외 후보로 좁힌 풀
+  const available = DEMO_VIDEOS.filter((v) => !excludeIds.includes(demoVideoId(v)));
+  // 모두 제외됐다면 reset — 다시 처음부터
+  const pool = available.length > 0 ? available : DEMO_VIDEOS;
+  // 2) 업종 매칭 우선 (단, 제외 풀 안에서만)
   if (industry) {
-    const matched = DEMO_VIDEOS.find((v) => v.industry === industry);
+    const matched = pool.find((v) => v.industry === industry);
     if (matched) return matched;
   }
-  // 2) slideId 로 라운드 로빈 — 같은 슬라이드는 같은 영상, 다른 슬라이드는 다른 영상
+  // 3) slideId 라운드 로빈
   const idNum = Number(slideId);
-  const idx = Number.isInteger(idNum) && idNum >= 1 ? (idNum - 1) % DEMO_VIDEOS.length : 0;
-  return DEMO_VIDEOS[idx];
+  const idx = Number.isInteger(idNum) && idNum >= 1 ? (idNum - 1) % pool.length : 0;
+  return pool[idx];
 }
 
 export async function POST(req: NextRequest) {
@@ -119,7 +134,7 @@ export async function POST(req: NextRequest) {
 
   if (!apiKey || apiKey.trim() === "" || apiKey === "YOUR_PEXELS_KEY") {
     const industry = typeof body.industry === "string" ? body.industry : undefined;
-    const demo = pickDemoVideo(industry, slideId as string | number | undefined);
+    const demo = pickDemoVideo(industry, slideId as string | number | undefined, excludeIds);
     return NextResponse.json({
       ok: true,
       video: {
@@ -132,6 +147,8 @@ export async function POST(req: NextRequest) {
       meta: {
         source: "demo-fallback",
         demoMode: true,
+        // videoId 반환 → 호출자(ReelsPreview)가 seenIds 에 누적 → "다른 컷" 마다 다른 영상
+        videoId: demoVideoId(demo),
         photographer: demo.photographer,
         alt: demo.alt,
         notice: "PEXELS_API_KEY 미설정 — 업종 매핑 데모 영상 (Pexels)",
