@@ -4,11 +4,21 @@
 // 가격 페이지 "도입 문의" CTA 가 가던 404 를 메우는 단순 1페이지.
 
 import * as React from "react";
+import { Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { LandingNav } from "@/components/landing/Nav";
 
+// useSearchParams 는 Suspense 안에서만 안전 — 빌드 prerender 깨짐 방지
 export default function ContactPage() {
+  return (
+    <Suspense fallback={null}>
+      <ContactPageInner />
+    </Suspense>
+  );
+}
+
+function ContactPageInner() {
   const params = useSearchParams();
   const plan = params.get("plan") ?? "";
   const [orgName, setOrgName] = React.useState("");
