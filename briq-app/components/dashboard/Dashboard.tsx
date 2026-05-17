@@ -160,7 +160,7 @@ export function DashboardScreen() {
         <Masthead brand={brand} issueNumber={issueNumber} tone={tone} onToneChange={changeTone} />
         <AutomationStatus />
         <DivLine />
-        <CoverStory shop={shop} brand={brand} onCoverChange={setCoverUrl} />
+        <CoverStory shop={shop} brand={brand} tone={tone} onCoverChange={setCoverUrl} />
         <DivLine />
         <SuggestedMoves brand={brand} />
         <DivLine />
@@ -445,10 +445,12 @@ function Masthead({
 function CoverStory({
   shop,
   brand,
+  tone,
   onCoverChange,
 }: {
   shop: ShopHand;
   brand: Brand;
+  tone: VoiceTone;
   /** 부모(Dashboard)에게 현재 표지 url 통지 — 모바일 미리보기와 공유 */
   onCoverChange?: (url: string | null) => void;
 }) {
@@ -466,10 +468,21 @@ function CoverStory({
     setPageSeed(1);
   }, [brand.id]);
 
+  // brand.id 해시 → page offset. 같은 industry+tone 라도 다른 brand 는 다른 페이지의
+  // 검색 결과를 받아 "오늘 한 컷" 사진이 브랜드별로 달라짐.
+  const brandPageOffset = React.useMemo(() => {
+    let h = 0;
+    for (let i = 0; i < brand.id.length; i++) h = (h * 31 + brand.id.charCodeAt(i)) | 0;
+    return (Math.abs(h) % 4) + 1; // 1~4 페이지 분산
+  }, [brand.id]);
+
   React.useEffect(() => {
     let cancelled = false;
     setLoadingCover(true);
-    const query = COVER_QUERY[brand.industry]?.editorial ?? "editorial natural light";
+    // tone 별로 다른 query 사용 — 사장님이 톤 토글 시 사진도 함께 바뀜
+    const query = COVER_QUERY[brand.industry]?.[tone] ?? COVER_QUERY[brand.industry]?.editorial ?? "editorial natural light";
+    // 같은 brand 면 pageSeed 누적, 첫 진입 시 brand.id hash 로 페이지 분산
+    const effectivePage = pageSeed > 1 ? pageSeed : brandPageOffset;
     (async () => {
       try {
         const res = await fetch("/api/search-pexels", {
@@ -479,7 +492,7 @@ function CoverStory({
             query,
             orientation: "portrait",
             perPage: 40,
-            page: pageSeed,
+            page: effectivePage,
             returnCandidates: true,
             candidateCount: 6,
             slideId: brand.id,
@@ -496,7 +509,7 @@ function CoverStory({
       finally { if (!cancelled) setLoadingCover(false); }
     })();
     return () => { cancelled = true; };
-  }, [brand.id, brand.industry, pageSeed]);
+  }, [brand.id, brand.industry, tone, pageSeed, brandPageOffset]);
 
   const coverUrl: string | null =
     coverPick.kind === "upload" ? coverPick.url
