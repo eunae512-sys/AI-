@@ -8,6 +8,7 @@ import { Menu, X } from "lucide-react";
 import { navGroups, SETTINGS_ITEM } from "@/lib/nav";
 import { ThemeToggle } from "./ThemeToggle";
 import { cn } from "@/lib/utils";
+import { useBrand } from "@/components/brand/BrandProvider";
 
 const badgeColor = {
   amber: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
@@ -25,6 +26,18 @@ type SidebarBodyProps = {
 function SidebarBody({ pathname, onNavigate, variant }: SidebarBodyProps) {
   const SettingsIcon = SETTINGS_ITEM.icon;
   const settingsActive = pathname.startsWith(SETTINGS_ITEM.href);
+  const { userBrand, allBrands, brand } = useBrand();
+
+  // 실 사장님: 온보딩 마친 ownerName + 본인 브랜드 + 데모 가게들
+  // 데모 사용자: 데모 브랜드 첫 가게 이름 + 그 외 N
+  const displayName = userBrand?.ownerName?.trim() || (userBrand ? "사장님" : "허은애");
+  const initial = displayName.charAt(0) || "사";
+  const otherCount = Math.max(0, allBrands.length - 1);
+  const shopSummary = userBrand
+    ? otherCount > 0
+      ? `${brand.name} 외 ${otherCount}`
+      : brand.name
+    : `${brand.name} 외 ${otherCount}`;
 
   return (
     <>
@@ -97,11 +110,11 @@ function SidebarBody({ pathname, onNavigate, variant }: SidebarBodyProps) {
       {/* 사용자 + 설정 톱니 + 테마 — Settings 는 메뉴 줄 차지 않고 여기서만 진입 */}
       <div className="border-t border-zinc-100 dark:border-zinc-900 p-3 flex items-center gap-2.5">
         <div className="h-7 w-7 rounded-full bg-zinc-200 dark:bg-zinc-800 shrink-0 grid place-items-center text-[10px] text-zinc-500">
-          허
+          {initial}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-[12px] font-medium truncate">허은애</div>
-          <div className="text-[10px] text-zinc-500 dark:text-zinc-500 truncate">미옥당 외 5</div>
+          <div className="text-[12px] font-medium truncate">{displayName}</div>
+          <div className="text-[10px] text-zinc-500 dark:text-zinc-500 truncate">{shopSummary}</div>
         </div>
         <Link
           href={SETTINGS_ITEM.href}

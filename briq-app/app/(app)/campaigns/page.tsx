@@ -153,9 +153,21 @@ function seedDraftsForBrand(brand: Brand): CampaignDraft[] {
   ];
 }
 
+// 시작일이 오늘 기준 너무 지났으면 (3일 이상) 시즌 만료로 보고 제외.
+// 신규 사장님이 어버이날 같은 이미 지난 시즌을 "이번 주 제안" 으로 보지 않도록.
+function filterCurrentDrafts(all: CampaignDraft[]): CampaignDraft[] {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const cutoff = today.getTime() - 3 * 24 * 60 * 60 * 1000;
+  return all.filter((d) => {
+    const t = new Date(d.schedule.startsAt).getTime();
+    return Number.isFinite(t) ? t >= cutoff : true;
+  });
+}
+
 export default function CampaignsPage() {
   const { brand } = useBrand();
-  const [drafts, setDrafts] = React.useState<CampaignDraft[]>(() => seedDraftsForBrand(brand));
+  const [drafts, setDrafts] = React.useState<CampaignDraft[]>(() => filterCurrentDrafts(seedDraftsForBrand(brand)));
   const [approved, setApproved] = React.useState<string[]>([]);
   const [skipped, setSkipped] = React.useState<string[]>([]);
   const router = useRouter();
@@ -163,7 +175,7 @@ export default function CampaignsPage() {
 
   // 브랜드 바뀌면 초안 재시드 (승인/건너뜀 상태도 리셋)
   React.useEffect(() => {
-    setDrafts(seedDraftsForBrand(brand));
+    setDrafts(filterCurrentDrafts(seedDraftsForBrand(brand)));
     setApproved([]);
     setSkipped([]);
   }, [brand.id]);
@@ -338,6 +350,24 @@ function runningCampaignsForBrand(brand: Brand) {
 }
 
 function RunningCampaigns({ brand }: { brand: Brand }) {
+  const { userBrand } = useBrand();
+  // 사장님이 막 가입한 직후엔 진행 중 캠페인이 없는 게 정상.
+  // 가짜 reach 4.2k 같은 숫자가 신뢰 깎임 → 빈 상태로 정직하게.
+  if (userBrand && brand.id === userBrand.id) {
+    return (
+      <section className="mt-12">
+        <div className="flex items-baseline justify-between mb-5">
+          <div className="editorial-label">지금 진행 중</div>
+          <div className="text-[11px] text-zinc-500">자동으로 굴러가는 캠페인</div>
+        </div>
+        <div className="border-y border-zinc-200 dark:border-zinc-800 py-8 text-center">
+          <p className="text-[13px] text-zinc-500">
+            아직 굴러가는 캠페인이 없어요. 아래 제안 중 하나를 승인하시면 BRIQ가 발행을 시작합니다.
+          </p>
+        </div>
+      </section>
+    );
+  }
   const RUNNING = runningCampaignsForBrand(brand);
   return (
     <section className="mt-12">

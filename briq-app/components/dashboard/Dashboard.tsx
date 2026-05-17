@@ -181,6 +181,9 @@ export function DashboardScreen() {
 // ─────────────────────────────────────────────────────────────
 
 function AutomationStatus() {
+  const { userBrand } = useBrand();
+  // 실 사장님 신규 가입 직후엔 모든 카운터가 0 — 가짜 숫자 대신 첫 발걸음 안내
+  const isFresh = !!userBrand;
   return (
     <section className="py-8 sm:py-10">
       <div className="flex items-baseline justify-between mb-4">
@@ -192,12 +195,29 @@ function AutomationStatus() {
           모두 보기
         </Link>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-0 gap-y-6 border-y border-zinc-200 dark:border-zinc-800 py-7">
-        <StatusBlock label="다음 발행 준비" value="완료" sub="오늘 오후 7:12" />
-        <StatusBlock label="이번 주 예약" value="12" unit="건" sub="인스타 9 · 블로그 3" />
-        <StatusBlock label="댓글 자동 응답" value="ON" sub="평균 3분 회신" />
-        <StatusBlock label="진행 중 캠페인" value="2" unit="개" sub="신메뉴 · 어버이날" />
-      </div>
+      {isFresh ? (
+        <div className="border-y border-zinc-200 dark:border-zinc-800 py-7 grid grid-cols-1 sm:grid-cols-[1fr_auto] items-center gap-5">
+          <div>
+            <div className="editorial-label">아직 발행한 콘텐츠가 없어요</div>
+            <p className="mt-2 text-[14px] text-zinc-700 dark:text-zinc-300">
+              첫 캠페인을 만들면 카드뉴스 · 캡션 · 해시태그 · 발행 시간이 자동으로 정해집니다.
+            </p>
+          </div>
+          <Link
+            href="/campaigns"
+            className="inline-flex items-center justify-center h-10 px-5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[12.5px] tracking-[0.06em] font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors whitespace-nowrap"
+          >
+            첫 캠페인 시작 →
+          </Link>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-0 gap-y-6 border-y border-zinc-200 dark:border-zinc-800 py-7">
+          <StatusBlock label="다음 발행 준비" value="완료" sub="오늘 오후 7:12" />
+          <StatusBlock label="이번 주 예약" value="12" unit="건" sub="인스타 9 · 블로그 3" />
+          <StatusBlock label="댓글 자동 응답" value="ON" sub="평균 3분 회신" />
+          <StatusBlock label="진행 중 캠페인" value="2" unit="개" sub="신메뉴 · 어버이날" />
+        </div>
+      )}
     </section>
   );
 }
