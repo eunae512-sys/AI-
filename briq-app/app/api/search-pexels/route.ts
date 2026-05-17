@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { pickDemoImage } from "@/lib/api/demo-images";
+import { pickDemoImage, pickDemoImages } from "@/lib/api/demo-images";
 
 export const runtime = "nodejs";
 
@@ -32,6 +32,43 @@ export async function POST(req: NextRequest) {
   const slideId = body.slideId;
 
   if (!apiKey || apiKey.trim() === "" || apiKey === "YOUR_PEXELS_KEY") {
+    const returnCandidates = body.returnCandidates === true;
+    const candidateCount =
+      typeof body.candidateCount === "number"
+        ? Math.max(1, Math.min(9, Math.floor(body.candidateCount)))
+        : 3;
+    const page = typeof body.page === "number" && body.page > 0 ? Math.floor(body.page) : 1;
+    const industry = typeof body.industry === "string" ? body.industry : undefined;
+    // exclude: 사장님이 이미 본 사진 url 들 (CoverStory 가 seenUrls 누적)
+    const exclude: string[] = Array.isArray(body.excludeUrls)
+      ? body.excludeUrls.filter((u: unknown): u is string => typeof u === "string")
+      : [];
+
+    if (returnCandidates) {
+      const picks = pickDemoImages({ query, count: candidateCount, page, exclude, industry });
+      return NextResponse.json({
+        ok: true,
+        image: picks[0]?.url,
+        candidates: picks.map((p) => ({
+          url: p.url,
+          photoId: p.url, // url 자체를 id 로 (exclude 비교용)
+          photographer: p.photographer,
+          photographerUrl: p.photographerUrl,
+          pexelsUrl: p.pexelsUrl,
+          alt: p.alt,
+        })),
+        meta: {
+          source: "demo-fallback",
+          demoMode: true,
+          photographer: picks[0]?.photographer,
+          alt: picks[0]?.alt,
+          query,
+          poolSize: picks.length,
+          notice: "PEXELS_API_KEY 미설정 — 큐레이션 데모 풀 (54장)",
+        },
+      });
+    }
+
     const demo = pickDemoImage(query, slideId);
     return NextResponse.json({
       ok: true,

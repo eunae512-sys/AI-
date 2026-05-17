@@ -462,27 +462,27 @@ function CoverStory({
   const [pageSeed, setPageSeed] = React.useState(1);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
+  // 사장님이 이미 본 사진 url 누적 — "다른 사진" 누를 때마다 다음 풀이 본 것 제외
+  const seenUrlsRef = React.useRef<string[]>([]);
+
   React.useEffect(() => {
     const saved = readSavedCover(brand.id);
     setCoverPick(saved ?? { kind: "auto" });
     setPageSeed(1);
+    seenUrlsRef.current = [];
   }, [brand.id]);
 
-  // brand.id 해시 → page offset. 같은 industry+tone 라도 다른 brand 는 다른 페이지의
-  // 검색 결과를 받아 "오늘 한 컷" 사진이 브랜드별로 달라짐.
+  // brand.id 해시 → page offset
   const brandPageOffset = React.useMemo(() => {
     let h = 0;
     for (let i = 0; i < brand.id.length; i++) h = (h * 31 + brand.id.charCodeAt(i)) | 0;
-    return (Math.abs(h) % 4) + 1; // 1~4 페이지 분산
+    return (Math.abs(h) % 4) + 1;
   }, [brand.id]);
 
   React.useEffect(() => {
     let cancelled = false;
     setLoadingCover(true);
-    // tone 별로 다른 query 사용 — 사장님이 톤 토글 시 사진도 함께 바뀜
     const query = COVER_QUERY[brand.industry]?.[tone] ?? COVER_QUERY[brand.industry]?.editorial ?? "editorial natural light";
-    // brandPageOffset 이 base, pageSeed 가 1씩 누적 → "다른 사진" 누를 때마다 +1 페이지.
-    // pageSeed=1 → brandPageOffset, =2 → +1, =3 → +2... 매번 새로운 풀.
     const effectivePage = brandPageOffset + (pageSeed - 1);
     (async () => {
       try {
@@ -497,14 +497,21 @@ function CoverStory({
             returnCandidates: true,
             candidateCount: 6,
             slideId: brand.id,
+            industry: brand.industry,
+            // demo fallback 모드에서 이미 본 사진 제외
+            excludeUrls: seenUrlsRef.current,
           }),
         });
         const data = await res.json();
         if (cancelled) return;
         if (data?.ok && Array.isArray(data.candidates) && data.candidates.length > 0) {
-          setCandidates(data.candidates.map((c: { url: string; photographer?: string }) => ({ url: c.url, photographer: c.photographer })));
+          const list = data.candidates.map((c: { url: string; photographer?: string }) => ({ url: c.url, photographer: c.photographer }));
+          setCandidates(list);
+          // 본 사진 누적
+          seenUrlsRef.current = [...seenUrlsRef.current, ...list.map((c: { url: string }) => c.url)];
         } else if (data?.ok && data.image) {
           setCandidates([{ url: data.image, photographer: data.meta?.photographer }]);
+          seenUrlsRef.current = [...seenUrlsRef.current, data.image];
         }
       } catch { /* 무시 */ }
       finally { if (!cancelled) setLoadingCover(false); }
