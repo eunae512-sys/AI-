@@ -23,6 +23,7 @@ import {
   PenLine,
   Wand2,
   LayoutTemplate,
+  Lock,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +43,12 @@ import {
 } from "@/lib/cardnews/layouts";
 import { getContext } from "@/lib/viral/context";
 import { cn } from "@/lib/utils";
+import { useUsage } from "@/lib/billing/use-usage";
+import { incrementUsage } from "@/lib/billing/usage";
+import { isFeatureAllowed as isFeatureAllowedFor } from "@/lib/billing/gate";
+import { LimitReachedModal } from "@/components/billing/LimitReachedModal";
+import { Watermark } from "@/components/billing/Watermark";
+import type { UsageKind } from "@/lib/billing/usage";
 
 type Source = "pexels" | "codex" | "ai";
 
@@ -299,6 +306,10 @@ export function CardnewsScreen() {
   // 톤 모드 — viral 이 기본 (반말체·바이럴), formal 은 정중 존댓말
   const [voice, setVoice] = useState<"viral" | "formal">("viral");
 
+  // 사용량 트래킹 — 현재 플랜의 카드뉴스/AI 이미지 한도 체크
+  const { check, plan, planId, isMounted: usageMounted } = useUsage();
+  const [limitModal, setLimitModal] = useState<UsageKind | null>(null);
+
   // 지금 컨텍스트 — 자동으로 GPT 프롬프트에 들어감, 사용자에게 배지로 노출
   const ctx = useMemo(() => getContext(), []);
   const ctxLabel = useMemo(() => {
@@ -397,6 +408,12 @@ export function CardnewsScreen() {
       const prompt = buildImagePrompt(brand.id, brand.industryLabel, brand.campaign, slide, idx, colors[0]?.hex);
 
       if (src === "codex") {
+        // ChatGPT 이미지 한도 체크 — Free 0장 / Pro 50장 / Studio 300장 / Agency 무제한
+        const limit = check("aiImage");
+        if (!limit.allowed) {
+          setLimitModal("aiImage");
+          return { status: "error", error: "월 ChatGPT 이미지 한도 도달" };
+        }
         const res = await fetch("/api/generate-image-codex", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -404,6 +421,8 @@ export function CardnewsScreen() {
         });
         const data = await res.json();
         if (!data.ok) return { status: "error", error: data.error || "Codex 생성 실패" };
+        // 성공한 장 수만큼 카운터 증가
+        incrementUsage("aiImage");
         return {
           status: "ready",
           url: data.image,
@@ -429,7 +448,7 @@ export function CardnewsScreen() {
         meta: { latencyMs: data.meta?.latencyMs, costKrw: data.meta?.costKrw },
       };
     },
-    [brand.id, brand.industryLabel, brand.campaign, slides, queries, colors],
+    [brand.id, brand.industryLabel, brand.campaign, slides, queries, colors, check],
   );
 
   // 임의의 slides 배열에 대해 6장 이미지 일괄 생성 — compose 직후처럼 state 가 아직 반영 안 됐을 때 슬라이드 인라인 전달
@@ -573,6 +592,12 @@ export function CardnewsScreen() {
       toast.warn("어떤 주제로 카드뉴스를 만들지 한 줄 적어주세요");
       return;
     }
+    // 한도 체크 — Free 는 월 2편, Pro 이상 무제한
+    const limit = check("cardnews");
+    if (!limit.allowed) {
+      setLimitModal("cardnews");
+      return;
+    }
     setComposing(true);
     toast.info(`"${topic}" 주제 — 6장 + 페이지 디자인 자동 구성 중...`);
     try {
@@ -629,6 +654,8 @@ export function CardnewsScreen() {
       setApproved(newSlides.map(() => false));
       setFactCheck(null);
       setEditing(null);
+      // 사용량 카운터 +1 — 한도가 있는 플랜에서만 의미 있음 (무제한 플랜은 무시)
+      incrementUsage("cardnews");
       const cost = data.meta?.costKrw ?? 0;
       const demo = data.meta?.demoMode ? " (데모)" : "";
       toast.success(`6장 구성 완료${demo} · 각 슬라이드 레이아웃 자동 선택 · ₩${cost}`);
@@ -648,7 +675,7 @@ export function CardnewsScreen() {
     } finally {
       setComposing(false);
     }
-  }, [topicInput, brand, detail, isUserBrand, userBrand, busy, composing, generatingText, toast, voice, generateImagesForSlides]);
+  }, [topicInput, brand, detail, isUserBrand, userBrand, busy, composing, generatingText, toast, voice, generateImagesForSlides, check]);
 
   const generateText = useCallback(async () => {
     if (generatingText || busy) return;
@@ -952,6 +979,18 @@ export function CardnewsScreen() {
         </div>
       </div>
 
+      {/* 사용량 인디케이터 — 한도 있는 플랜만 노출.
+          SSR 디폴트(Free) 도 cardnewsPerMonth = 2 이므로 첫 프레임부터 그대로 보인다.
+          Pro 이상 마운트 후엔 한도 null 이라 자연스럽게 사라짐. */}
+      {plan.limits.cardnewsPerMonth !== null && (
+        <UsageStrip
+          planName={plan.name}
+          used={check("cardnews").used}
+          limit={plan.limits.cardnewsPerMonth}
+          onUpgrade={() => setLimitModal("cardnews")}
+        />
+      )}
+
       {/* 주제 한 줄 입력 → 6장 + 페이지 디자인 자동 구성 (대표 흐름) */}
       <Card className="p-4 sm:p-5 mb-4 border-violet-200 dark:border-violet-900/40 bg-gradient-to-br from-violet-50/60 to-white dark:from-violet-500/5 dark:to-zinc-950">
         <div className="flex items-start gap-3 flex-wrap mb-3">
@@ -1123,19 +1162,31 @@ export function CardnewsScreen() {
             {(Object.keys(SOURCE_LABEL) as Source[]).map((s) => {
               const Icon = SOURCE_LABEL[s].icon;
               const active = source === s;
+              // Pexels 는 Free 도 가능, codex/ai 는 Pro 부터
+              const locked = (s === "codex" || s === "ai") && usageMounted && !isFeatureAllowedFor("ai-image:generate", planId);
               return (
                 <button
                   key={s}
-                  onClick={() => setSource(s)}
+                  onClick={() => {
+                    if (locked) {
+                      setLimitModal("aiImage"); // 모달은 한도 도달과 동일하게 — Pro 업셀
+                      return;
+                    }
+                    setSource(s);
+                  }}
                   disabled={busy}
+                  title={locked ? "Pro 부터 사용 가능" : undefined}
                   className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-colors whitespace-nowrap min-h-10 ${
                     active
                       ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm"
-                      : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+                      : locked
+                        ? "text-zinc-400 dark:text-zinc-600"
+                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
                   }`}
                 >
                   <Icon className="h-3.5 w-3.5" />
                   <span>{SOURCE_LABEL[s].label}</span>
+                  {locked && <Lock className="h-3 w-3 text-zinc-400" />}
                 </button>
               );
             })}
@@ -1654,6 +1705,8 @@ export function CardnewsScreen() {
                     </button>
                   </div>
                 )}
+                {/* Free 워터마크 — Pro 이상 자동 숨김 */}
+                <Watermark position="bottom-left" variant="light" />
               </motion.article>
             );
           })}
@@ -1777,6 +1830,81 @@ export function CardnewsScreen() {
       {/* 다음 단계 — 발행 예약 */}
       <div className="mt-5">
         <NextStepCard />
+      </div>
+
+      {/* 한도 도달 모달 — 사장님이 Free 한도 막혔을 때만 */}
+      <LimitReachedModal
+        open={limitModal !== null}
+        kind={limitModal ?? "cardnews"}
+        onClose={() => setLimitModal(null)}
+      />
+    </div>
+  );
+}
+
+// 사용량 인디케이터 — Free 카드뉴스 한도 도달 트리거. 한도 있는 플랜에서만 노출.
+function UsageStrip({
+  planName,
+  used,
+  limit,
+  onUpgrade,
+}: {
+  planName: string;
+  used: number;
+  limit: number;
+  onUpgrade: () => void;
+}) {
+  const pct = Math.min(100, Math.round((used / limit) * 100));
+  const remaining = Math.max(0, limit - used);
+  const isNear = used >= limit - 1;
+  return (
+    <div className="mb-3 px-4 py-2.5 border border-zinc-200 dark:border-zinc-800 bg-zinc-50/40 dark:bg-zinc-900/40">
+      {/* 모바일: 두 줄 — 라벨/카운터/CTA 한 줄, 프로그레스+남음 한 줄 */}
+      <div className="flex items-center gap-3 sm:hidden">
+        <span className="text-[10px] tracking-[0.12em] uppercase text-zinc-500 truncate">
+          {planName} · 이번 달
+        </span>
+        <span className="tabular-nums text-[12px] text-zinc-900 dark:text-zinc-100 shrink-0">
+          {used} <span className="text-zinc-400">/ {limit}편</span>
+        </span>
+        <button
+          type="button"
+          onClick={onUpgrade}
+          className="ml-auto text-[10.5px] tracking-[0.1em] uppercase text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 underline underline-offset-4 decoration-[0.5px] shrink-0"
+        >
+          무제한 →
+        </button>
+      </div>
+      <div className="mt-2 flex items-center gap-3 sm:hidden">
+        <div className="flex-1 h-1 bg-zinc-200 dark:bg-zinc-800 overflow-hidden">
+          <div
+            className={cn("h-full transition-all", isNear ? "bg-amber-500" : "bg-emerald-500")}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <span className="text-[11px] text-zinc-500 tabular-nums shrink-0">{remaining}편 남음</span>
+      </div>
+
+      {/* 데스크탑(sm+): 한 줄 */}
+      <div className="hidden sm:flex items-center gap-3">
+        <span className="text-[10px] tracking-[0.12em] uppercase text-zinc-500">{planName} · 이번 달 카드뉴스</span>
+        <span className="tabular-nums text-[12px] text-zinc-900 dark:text-zinc-100">
+          {used} <span className="text-zinc-400">/ {limit}편</span>
+        </span>
+        <div className="flex-1 h-1 bg-zinc-200 dark:bg-zinc-800 overflow-hidden">
+          <div
+            className={cn("h-full transition-all", isNear ? "bg-amber-500" : "bg-emerald-500")}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <span className="text-[11px] text-zinc-500">{remaining}편 남음</span>
+        <button
+          type="button"
+          onClick={onUpgrade}
+          className="text-[10.5px] tracking-[0.1em] uppercase text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 underline underline-offset-4 decoration-[0.5px]"
+        >
+          무제한으로 →
+        </button>
       </div>
     </div>
   );

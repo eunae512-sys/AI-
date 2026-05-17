@@ -1,0 +1,862 @@
+// 인스타 카드뉴스 자동 기획 엔진 — v2.
+//
+// 같은 (brand, topic) → 같은 결과 (안정적 미리보기).
+// 다른 (brand, topic) → 다른 결과 (변형 풀 + 토픽 키워드 직접 박기).
+//
+// 구조:
+//   1. 토픽에서 키워드 명사구 추출 (extractTopicTokens)
+//   2. 브랜드 + 토픽 → 결정론적 시드 해시
+//   3. 슬롯별(HOOK/PROBLEM/VALUE/PROOF/CTA) 변형 풀에서 시드로 픽
+//   4. 변형 풀 안 템플릿이 토픽 키워드 + 브랜드 컨텍스트를 직접 참조
+//
+// 슬라이드 7장:
+//   1. HOOK — 후킹 (저장하게 만든다)
+//   2. PROBLEM — 페인포인트
+//   3-5. VALUE × 3 — 저장 가치
+//   6. PROOF — 사회적 증거
+//   7. CTA — 단 하나의 행동
+
+import type { Brand } from "@/types";
+import type { CardnewsSlide, CardnewsMarketing, SlideRole } from "@/components/campaigns/types";
+import { brandHandle, brandWordmark } from "@/lib/brand/brand-context";
+import { 은, 이, 을 } from "@/lib/utils/korean-particles";
+
+export type CardnewsCampaignKind =
+  | "신메뉴"
+  | "신상품"
+  | "시즌"
+  | "단골"
+  | "리뷰"
+  | "예약"
+  | "트렌드"
+  | "이벤트";
+
+export type GeneratedCardnewsCampaign = {
+  headline: string;
+  slides: CardnewsSlide[];
+  marketing: CardnewsMarketing;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 시드 — 같은 입력엔 같은 출력 (재현 가능), 다른 입력엔 다른 픽
+// ─────────────────────────────────────────────────────────────────────────────
+
+function hash(s: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = (h * 16777619) >>> 0;
+  }
+  return h;
+}
+
+function pick<T>(arr: readonly T[], seed: number, offset: number): T {
+  return arr[(seed + offset) % arr.length];
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 토픽 키워드 추출 — 카피 안에 토픽 명사 그대로 박기 위한 재료
+// ─────────────────────────────────────────────────────────────────────────────
+
+type TopicTokens = {
+  /** 첫 핵심 명사구 — 헤드라인용 (예: "봄나물 코스", "콜드브루") */
+  subject: string;
+  /** 시간/시즌 표현 (예: "5월", "어버이날", "여름") */
+  timeWord?: string;
+  /** 한정/혜택 표현 (예: "한정", "선착순", "특가") */
+  limitWord?: string;
+  /** 숫자 (예: "5", "10", "100") */
+  number?: string;
+};
+
+const TIME_PATTERN = /([1-9]|1[0-2])월|어버이날|크리스마스|발렌타인|추석|설|가정의\s*달|봄|여름|가을|겨울|장마|연말|연초|새해|화이트데이|블랙프라이데이/;
+const LIMIT_PATTERN = /한정|선착순|특가|반값|D-\d+|D-N/;
+const NUM_PATTERN = /(\d+)\s*(개|명|일|주|월|컷|장|호|박)/;
+
+/** 제너릭 Dashboard 라벨 ("신메뉴 / 신상품 홍보", "예약·DM 유도" 등) 을
+ *  브랜드의 실제 캠페인 명("5월 봄나물 코스" 등) 으로 치환.
+ *  → 카피에 "이 신메뉴 / 신상품 홍보 만드는 곳" 같은 깨진 문장 방지. */
+function realizedTopic(rawTopic: string, brand: Brand): string {
+  const genericMarkers = [
+    "신메뉴 / 신상품",
+    "신메뉴/신상품",
+    "예약·DM",
+    "예약/DM",
+    "재방문 유도",
+    "리뷰 리포스트",
+    "트렌드 콘텐츠",
+    "시즌 이벤트",
+    "리뷰 자동",
+    "단골 자동",
+    "홍보",
+  ];
+  const isGeneric = genericMarkers.some((g) => rawTopic.includes(g));
+  if (isGeneric && brand.campaign) return brand.campaign;
+  return rawTopic;
+}
+
+function extractTopicTokens(topic: string): TopicTokens {
+  const cleaned = topic.replace(/[—–-]/g, " ").replace(/\s+/g, " ").trim();
+
+  const timeMatch = cleaned.match(TIME_PATTERN);
+  const limitMatch = cleaned.match(LIMIT_PATTERN);
+  const numMatch = cleaned.match(NUM_PATTERN);
+
+  // 첫 명사구 = 시간/한정/숫자 표현 제외하고 남는 첫 의미 단어들
+  const withoutMeta = cleaned
+    .replace(TIME_PATTERN, "")
+    .replace(LIMIT_PATTERN, "")
+    .replace(NUM_PATTERN, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  // 첫 4 단어까지를 subject 로
+  const subject = withoutMeta.split(" ").filter(Boolean).slice(0, 4).join(" ") || cleaned;
+
+  return {
+    subject,
+    timeWord: timeMatch?.[0],
+    limitWord: limitMatch?.[0],
+    number: numMatch?.[1],
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 업종 어휘 — 브랜드 industry 기반 카피 빌딩 블록
+// ─────────────────────────────────────────────────────────────────────────────
+
+type Industry = Brand["industry"];
+
+type Vocab = {
+  cat: string;          // "한정식" "스페셜티 카페" — 정식 명칭
+  catShort: string;     // "한정식" "카페" — 짧은 형
+  unit: string;         // 결과물 단위 ("코스" "원두" "케이크" "시술")
+  unitPlural: string;   // 다수 표현
+  experienceWord: string; // 한 단위 경험 ("한 끼" "한 잔" "한 시술" "한 컷" "한 접시")
+  outcomePhrase: string; // 완성 표현 ("한 상의 정성을 차려냅니다" "한 잔의 풍미가 깊어집니다")
+  containerNoun: string; // 한 단위 그릇/잔/세션 ("그릇" "잔" "세션" "객실" "착장")
+  slot: string;         // 채워지는 단위 ("자리" "객실" "시술 시간" "재고")
+  slotBusyPhrase: string; // "자리가 가장 빠르게 차는 시간" — 단어 충돌 방지용 한 줄
+  signature: string;    // 시그니처 표현 ("점심 코스" "시즌 원두")
+  process: string;      // 과정 표현 ("끓이고" "내리고" "굽고" "다듬고")
+  ingredientWord: string; // ("재료" "원두" "결" "원단")
+  customerWord: string; // ("손님" "단골" "고객")
+  visitWord: string;    // ("다녀가시는" "들르시는" "예약하시는")
+  purchaseAction: string; // ("예약" "주문" "방문")
+  purchaseWord: string;  // 그 동사형 ("예약하시는" "주문하시는")
+  city: string;
+};
+
+function vocabFor(brand: Brand): Vocab {
+  const city = brand.city.replace(/구$/, "");
+  const base = { city };
+  switch (brand.industry as Industry) {
+    case "cafe":
+      return { ...base,
+        cat: brand.industryLabel, catShort: "카페", unit: "원두", unitPlural: "원두",
+        experienceWord: "한 잔", outcomePhrase: "잔에 담기는 풍미가 깊어집니다",
+        containerNoun: "잔", slot: "자리", slotBusyPhrase: "자리가 가장 빠르게 차는 시간",
+        signature: "시즌 원두", process: "내리는",
+        ingredientWord: "원두", customerWord: "손님", visitWord: "들르시는",
+        purchaseAction: "주문", purchaseWord: "주문하시는" };
+    case "dessert":
+      return { ...base,
+        cat: brand.industryLabel, catShort: "디저트", unit: "케이크", unitPlural: "디저트",
+        experienceWord: "한 접시", outcomePhrase: "단맛의 균형이 잡힙니다",
+        containerNoun: "접시", slot: "재고", slotBusyPhrase: "재고가 가장 빠르게 마감되는 시간",
+        signature: "시즌 케이크", process: "굽는",
+        ingredientWord: "재료", customerWord: "손님", visitWord: "찾으시는",
+        purchaseAction: "주문", purchaseWord: "주문하시는" };
+    case "beauty":
+      return { ...base,
+        cat: brand.industryLabel, catShort: "헤어", unit: "시술", unitPlural: "시술",
+        experienceWord: "한 시술", outcomePhrase: "결의 마무리가 또렷해집니다",
+        containerNoun: "세션", slot: "예약", slotBusyPhrase: "예약이 가장 빠르게 차는 시간",
+        signature: "시즌 컬러", process: "잡는",
+        ingredientWord: "결", customerWord: "고객", visitWord: "예약하시는",
+        purchaseAction: "예약", purchaseWord: "예약하시는" };
+    case "stay":
+      return { ...base,
+        cat: brand.industryLabel, catShort: "한옥스테이", unit: "1박", unitPlural: "1박",
+        experienceWord: "하루", outcomePhrase: "공간의 결이 살아납니다",
+        containerNoun: "객실", slot: "객실", slotBusyPhrase: "객실이 가장 빠르게 차는 시즌",
+        signature: "1박 패키지", process: "맞이하는",
+        ingredientWord: "공간", customerWord: "손님", visitWord: "머무시는",
+        purchaseAction: "예약", purchaseWord: "예약하시는" };
+    case "local":
+      return { ...base,
+        cat: brand.industryLabel, catShort: "패션", unit: "룩", unitPlural: "룩",
+        experienceWord: "한 컷", outcomePhrase: "한 컷의 균형이 완성됩니다",
+        containerNoun: "착장", slot: "재고", slotBusyPhrase: "신상이 가장 빠르게 빠지는 시간",
+        signature: "시즌 룩", process: "고르는",
+        ingredientWord: "원단", customerWord: "고객", visitWord: "둘러보시는",
+        purchaseAction: "주문", purchaseWord: "주문하시는" };
+    case "restaurant":
+    default:
+      return { ...base,
+        cat: brand.industryLabel, catShort: "한정식", unit: "코스", unitPlural: "코스",
+        experienceWord: "한 끼", outcomePhrase: "한 상의 정성이 차려집니다",
+        containerNoun: "그릇", slot: "자리", slotBusyPhrase: "자리가 가장 빠르게 차는 시간",
+        signature: "점심 코스", process: "다듬는",
+        ingredientWord: "재료", customerWord: "단골", visitWord: "다녀가시는",
+        purchaseAction: "예약", purchaseWord: "예약하시는" };
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 슬롯별 변형 풀
+// ─────────────────────────────────────────────────────────────────────────────
+
+type Ctx = {
+  brand: Brand;
+  v: Vocab;
+  t: TopicTokens;
+  kind: CardnewsCampaignKind;
+  topic: string;
+};
+
+// HOOK — 캠페인 종류별 후킹 패턴 (마케팅 전문가 결).
+// 한국 소상공인 인스타에서 저장·공유·댓글 검증된 키워드 강제: 저장각·찐맛집·줄서는·꿀팁·노하우·한정·D-N
+
+// HOOK 신메뉴 — 마케팅 전문가 결, 자연스러운 한국어 문장
+const HOOK_NEW_MENU: ((c: Ctx) => string)[] = [
+  // 숫자 후킹
+  (c) => `${c.v.city} ${c.v.catShort} 100곳 중,\n${c.t.subject || c.v.signature}을 이렇게 하는 곳은 1곳.`,
+  (c) => `${c.t.subject || c.v.signature}.\n${c.v.city}에서 한 번도 안 드셔봤다면 저장각.`,
+  // 시간 한정
+  (c) => `${c.t.timeWord ?? "이번 시즌"} 한정,\n${c.t.subject || c.v.signature}.`,
+  (c) => `1년에 60일,\n그 60일이 시작됐습니다. ${c.t.subject || c.v.signature}.`,
+  // 권위
+  (c) => `${c.t.subject || c.v.signature},\n사장님이 직접 손대는 가게입니다.`,
+  (c) => `${c.v.catShort} 톤을 오래 다듬어 온\n${c.v.city}의 한 가게, ${c.t.subject || c.v.signature}.`,
+  // 가성비
+  (c) => `${c.v.city} ${c.v.catShort},\n${c.t.subject || c.v.signature} 들러볼 만한 가게.`,
+  // 사회적 증거
+  (c) => `줄 서는 ${c.v.city} ${c.v.catShort},\n그 이유는 ${c.t.subject || c.v.signature} 하나.`,
+  (c) => `${c.v.city} ${c.v.catShort} 진짜 찐맛집,\n${c.t.subject || c.v.signature} 한 번이면 압니다.`,
+  // 비밀 / 노하우
+  (c) => `${c.v.city} 단골들만 알던 ${c.t.subject || c.v.signature},\n오늘 처음 공개합니다.`,
+  // 인생
+  (c) => `${c.v.city} 인생 ${c.v.unit} 한 줄,\n${c.t.subject || c.v.signature}.`,
+];
+
+const HOOK_SEASON: ((c: Ctx) => string)[] = [
+  // D-N 카운트다운
+  (c) => `${c.t.timeWord ?? "어버이날"} 자리,\nD-${c.t.number ?? "3"} 마감 예정.`,
+  (c) => `${c.t.timeWord ?? "어버이날"},\n작년에 못 잡으셨다면 저장.`,
+  // 시간 한정성
+  (c) => `${c.t.timeWord ?? "이번 시즌"} 한 번뿐인 ${c.t.subject || c.v.unit}.\n자리 ${c.t.limitWord ?? "한정"}, 빠르게.`,
+  (c) => `${c.t.timeWord ?? "5월"}이라\n가능한 ${c.t.subject || c.v.unit}. 다음은 1년 뒤.`,
+  // 작년 통계 인용 — 권위
+  (c) => `${c.t.timeWord ?? "어버이날"} 직전 주\n예약 평소 대비 +2.4배. 미리 잡으세요.`,
+  (c) => `작년 ${c.t.timeWord ?? "어버이날"} 다녀가신 분,\n올해도 같은 자리 비워둡니다.`,
+  // 가족·관계 후킹
+  (c) => `${c.t.timeWord ?? "어버이날"},\n${c.v.city}에서 부모님 모시고 가기 좋은 곳.`,
+  // 가장 먼저
+  (c) => `${c.v.city} ${c.v.catShort} 중,\n${c.t.timeWord ?? "시즌"} 가장 먼저 ${c.v.purchaseAction} 받습니다.`,
+];
+
+const HOOK_RETURNING: ((c: Ctx) => string)[] = [
+  // 단골 비밀 후킹
+  (c) => `${c.v.customerWord}만 아는\n${c.t.subject || c.v.signature}, 5월에만 나옵니다.`,
+  (c) => `오래된 ${c.v.customerWord}께\n먼저 안내드립니다. 저장하세요.`,
+  // 1년 만에
+  (c) => `1년 만에 다시 ${c.v.visitWord} 분,\nDM 'BACK' 한 글자만.`,
+  // 한 번 와본 분만
+  (c) => `한 번 다녀가신 분만\n읽어주세요. 단골 가격 안내.`,
+  // 다시 오시는 이유
+  (c) => `${c.v.city} ${c.v.catShort} 중,\n다시 ${c.v.visitWord} 분이 많은 한 곳.`,
+  // 단골 가격
+  (c) => `${c.v.customerWord} 가격으로\n이번 시즌 한정 안내.`,
+  // 안 잊는 가게
+  (c) => `1년에 한 번이라도 다녀가셨다면,\n이 게시물은 저장 필수.`,
+];
+
+const HOOK_REVIEW: ((c: Ctx) => string)[] = [
+  // 반전 후킹
+  (c) => `"비싸서 망설였는데\n다음에 또 갔어요" — ${c.v.customerWord} 후기.`,
+  (c) => `"이 가격에 이게 된다고요"\n— 지난 주 ${c.v.customerWord}의 말.`,
+  // 다녀간 분들 후기
+  (c) => `${c.v.city} ${c.v.catShort},\n다녀간 분들 후기 한 줄로 모았습니다.`,
+  // 정돈된 한 곳
+  (c) => `${c.v.city} ${c.v.catShort} 중,\n톤이 단단한 가게 한 줄 후기.`,
+  // 줄서는 이유
+  (c) => `${c.v.city} ${c.v.catShort},\n다녀간 분들 말씀이 닿는 곳.`,
+  // 입소문 후킹
+  (c) => `${c.v.customerWord} 후기 모음,\n${c.v.city} ${c.v.catShort} 한 곳.`,
+];
+
+const HOOK_TREND: ((c: Ctx) => string)[] = [
+  // 검색 트렌드
+  (c) => `요즘 ${c.v.city}에서 가장 많이\n검색되는 ${c.v.catShort} 패턴 공개.`,
+  (c) => `${c.v.city} ${c.v.catShort} 저장 상위 ${c.t.number ?? "3"}곳,\n오늘 알려드립니다.`,
+  // 동네 질문
+  (c) => `${c.v.city}에서 ${c.v.catShort},\n어디까지 가봐야 진가가 보일까요?`,
+  // 동네 후킹
+  (c) => `${c.v.city} 사람들이 요즘\n가장 자주 가는 동네 ${c.v.catShort}.`,
+  // 가까운
+  (c) => `${c.v.city} 직장인 점심,\n진짜 자주 가는 ${c.v.catShort} 패턴.`,
+];
+
+const HOOK_EVENT: ((c: Ctx) => string)[] = [
+  (c) => `${c.t.subject || "이벤트"} 선착순 ${c.t.number ?? "10"}명,\n${c.t.timeWord ?? "오늘"} 마감 임박.`,
+  (c) => `오늘만 ${c.t.limitWord ?? "한정"},\n${c.t.subject || "이벤트"} 놓치지 마세요.`,
+  (c) => `${c.v.customerWord} 한정 이벤트,\nDM 'EVENT' 한 글자만.`,
+];
+
+// 동사 활용 헬퍼 — process(어간) → "process는" 동작 어구로
+function processVerb(process: string): string {
+  // process = "다듬는" "내리는" "굽는" "잡는" "맞이하는" "고르는"
+  // → "다듬으려고" "내리려고" "굽으려고" "잡으려고" "맞이하려고" "고르려고"
+  if (process.endsWith("는")) {
+    const stem = process.slice(0, -1);
+    if (stem.endsWith("내리") || stem.endsWith("고르") || stem.endsWith("잡") || stem.endsWith("맞이하"))
+      return stem + "려고";
+    return stem + "으려고";
+  }
+  return process + "려고";
+}
+
+function hookPoolFor(kind: CardnewsCampaignKind) {
+  switch (kind) {
+    case "신메뉴":
+    case "신상품":
+      return HOOK_NEW_MENU;
+    case "시즌":
+    case "예약":
+      return HOOK_SEASON;
+    case "단골":
+      return HOOK_RETURNING;
+    case "리뷰":
+      return HOOK_REVIEW;
+    case "트렌드":
+      return HOOK_TREND;
+    case "이벤트":
+      return HOOK_EVENT;
+  }
+}
+
+// PROBLEM — 페인포인트. 자연스러운 한국어 완성형, 검색 행동 인용.
+const PROBLEM_POOL: ((c: Ctx) => string)[] = [
+  (c) => `매번 ${c.v.purchaseAction}을\n놓치셨다면, 이번엔 미리.`,
+  (c) => `"${c.v.city}에서 ${c.v.signature},\n어디 가야 잘 먹어요?"`,
+  (c) => `${c.v.city} ${c.v.catShort},\n어디부터 가야 할지 막막하셨다면.`,
+  (c) => `비싸다고 망설였던 ${c.v.cat},\n직접 가보고 후기 남깁니다.`,
+  (c) => `검색만 하다 발걸음\n돌리셨던 분만 읽어주세요.`,
+  (c) => `${c.t.timeWord ?? "5월"}에만 나오는 ${c.v.signature},\n매년 놓치셨다면 이번엔 미리.`,
+  (c) => `자리가 가장 빠르게 차요.\n늘 한 발 늦으셨다면 이 게시물 저장.`,
+  (c) => `${c.v.city}에서 ${c.v.signature},\n어디서 제대로 받을지 모르셨다면.`,
+  (c) => `${c.v.cat} 가격이 부담되셨다면,\n실제 가격 그대로 공개합니다.`,
+];
+
+// VALUE — 한국어 자연스러운 완성형 문장. 변수는 문법 안전한 자리에만.
+// 정책: 출처 없는 단정 숫자 ("새벽 4시 / 별점 4.9 / 재방문율 62%") 금지.
+//      산업 일반론 + 브랜드 입력 값 (saveRate · followers · reachThisMonth) 만 사용.
+const VALUE_POOL: ((c: Ctx) => string)[] = [
+  // 산지·신선 — 시간 단정 제거
+  (c) => `${은(c.v.ingredientWord)} 산지에서\n그날그날 들어옵니다.`,
+  (c) => `사장님이 직접 골라 ${c.v.process}\n${c.v.unit}, 그대로 내놓습니다.`,
+  // 정성 — 산업별 outcomePhrase
+  (c) => `${c.v.experienceWord} ${c.v.process}\n시간만큼 ${c.v.outcomePhrase}.`,
+  (c) => `손에 닿는 시간만큼 다듬은 ${c.v.unit},\n그 이상은 더하지 않습니다.`,
+  // 조합·구성 — 산업별 containerNoun
+  (c) => `${c.v.signature} ${c.v.experienceWord}에\n사장님 손길이 자기 자리를 잡습니다.`,
+  (c) => `${c.v.customerWord}들이 가장 자주 다시 찾는\n조합, 그대로 묶었습니다.`,
+  // 사장님·운영
+  (c) => `${c.v.city}에서 같은 방식으로,\n매일 같은 시간에.`,
+  (c) => `사장님이 직접 ${c.v.process} ${c.v.unit},\n다른 손은 거치지 않습니다.`,
+  // 가격 — 단정 금액 제거, 채널 안내로
+  (c) => `${c.v.purchaseAction} 안내는\n${c.brand.name} 채널을 참고해 주세요.`,
+  (c) => `${c.v.signature} 정보는 채널 안내,\n${c.v.city}에서 단단한 가게입니다.`,
+  // 저장 — 실 브랜드 saveRate 사용
+  (c) => `저장률 ${(c.brand.saveRate ?? 4.0).toFixed(1)}%,\n${c.v.city} ${c.v.catShort} 평균보다 높은 수치.`,
+  (c) => `${c.v.customerWord} 중 다시 ${c.v.visitWord} 분이\n많은 가게입니다.`,
+  // 후기
+  (c) => `다녀가신 분 말씀,\n한 줄씩 그대로 옮깁니다.`,
+  // 시간대 — 산업별 분기 (단어 충돌 방지로 slotBusyPhrase 한 줄)
+  (c) => `${c.v.slotBusyPhrase} —\n${c.t.timeWord ?? defaultBusyTime(c.brand.industry)}.`,
+  (c) => `${defaultQuietTime(c.brand.industry)}\n비교적 여유 있는 편입니다.`,
+  // 시즌 한정
+  (c) => `${c.t.timeWord ?? "이번 시즌"}에만 가능한 ${c.t.subject || c.v.signature},\n다음은 한 시즌 뒤에 다시 만납니다.`,
+];
+
+// 산업별 시간대 기본값 — 모든 산업에 "주말 점심" 박는 식당-편향 제거
+function defaultBusyTime(industry: Brand["industry"]): string {
+  switch (industry) {
+    case "cafe": return "주말 오전·점심 직후";
+    case "dessert": return "주말 오후";
+    case "beauty": return "토요일 오후";
+    case "stay": return "주말 · 시즌";
+    case "local": return "신상 발매 직후";
+    case "restaurant":
+    default: return "주말 점심";
+  }
+}
+function defaultQuietTime(industry: Brand["industry"]): string {
+  switch (industry) {
+    case "cafe": return "평일 오픈 직후가";
+    case "dessert": return "평일 오후가";
+    case "beauty": return "평일 오전이";
+    case "stay": return "평일 입실이";
+    case "local": return "평일 오후가";
+    case "restaurant":
+    default: return "평일 화·수 점심이";
+  }
+}
+
+// 시즌·예약 캠페인 전용 VALUE — D-N + 카운트다운 + DM 행동 키워드
+const VALUE_SEASON_POOL: ((c: Ctx) => string)[] = [
+  (c) => `남은 자리,\n점심 ${c.t.number ?? "2"} · 저녁 ${Math.max(1, Number(c.t.number ?? "2") - 1)}. 마감 임박.`,
+  (c) => `${c.t.timeWord ?? "어버이날"} D-${c.t.number ?? "3"},\nStory 카운트다운 시작합니다.`,
+  (c) => `${c.v.purchaseAction}은 DM 'OPEN' 한 글자,\n또는 댓글로 인원만.`,
+  (c) => `${c.v.visitWord} 분,\n매년 같은 자리로 모십니다. 단골 우선.`,
+  (c) => `이번 ${c.t.timeWord ?? "시즌"}만 가능한\n${c.v.unitPlural} 조합 ${c.t.number ?? "4"}가지.`,
+  (c) => `작년 ${c.t.timeWord ?? "어버이날"} 다녀가신 분\n${c.t.number ?? "84"}%가 올해도 ${c.v.purchaseAction}.`,
+];
+
+// PROOF — 브랜드 자체 값 (saveRate · followers · reachThisMonth) 만 인용.
+// 정책: 출처 없는 단정 숫자 (별점 4.9 / 재방문율 62% / 검색 1위) 금지.
+const PROOF_POOL: ((c: Ctx) => string)[] = [
+  (c) => `이번 달 저장률 ${(c.brand.saveRate ?? 5.4).toFixed(1)}%,\n팔로워 ${Math.round((c.brand.followers ?? 8000) / 100) / 10}k와 함께.`,
+  (c) => `${c.v.purchaseWord} 분 중\n다시 ${c.v.visitWord} 분이 많은 가게입니다.`,
+  (c) => `${c.v.city} ${c.v.catShort} 이야기를\n채널에 한 줄씩 쌓아 가는 중.`,
+  (c) => `이번 달 누적 도달\n${Math.round((c.brand.reachThisMonth ?? 40000) / 1000)}k, 매주 톤이 또렷해지는 중.`,
+  (c) => `다녀가신 ${c.v.customerWord} 말씀,\n채널에 한 줄씩 그대로 옮깁니다.`,
+  (c) => `"같은 자리로 자주 들러요"\n— ${c.v.customerWord}의 한 줄.`,
+  (c) => `${c.v.city} ${c.v.catShort} 한 호흡,\n채널에 차곡차곡 쌓는 중입니다.`,
+];
+
+// CTA — 캠페인 종류별 핵심 행동
+type CtaVariant = { slide: string; ctaText: string };
+
+// CTA — 단 하나의 행동 (저장 / DM / 공유 / 팔로우+알림). 마케팅 트리거 단어 강제.
+const CTA_NEW_MENU: ((c: Ctx) => CtaVariant)[] = [
+  (c) => ({
+    slide: `이번 ${c.t.timeWord ?? "시즌"} 끝나기 전 저장.\n다음 ${c.v.purchaseAction} 때 도움돼요.`,
+    ctaText: `꼭 저장하세요. 다음 시즌엔 다른 ${c.v.unit}이 나옵니다. ${c.v.purchaseAction}은 프로필 링크 또는 댓글로.`,
+  }),
+  (c) => ({
+    slide: `저장 → 친구와 같이.\n공유하면 같이 갈 사람 생깁니다.`,
+    ctaText: `저장 + 공유. ${c.v.city} 같이 갈 친구한테 보내면 다음 ${c.v.purchaseAction} 때 같이 올 수 있어요.`,
+  }),
+  (c) => ({
+    slide: `팔로우 + 알림 ON.\n다음 ${c.v.signature} 가장 먼저.`,
+    ctaText: `팔로우 + 게시물 알림 켜두시면 다음 시즌 ${c.v.signature} 가장 먼저 안내드립니다.`,
+  }),
+  (c) => ({
+    slide: `${c.v.purchaseAction}은 DM 한 글자.\n자리 빠르게 잡습니다.`,
+    ctaText: `${c.v.purchaseAction}은 DM 'BOOK' 한 글자만 보내주세요. 자리 빠르게 잡아드립니다.`,
+  }),
+];
+
+const CTA_SEASON: ((c: Ctx) => CtaVariant)[] = [
+  (c) => ({
+    slide: `DM 'OPEN' 한 글자만.\n자리 안내해 드려요.`,
+    ctaText: `DM 'OPEN' 한 글자 보내주시면 자리 안내해 드려요. 저장 → ${c.t.timeWord ?? "어버이날"} 안 잊게.`,
+  }),
+  (c) => ({
+    slide: `${c.t.timeWord ?? "이번 주"} 끝나면\n다시 못 잡습니다.`,
+    ctaText: `${c.t.timeWord ?? "이번 주"} 안에 ${c.v.purchaseAction} 부탁드려요. 자리 한정, DM 'OPEN' 빠르게.`,
+  }),
+  (c) => ({
+    slide: `자리 한정 —\n저장 + 친구에게 공유.`,
+    ctaText: `자리 한정이라 빨리 차요. 저장해두시고 친구한테 공유하면 같이 갈 사람 생깁니다.`,
+  }),
+  (c) => ({
+    slide: `댓글로 인원만.\n자리 잡아둡니다.`,
+    ctaText: `댓글로 인원만 알려주세요. 자리 잡아둡니다. ${c.t.timeWord ?? "어버이날"} 안 잊게 저장 필수.`,
+  }),
+];
+
+const CTA_RETURNING: ((c: Ctx) => CtaVariant)[] = [
+  (c) => ({
+    slide: `DM 'BACK' 한 글자만.\n${c.v.customerWord} 자리 따로 잡아드려요.`,
+    ctaText: `DM 'BACK' 한 글자만 보내주시면 ${c.v.customerWord} 자리 따로 잡아드려요. 저장해두시면 안 잊혀요.`,
+  }),
+  (c) => ({
+    slide: `팔로우 + 알림 ON.\n다음 시즌 가장 먼저.`,
+    ctaText: `팔로우 + 게시물 알림 켜두시면 다음 시즌 ${c.v.signature} 가장 먼저 안내드립니다.`,
+  }),
+  (c) => ({
+    slide: `단골 가격 안내.\n카카오 채널로 연결됩니다.`,
+    ctaText: `단골 가격 안내는 카카오 채널로 보냅니다. 프로필 링크 → 카카오 채널 추가하시면 그달 안에 안내드립니다.`,
+  }),
+];
+
+const CTA_REVIEW: ((c: Ctx) => CtaVariant)[] = [
+  (c) => ({
+    slide: `이 게시물 저장,\n다음 ${c.v.city} 갈 때 보세요.`,
+    ctaText: `저장해두시면 다음 ${c.v.city} 가실 때 바로 찾을 수 있어요. 친구한테 공유하면 같이 갈 사람 생깁니다.`,
+  }),
+  (c) => ({
+    slide: `후기 더 보고 싶다면\n프로필 → 하이라이트.`,
+    ctaText: `다녀가신 분들 후기 더 보고 싶으면 프로필 하이라이트 '리뷰' 확인. ${c.v.purchaseAction}은 링크에서.`,
+  }),
+  (c) => ({
+    slide: `공유 → 같이 갈 친구.\n비싸다고 고민 중인 친구한테.`,
+    ctaText: `비싸다고 망설이는 친구한테 이 게시물 공유해 주세요. 다녀가면 그 가격에 그 결, 그대로입니다.`,
+  }),
+];
+
+const CTA_TREND: ((c: Ctx) => CtaVariant)[] = [
+  (c) => ({
+    slide: `댓글로 한 줄.\n"우리 동네는 어때요?"`,
+    ctaText: `여러분 동네 ${c.v.catShort} 추천도 댓글로 한 줄 부탁드려요. 저장해두시면 ${c.v.city} 갈 때 도움됩니다.`,
+  }),
+  (c) => ({
+    slide: `저장 + ${c.v.city} 친구한테 공유.\n진짜 ${c.v.catShort} 같이.`,
+    ctaText: `${c.v.city} ${c.v.catShort} 더 모아두려면 저장. ${c.v.city} 같이 갈 친구한테 공유하면 다음 약속 때 도움됩니다.`,
+  }),
+  (c) => ({
+    slide: `팔로우 + 알림 ON.\n${c.v.city} ${c.v.catShort} 정보 가장 먼저.`,
+    ctaText: `팔로우 + 알림 ON 해두시면 ${c.v.city} ${c.v.catShort} 새 콘텐츠 가장 먼저 받아보실 수 있어요.`,
+  }),
+];
+
+function ctaPoolFor(kind: CardnewsCampaignKind) {
+  switch (kind) {
+    case "신메뉴":
+    case "신상품":
+      return CTA_NEW_MENU;
+    case "시즌":
+    case "예약":
+    case "이벤트":
+      return CTA_SEASON;
+    case "단골":
+      return CTA_RETURNING;
+    case "리뷰":
+      return CTA_REVIEW;
+    case "트렌드":
+      return CTA_TREND;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 이미지 쿼리 — 슬라이드 역할별 + 토픽 명사 직접 박기
+// ─────────────────────────────────────────────────────────────────────────────
+
+function translateSubject(subject: string): string {
+  // 자주 쓰이는 명사구만 매핑 — 나머지는 영어 산문 부분으로만 들어감
+  const map: Record<string, string> = {
+    봄나물: "spring greens",
+    두릅: "fatsia sprouts",
+    곰취: "wild greens",
+    산마늘: "wild garlic leaf",
+    한정식: "korean fine dining",
+    코스: "course meal",
+    콜드브루: "cold brew coffee",
+    원두: "specialty coffee beans",
+    드립: "pour over coffee",
+    케이크: "cake slice",
+    디저트: "korean dessert",
+    수박: "watermelon",
+    봄: "spring",
+    여름: "summer",
+    가을: "autumn",
+    겨울: "winter",
+    어버이날: "family dinner",
+    크리스마스: "christmas",
+    한옥: "hanok traditional house",
+    룩북: "fashion lookbook",
+    컬러: "hair color salon",
+    헤어: "hair salon",
+  };
+  let out = subject;
+  for (const [k, v] of Object.entries(map)) {
+    if (subject.includes(k)) {
+      out = v;
+      break;
+    }
+  }
+  return out;
+}
+
+function imageQueryFor(role: SlideRole, ctx: Ctx): string {
+  const industryScene: Record<Industry, string> = {
+    restaurant: "korean fine dining table",
+    cafe: "specialty cafe minimal still life",
+    dessert: "korean dessert tablescape",
+    beauty: "minimal salon interior chair",
+    stay: "warm hanok stay interior",
+    local: "neighborhood boutique interior",
+  };
+  const tail = "editorial magazine, natural window light, soft warm tone, shallow depth of field, candid, film aesthetic, no people";
+  const industrySubject = industryScene[ctx.brand.industry as Industry] ?? industryScene.restaurant;
+  const topicSubject = translateSubject(ctx.t.subject);
+  // 토픽이 industry 와 같은 결이면 industry scene 만 사용, 다르면 토픽 우선
+  const subject = topicSubject !== ctx.t.subject ? `${topicSubject}, ${industrySubject}` : industrySubject;
+
+  switch (role) {
+    case "hook":
+      return `${subject} hero overhead composition, dramatic editorial mood, ${tail}`;
+    case "problem":
+      return `empty ${subject} corner, soft afternoon shadow, contemplative quiet mood, ${tail}`;
+    case "value":
+      return `${subject} detail close up, hands texture moment, ${tail}`;
+    case "proof":
+      return `warm intimate ${subject} scene, candid atmosphere, ${tail}`;
+    case "cta":
+      return `welcoming entrance ${subject}, golden hour glow, editorial closing shot, ${tail}`;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 캡션 / 해시태그 / 예상 지표 — 변형 풀
+// ─────────────────────────────────────────────────────────────────────────────
+
+// 캡션 오프너 — 한 줄 인스타 본문 시작 (저장각·찐맛집·꿀팁 등 마케팅 키워드 직접 박힘)
+const CAPTION_OPENERS: ((c: Ctx) => string)[] = [
+  (c) => `${c.v.city} ${c.v.catShort} 다닐 일 있으면 저장각.\n${c.t.subject || c.v.signature}, ${c.t.timeWord ?? "이번 시즌"} 한정.`,
+  (c) => `${c.v.city} ${c.v.cat} 진짜 찐맛집 한 곳.\n오늘 ${c.t.subject || c.v.signature} 그대로 보여드립니다.`,
+  (c) => `${c.v.customerWord}만 알던 ${c.t.subject || c.v.signature},\n이번 ${c.t.timeWord ?? "시즌"}에만 공개합니다.`,
+  (c) => `${c.v.city} ${c.v.catShort} 어디 갈지 막막했다면,\n이 한 ${c.v.unit}만 저장해두세요.`,
+  (c) => `${c.t.timeWord ?? "5월"} ${c.t.subject || c.v.signature} 꿀팁 한 줄,\n${c.v.city} 가실 분만 보세요.`,
+  (c) => `줄 서는 ${c.v.city} ${c.v.catShort},\n그 이유 ${c.t.subject || c.v.unit} 한 가지에 다 있습니다.`,
+];
+
+// 캡션 본문 라인 — 권위 + 행동 트리거.
+// 정책: 출처 없는 단정 숫자 (새벽 4시, 별점 4.9, 재방문율 62%) 금지. 브랜드 자체 값만 인용.
+const CAPTION_BODY_LINES: ((c: Ctx) => string)[] = [
+  (c) => `· ${은(c.v.ingredientWord)} 산지에서 그날그날 들어옵니다.`,
+  (c) => `· ${c.v.process} 시간만큼 정성 — 그 이상은 더하지 않습니다.`,
+  (c) => `· 다시 ${c.v.visitWord} ${이(c.v.customerWord)} 많은 가게입니다.`,
+  (c) => `· ${이(c.v.customerWord)} 가장 자주 다시 찾는 조합, 그대로 묶었습니다.`,
+  (c) => `· ${c.v.slotBusyPhrase} — ${c.t.timeWord ?? defaultBusyTime(c.brand.industry)}.`,
+  (c) => `· 다녀가신 ${c.v.customerWord} 말씀, 한 줄씩 그대로 옮깁니다.`,
+  (c) => `· 사장님이 직접 ${c.v.process} ${c.t.subject || c.v.unit}, 같은 방식으로.`,
+  (c) => `· 단골이 다시 ${c.v.visitWord} 분이 많은 곳입니다.`,
+  (c) => `· ${은(c.v.purchaseAction)} ${c.v.purchaseAction === "예약" ? "프로필 링크나 댓글" : "DM이나 카카오톡"} — 빠르면 그날 응답.`,
+  (c) => `· ${c.v.purchaseAction} 가격은 ${c.brand.name} 채널 안내 참고.`,
+  (c) => `· ${c.t.timeWord ?? "이번 시즌"}만 가능한 ${c.t.subject || c.v.unit}, 다음은 한 시즌 뒤.`,
+];
+
+function buildCaption(hook: string, ctaText: string, ctx: Ctx, seed: number): string {
+  const opener = pick(CAPTION_OPENERS, seed, 7)(ctx);
+  // body 3줄 — 중복 없이
+  const used = new Set<number>();
+  const body: string[] = [];
+  for (let i = 0; body.length < 3 && i < 30; i++) {
+    const idx = (seed + i * 11) % CAPTION_BODY_LINES.length;
+    if (used.has(idx)) continue;
+    used.add(idx);
+    body.push(CAPTION_BODY_LINES[idx](ctx));
+  }
+  const wordmark = brandWordmark(ctx.brand);
+  return [
+    hook.replace(/\n/g, " "),
+    "",
+    opener,
+    "",
+    body.join("\n"),
+    "",
+    ctaText,
+    "",
+    `— ${wordmark}`,
+  ].join("\n");
+}
+
+function buildHashtags(ctx: Ctx, seed: number): string[] {
+  const { v, brand, t, kind } = ctx;
+  const brandClean = brand.name.replace(/\s/g, "");
+
+  // 1) 핵심 — 지역 + 업종
+  const core = [`#${v.city}${v.catShort}`, `#${v.city}맛집`, `#${v.catShort}`];
+
+  // 2) 롱테일 — 검색 의도 강한 결합
+  const longTail = [
+    `#${v.city}${v.catShort}추천`,
+    `#${v.city}${v.purchaseAction}`,
+    `#${v.city}점심`,
+  ];
+
+  // 3) 토픽 명사 — 매거진식 단일 명사 태그
+  const topicTags: string[] = [];
+  if (t.subject && t.subject.length >= 2 && /[가-힣]/.test(t.subject)) {
+    const s = t.subject.replace(/\s/g, "");
+    topicTags.push(`#${s}`);
+    if (s.length > 2) topicTags.push(`#${s}추천`);
+  }
+  if (t.timeWord) topicTags.push(`#${t.timeWord}`);
+
+  // 4) 캠페인 종류 풀 — 더 다양하게, 검증된 마케팅 태그 위주
+  const kindTagPool: Record<CardnewsCampaignKind, string[]> = {
+    신메뉴: ["#신메뉴", "#시즌메뉴", `#${v.city}신상`, "#오늘의메뉴", "#한정메뉴"],
+    신상품: ["#신상품", "#컬렉션", `#${v.city}신상`, "#시즌신상", "#룩북"],
+    시즌: ["#가정의달", "#시즌한정", "#5월한정", "#한정메뉴", "#마감임박"],
+    단골: ["#단골이벤트", "#재방문", "#단골선물", "#리텐션", "#단골할인"],
+    리뷰: ["#리뷰", "#후기", "#가성비", "#가심비"],
+    예약: ["#예약필수", `#${v.city}예약`, "#자리한정", "#예약문의"],
+    트렌드: [`#${v.city}동네`, "#로컬", "#트렌드", "#동네맛집"],
+    이벤트: ["#이벤트", "#한정", "#기간한정", "#오늘만"],
+  };
+  const kindPool = kindTagPool[kind];
+  const kindTags: string[] = [];
+  for (let i = 0; kindTags.length < Math.min(3, kindPool.length) && i < 12; i++) {
+    const idx = (seed + i * 7) % kindPool.length;
+    if (!kindTags.includes(kindPool[idx])) kindTags.push(kindPool[idx]);
+  }
+
+  // 5) 저장 / 공유 / 발견 트리거 — 검증된 인스타 알고리즘 태그
+  const triggerPool = [
+    "#저장각", "#꿀팁", "#찐맛집", "#인스타맛집",
+    "#줄서는맛집", "#입소문", "#인생맛집",
+    "#사장님맛집", "#로컬맛집", "#소상공인",
+  ];
+  const triggerTags: string[] = [];
+  for (let i = 0; triggerTags.length < 3 && i < 20; i++) {
+    const idx = (seed + i * 13) % triggerPool.length;
+    if (!triggerTags.includes(triggerPool[idx])) triggerTags.push(triggerPool[idx]);
+  }
+
+  // 6) 브랜드 태그
+  const brandTags = [`#${brandClean}`, `#${v.city}`];
+
+  return [...core, ...longTail, ...topicTags, ...kindTags, ...triggerTags, ...brandTags];
+}
+
+function buildExpectedMetrics(brand: Brand, kind: CardnewsCampaignKind): CardnewsMarketing["expectedMetrics"] {
+  const baseSave = brand.saveRate ?? 4.0;
+  const boost: Record<CardnewsCampaignKind, number> = {
+    신메뉴: 1.2, 신상품: 1.2, 시즌: 1.4, 예약: 1.5, 이벤트: 1.3,
+    단골: 1.1, 리뷰: 1.6, 트렌드: 1.0,
+  };
+  const saveRate = (baseSave * boost[kind]).toFixed(1);
+  const delta = (baseSave * (boost[kind] - 1)).toFixed(1);
+  return {
+    saveRate: `${saveRate}% (+${delta}%p)`,
+    shareRate: kind === "리뷰" || kind === "트렌드" ? "2.4%" : kind === "단골" ? "1.2%" : "1.8%",
+    comments: kind === "트렌드" ? "18 ~ 28" : kind === "이벤트" || kind === "예약" ? "14 ~ 22" : "8 ~ 14",
+    followConv: kind === "단골" ? "1.4%p" : kind === "신메뉴" ? "2.1%p" : kind === "시즌" ? "1.9%p" : "1.6%p",
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 공개 API
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function generateCardnewsCampaign(
+  topic: string,
+  brand: Brand,
+  kindOverride?: CardnewsCampaignKind,
+): GeneratedCardnewsCampaign {
+  // Dashboard 제너릭 라벨 → 브랜드의 실제 캠페인명으로 치환
+  const realTopic = realizedTopic(topic, brand);
+  const kind = kindOverride ?? inferKindFromTopic(realTopic);
+  const seed = hash(`${brand.id}::${realTopic}::${kind}`);
+  const v = vocabFor(brand);
+  const t = extractTopicTokens(realTopic);
+  const ctx: Ctx = { brand, v, t, kind, topic: realTopic };
+
+  const hookPool = hookPoolFor(kind);
+  const hook = pick(hookPool, seed, 0)(ctx);
+
+  const problem = pick(PROBLEM_POOL, seed, 3)(ctx);
+
+  // VALUE 3개 — 시즌/예약/이벤트 캠페인은 시간 한정 풀에서 1개 + 일반 풀에서 2개 섞기
+  const usesSeasonPool = kind === "시즌" || kind === "예약" || kind === "이벤트";
+  const values: string[] = [];
+  const usedV = new Set<string>();
+  if (usesSeasonPool) {
+    const sv = pick(VALUE_SEASON_POOL, seed, 5)(ctx);
+    values.push(sv);
+    usedV.add(sv);
+  }
+  for (let i = 0; values.length < 3 && i < 40; i++) {
+    const v2 = pick(VALUE_POOL, seed, 11 + i * 3)(ctx);
+    if (!usedV.has(v2)) {
+      values.push(v2);
+      usedV.add(v2);
+    }
+  }
+
+  const proof = pick(PROOF_POOL, seed, 23)(ctx);
+
+  const ctaPool = ctaPoolFor(kind);
+  const ctaVariant = pick(ctaPool, seed, 29)(ctx);
+
+  const wordmark = brandWordmark(brand);
+  const handle = brandHandle(brand);
+
+  // 호번·발행 결 — 매거진 표지 느낌 (예: "Vol. 24 · 2026.05.17")
+  const issueLabel = `Vol. ${(seed % 90) + 10} · ${new Date().toISOString().slice(0, 10).replace(/-/g, ".")}`;
+  // PROBLEM·VALUE 슬라이드의 보조 한 줄 — 캡션 풀에서 짧은 한 줄을 픽
+  const innerSubtexts = [
+    `${v.city} ${v.catShort}`,
+    `${kind} · ${t.timeWord ?? "이번 시즌"}`,
+    `${v.customerWord} 들이 가장 자주 ${v.purchaseAction} 하는 결`,
+    `${v.signature} 라인`,
+  ];
+
+  // 슬라이드별 디자이너 컴포지션 분배 — 7장이 각각 다른 결로 흐른다.
+  //   1: masthead (표지)
+  //   2: pillar-left (좌측 세로선 + 챕터 넘버럴)
+  //   3: paper-split (페이퍼 패널 + 이미지)
+  //   4: overlay-card (이미지 + 페이퍼 카드)
+  //   5: pillar-left (반복하되 이미지/내용 다름)
+  //   6: type-hero (PROOF 슬라이드는 타이포 자체가 비주얼)
+  //   7: masthead (CTA — 표지와 짝을 이루는 닫음)
+  //
+  // 종이 톤도 같은 슬라이드에 같은 색이 두 번 안 나오도록 시드 픽.
+  const tones: NonNullable<CardnewsSlide["paperTone"]>[] = ["cream", "dust", "sand", "sage", "ink"];
+  const pickTone = (offset: number) => tones[(seed + offset) % tones.length];
+
+  const slides: CardnewsSlide[] = [
+    // 1. 표지
+    { n: 1, role: "hook", display: "cover", composition: "masthead", caption: hook,
+      subtext: t.subject || v.signature,
+      footer: issueLabel, ink: "light", textAt: "center",
+      imageQuery: imageQueryFor("hook", ctx) },
+    // 2. 페인포인트 — 좌측 세로선 결
+    { n: 2, role: "problem", display: "inner", composition: "pillar-left", caption: problem,
+      subtext: pick(innerSubtexts, seed, 1),
+      ink: "light", textAt: "bottom-left",
+      imageQuery: imageQueryFor("problem", ctx) },
+    // 3. VALUE — 페이퍼 패널 좌측
+    { n: 3, role: "value", display: "inner", composition: "paper-split", paperTone: pickTone(2),
+      caption: values[0], subtext: pick(innerSubtexts, seed, 2),
+      ink: "dark", textAt: "top-left",
+      imageQuery: imageQueryFor("value", ctx) },
+    // 4. VALUE — 이미지 위 페이퍼 카드 오버레이
+    { n: 4, role: "value", display: "inner", composition: "overlay-card", paperTone: pickTone(5),
+      caption: values[1], subtext: pick(innerSubtexts, seed, 3),
+      ink: "dark", textAt: "center",
+      imageQuery: imageQueryFor("value", ctx) },
+    // 5. VALUE — 다시 필러 (방향 반전)
+    { n: 5, role: "value", display: "inner", composition: "pillar-left", caption: values[2],
+      subtext: pick(innerSubtexts, seed, 4),
+      ink: "light", textAt: "bottom-left",
+      imageQuery: imageQueryFor("value", ctx) },
+    // 6. PROOF — 타이포 히어로 (페이퍼 톤 위)
+    { n: 6, role: "proof", display: "inner", composition: "type-hero", paperTone: pickTone(8),
+      caption: proof, subtext: `${wordmark} · ${v.city}`,
+      ink: "dark", textAt: "center",
+      imageQuery: imageQueryFor("proof", ctx) },
+    // 7. CTA — 표지와 짝, 마감 마스트헤드
+    { n: 7, role: "cta", display: "inner", composition: "masthead", caption: ctaVariant.slide,
+      subtext: handle, footer: handle, ink: "light", textAt: "center",
+      imageQuery: imageQueryFor("cta", ctx) },
+  ];
+
+  const marketing: CardnewsMarketing = {
+    caption: buildCaption(hook, ctaVariant.ctaText, ctx, seed),
+    hashtags: buildHashtags(ctx, seed),
+    cta: ctaVariant.ctaText,
+    expectedMetrics: buildExpectedMetrics(brand, kind),
+  };
+
+  return {
+    headline: hook.replace(/\n/g, " "),
+    slides,
+    marketing,
+  };
+}
+
+export function inferKindFromTopic(topic: string): CardnewsCampaignKind {
+  if (/시즌|봄|여름|가을|겨울|어버이|크리스마스|발렌타인|추석|설|가정의\s*달/i.test(topic)) return "시즌";
+  if (/단골|재방문|리텐션/i.test(topic)) return "단골";
+  if (/리뷰|후기/i.test(topic)) return "리뷰";
+  if (/예약|자리|빈\s*시간/i.test(topic)) return "예약";
+  if (/트렌드|동네|로컬|키워드/i.test(topic)) return "트렌드";
+  if (/이벤트|한정|기간/i.test(topic)) return "이벤트";
+  if (/신상품|상품|컬렉션|룩북/i.test(topic)) return "신상품";
+  return "신메뉴";
+}

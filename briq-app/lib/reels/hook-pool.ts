@@ -7,7 +7,7 @@ import type { Industry } from "@/types";
 const INDUSTRY_HOOK_POOL: Record<Industry, string[]> = {
   restaurant: [
     "오늘의 한 상, 정성으로 차립니다",
-    "새벽 4시, 시장에서 시작합니다",
+    "시장에서 시작합니다",
     "한 점, 한 결의 시간",
     "솥의 김이 오릅니다",
     "장맛은 거짓말을 안 합니다",
