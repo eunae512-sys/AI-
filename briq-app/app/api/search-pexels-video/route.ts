@@ -26,18 +26,39 @@ type PexelsVideo = {
   avg_color?: string | null;
 };
 
+// 데모 비디오 fallback — PEXELS_API_KEY 미설정 시 사용.
+// 2026-05 Pexels CDN 이 hot-link 차단 (403) 시작 → samplelib.com 으로 전환.
+// samplelib.com 은 CORS 헤더 (*) + 안정적 응답.
 const DEMO_VIDEOS: { url: string; poster: string; photographer: string; alt: string }[] = [
   {
-    url: "https://videos.pexels.com/video-files/3796033/3796033-uhd_1440_2732_25fps.mp4",
-    poster: "https://images.pexels.com/videos/3796033/free-video-3796033.jpg?auto=compress&cs=tinysrgb&w=940",
-    photographer: "Pexels Contributor",
-    alt: "Cooking ingredients editorial",
+    url: "https://samplelib.com/preview/mp4/sample-10s.mp4",
+    poster: "https://images.pexels.com/photos/1640773/pexels-photo-1640773.jpeg?auto=compress&cs=tinysrgb&w=940&h=1700",
+    photographer: "Demo",
+    alt: "Editorial cooking moment",
   },
   {
-    url: "https://videos.pexels.com/video-files/4350103/4350103-uhd_1440_2732_25fps.mp4",
-    poster: "https://images.pexels.com/videos/4350103/free-video-4350103.jpg?auto=compress&cs=tinysrgb&w=940",
-    photographer: "Pexels Contributor",
+    url: "https://samplelib.com/preview/mp4/sample-15s.mp4",
+    poster: "https://images.pexels.com/photos/776538/pexels-photo-776538.jpeg?auto=compress&cs=tinysrgb&w=940&h=1700",
+    photographer: "Demo",
     alt: "Coffee pour vertical",
+  },
+  {
+    url: "https://samplelib.com/preview/mp4/sample-20s.mp4",
+    poster: "https://images.pexels.com/photos/2103949/pexels-photo-2103949.jpeg?auto=compress&cs=tinysrgb&w=940&h=1700",
+    photographer: "Demo",
+    alt: "Atmospheric shop",
+  },
+  {
+    url: "https://samplelib.com/preview/mp4/sample-30s.mp4",
+    poster: "https://images.pexels.com/photos/1024359/pexels-photo-1024359.jpeg?auto=compress&cs=tinysrgb&w=940&h=1700",
+    photographer: "Demo",
+    alt: "Lifestyle product",
+  },
+  {
+    url: "https://samplelib.com/preview/mp4/sample-5s.mp4",
+    poster: "https://images.pexels.com/photos/3184339/pexels-photo-3184339.jpeg?auto=compress&cs=tinysrgb&w=940&h=1700",
+    photographer: "Demo",
+    alt: "Service preparation",
   },
 ];
 

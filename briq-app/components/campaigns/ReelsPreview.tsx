@@ -25,6 +25,7 @@ export function ReelsPreview({ clip: initial, title, handle, industry }: Props) 
   const [muted, setMuted] = React.useState(true);
   const [t, setT] = React.useState(0);
   const [fetching, setFetching] = React.useState(false);
+  const [videoError, setVideoError] = React.useState(false);
   // 이미 본 비디오 ID — API 가 excludeIds 로 받아 그 외 영상을 픽. 렌더 트리거 불필요라 ref 만.
   const seenIdsRef = React.useRef<number[]>([]);
   const [photographer, setPhotographer] = React.useState<string | null>(null);
@@ -100,6 +101,7 @@ export function ReelsPreview({ clip: initial, title, handle, industry }: Props) 
             durationSec: data.video.duration ?? c.durationSec,
           }));
           setPhotographer(data.meta?.photographer ?? null);
+          setVideoError(false);
           setT(0);
           // 본 ID 누적
           const newId = data.meta?.videoId;
@@ -183,7 +185,7 @@ export function ReelsPreview({ clip: initial, title, handle, industry }: Props) 
 
       <div className="relative w-full max-w-[280px] mx-auto sm:mx-0 aspect-[9/16] bg-zinc-900 border border-zinc-200 dark:border-zinc-800 overflow-hidden">
         {/* 비디오 또는 poster 폴백 */}
-        {clip.videoUrl ? (
+        {clip.videoUrl && !videoError ? (
           <video
             ref={videoRef}
             src={clip.videoUrl}
@@ -193,9 +195,12 @@ export function ReelsPreview({ clip: initial, title, handle, industry }: Props) 
             muted={muted}
             playsInline
             preload="metadata"
+            onError={() => setVideoError(true)}
             className="absolute inset-0 w-full h-full object-cover"
           />
         ) : clip.poster ? (
+          // 비디오 못 가져왔을 때 poster 사진으로라도 보여줌 — 빈 화면 막기
+          // eslint-disable-next-line @next/next/no-img-element
           <img src={clip.poster} alt="" className="absolute inset-0 w-full h-full object-cover" />
         ) : (
           <div
@@ -209,6 +214,14 @@ export function ReelsPreview({ clip: initial, title, handle, industry }: Props) 
         {fetching && !clip.videoUrl && (
           <div className="absolute inset-0 grid place-items-center text-white/85 text-[11px] tracking-[0.15em] uppercase">
             비디오 가져오는 중…
+          </div>
+        )}
+
+        {/* 비디오 로드 실패 안내 — 빈 화면 막고 사장님께 친절히 */}
+        {videoError && (
+          <div className="absolute bottom-2 left-2 right-2 bg-black/70 backdrop-blur text-white/90 text-[10.5px] leading-snug p-2 rounded">
+            <div className="font-medium mb-0.5">미리보기 영상을 가져오지 못했어요</div>
+            <div className="text-white/70">"다른 컷" 을 눌러 다시 시도하거나, PEXELS_API_KEY 를 추가하면 실제 매장 무드 영상으로 바뀝니다.</div>
           </div>
         )}
 
