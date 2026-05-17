@@ -167,6 +167,7 @@ export function Onboarding() {
   type UploadedPhoto = { url: string; name: string; size: number };
   const [photos, setPhotos] = React.useState<UploadedPhoto[]>([]);
   const photoInputRef = React.useRef<HTMLInputElement>(null);
+  const cameraInputRef = React.useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = React.useState(false);
   const MAX_PHOTOS = 20;
   const MIN_PHOTOS = 3;
@@ -498,12 +499,40 @@ export function Onboarding() {
                 <div className="mt-4 text-base font-medium">이곳에 사진을 드롭하거나 클릭</div>
                 <div className="mt-1 text-[12px] text-zinc-500">JPG · PNG · HEIC · 최대 {MAX_PHOTOS}장</div>
               </button>
+
+              {/* 모바일 보조 — 갤러리 / 카메라 두 갈래 (PC 에선 위 dropzone 충분) */}
+              <div className="mt-3 flex gap-2 sm:hidden">
+                <button
+                  type="button"
+                  onClick={() => photoInputRef.current?.click()}
+                  className="flex-1 h-11 rounded-md border border-zinc-200 dark:border-zinc-800 text-sm font-medium hover:border-zinc-900 dark:hover:border-zinc-100"
+                >
+                  🖼️ 사진 선택
+                </button>
+                <button
+                  type="button"
+                  onClick={() => cameraInputRef.current?.click()}
+                  className="flex-1 h-11 rounded-md border border-zinc-200 dark:border-zinc-800 text-sm font-medium hover:border-zinc-900 dark:hover:border-zinc-100"
+                >
+                  📷 직접 촬영
+                </button>
+              </div>
+
               <input
                 ref={photoInputRef}
                 type="file"
                 multiple
                 accept="image/*"
-                /* 모바일에선 갤러리 + 카메라 직접 촬영 둘 다 선택 가능 */
+                /* 갤러리 — 사장님 폰에 있는 사진 여러 장 선택 */
+                className="hidden"
+                onChange={onPhotoChange}
+              />
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                /* iOS/Android: 카메라 앱 바로 열림 (capture=environment 후면 카메라) */
+                capture="environment"
                 className="hidden"
                 onChange={onPhotoChange}
               />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { hexToPexelsColor } from "@/lib/api/demo-images";
 import {
@@ -275,6 +276,7 @@ const INDUSTRY_PROMPT_DEFAULTS: Record<
 export function CardnewsScreen() {
   const { brand, userBrand } = useBrand();
   const toast = useToast();
+  const router = useRouter();
   const isUserBrand = !!userBrand && brand.id === userBrand.id;
   // 사용자 브랜드면 업종에 맞는 템플릿 ID로 SLIDES 조회 (industry → template brand)
   const templateBrandId = isUserBrand
@@ -962,7 +964,10 @@ export function CardnewsScreen() {
       channels: ["instagram"],
       status: "scheduled",
     });
-    toast.success(`${brand.name} 카드뉴스 발행 큐에 등록 — /schedule 에서 시간 지정`);
+    // 사장님 워크플로우 자동 연결 — 발행 큐 등록 후 분배 페이지로 이동
+    // (사장님이 "이제 어디로 가지?" 막히지 않게)
+    toast.success(`발행 큐 등록 완료 — 분배 페이지로 이동합니다`);
+    setTimeout(() => router.push("/content-distribution"), 700);
   };
   const onQueue = () => {
     const firstSlide = slides[0];
@@ -1094,31 +1099,38 @@ export function CardnewsScreen() {
             </p>
           </div>
           {/* 톤 모드 토글 — viral(반말체 바이럴) / formal(정중 존댓말) */}
-          <div className="flex gap-1 p-1 rounded-md bg-zinc-100 dark:bg-zinc-900 shrink-0">
-            <button
-              onClick={() => setVoice("viral")}
-              className={cn(
-                "text-[11px] px-2.5 py-1 rounded transition-colors font-medium",
-                voice === "viral"
-                  ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100",
-              )}
-              title="반말체 · 저장각 · 바이럴 SNS 톤"
-            >
-              🔥 바이럴
-            </button>
-            <button
-              onClick={() => setVoice("formal")}
-              className={cn(
-                "text-[11px] px-2.5 py-1 rounded transition-colors font-medium",
-                voice === "formal"
-                  ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100",
-              )}
-              title="정중 존댓말 톤"
-            >
-              ✒ 정중
-            </button>
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <div className="flex gap-1 p-1 rounded-md bg-zinc-100 dark:bg-zinc-900">
+              <button
+                onClick={() => setVoice("viral")}
+                className={cn(
+                  "text-[11px] px-2.5 py-1 rounded transition-colors font-medium",
+                  voice === "viral"
+                    ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100",
+                )}
+                title="반말체 · 저장각 · 바이럴 SNS 톤"
+              >
+                🔥 바이럴
+              </button>
+              <button
+                onClick={() => setVoice("formal")}
+                className={cn(
+                  "text-[11px] px-2.5 py-1 rounded transition-colors font-medium",
+                  voice === "formal"
+                    ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100",
+                )}
+                title="정중 존댓말 톤"
+              >
+                ✒ 정중
+              </button>
+            </div>
+            <p className="text-[10.5px] text-zinc-500 italic text-right max-w-[200px] leading-tight">
+              {voice === "viral"
+                ? "예: \"이거 안 먹어보면 진짜 후회함\" — 저장 유도, 인스타 바이럴 톤"
+                : "예: \"오늘은 봄나물 코스를 정성껏 준비했습니다\" — 단정한 가게 안내 톤"}
+            </p>
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">

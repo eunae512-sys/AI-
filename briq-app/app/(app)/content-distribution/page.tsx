@@ -10,6 +10,7 @@
 
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
+import { ChevronDown } from "lucide-react";
 import { Topbar } from "@/components/layout/Topbar";
 import { useBrand } from "@/components/brand/BrandProvider";
 import { generateMultiChannelCampaign } from "@/lib/content/multi-channel-generator";
@@ -54,6 +55,32 @@ const PLATFORM_ORDER: PlatformId[] = [
   "threads",
   "tiktok",
   "youtube-shorts",
+];
+
+// 사장님 시점 그룹화 — 11개 채널이 한 그리드에 펼쳐지면 막막함.
+// 자주 쓰는 곳 / 가끔 / 확장 으로 묶고, 확장은 접힘 기본.
+const PLATFORM_GROUPS: { id: string; label: string; sub: string; ids: PlatformId[]; defaultOpen: boolean }[] = [
+  {
+    id: "core",
+    label: "자주 쓰는 곳",
+    sub: "한국 소상공인 검색·발견 1순위",
+    ids: ["naver-place", "instagram-cardnews", "instagram-caption", "naver-blog"],
+    defaultOpen: true,
+  },
+  {
+    id: "regular",
+    label: "가끔 쓰는 곳",
+    sub: "단골·짧은 영상·페이스북",
+    ids: ["instagram-reels", "kakao-channel", "naver-clip", "facebook"],
+    defaultOpen: true,
+  },
+  {
+    id: "extra",
+    label: "확장 — 나중에 열어보세요",
+    sub: "여유 생기면 추가 채널",
+    ids: ["threads", "tiktok", "youtube-shorts"],
+    defaultOpen: false,
+  },
 ];
 
 const PLATFORM_LABEL: Record<PlatformId, string> = {
@@ -628,7 +655,7 @@ export default function ContentDistributionPage() {
         {/* 연결 상태 스트립 */}
         <ConnectionStatusStrip connections={connections} onToggle={handleToggleConnection} />
 
-        {/* 플랫폼 카드 그리드 */}
+        {/* 플랫폼 카드 그리드 — 사장님 시점 3그룹 (자주/가끔/확장) */}
         <section className="pt-10">
           <div className="flex items-baseline justify-between mb-5">
             <div>
@@ -638,8 +665,9 @@ export default function ContentDistributionPage() {
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-            {PLATFORM_ORDER.map((id) => {
+          <PlatformGroupedBoard
+            groups={PLATFORM_GROUPS}
+            renderCard={(id) => {
               const conn = connections.find((c) => c.id === id);
               const content = platformContent[id];
               const state = distribution.platforms[id] ?? { platformId: id, status: "draft" as const };
@@ -673,8 +701,8 @@ export default function ContentDistributionPage() {
                   onCopy={() => handleCopy(id)}
                 />
               );
-            })}
-          </div>
+            }}
+          />
         </section>
 
         {/* 분배 로그 */}
@@ -705,5 +733,55 @@ export default function ContentDistributionPage() {
         onClose={() => setLockedFeature(null)}
       />
     </>
+  );
+}
+
+// 3티어로 묶인 플랫폼 보드 — 자주 쓰는 곳은 펼쳐서, 확장은 접어서.
+function PlatformGroupedBoard({
+  groups,
+  renderCard,
+}: {
+  groups: { id: string; label: string; sub: string; ids: PlatformId[]; defaultOpen: boolean }[];
+  renderCard: (id: PlatformId) => React.ReactNode;
+}) {
+  const [openGroups, setOpenGroups] = React.useState<Record<string, boolean>>(() =>
+    Object.fromEntries(groups.map((g) => [g.id, g.defaultOpen])),
+  );
+  const toggle = (id: string) =>
+    setOpenGroups((cur) => ({ ...cur, [id]: !cur[id] }));
+
+  return (
+    <div className="space-y-10">
+      {groups.map((g) => {
+        const open = openGroups[g.id];
+        return (
+          <div key={g.id}>
+            <button
+              type="button"
+              onClick={() => toggle(g.id)}
+              aria-expanded={open}
+              className="w-full flex items-baseline justify-between gap-3 mb-4 pb-2 border-b border-zinc-200 dark:border-zinc-800 text-left group"
+            >
+              <div className="flex items-baseline gap-3">
+                <span className="text-[14px] tracking-tight font-medium text-zinc-900 dark:text-zinc-100">
+                  {g.label}
+                </span>
+                <span className="text-[11px] text-zinc-500">
+                  {g.sub} · {g.ids.length}개
+                </span>
+              </div>
+              <ChevronDown
+                className={`h-3.5 w-3.5 text-zinc-400 transition-transform shrink-0 ${open ? "rotate-180" : ""}`}
+              />
+            </button>
+            {open && (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                {g.ids.map((id) => renderCard(id))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
   );
 }
