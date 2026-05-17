@@ -111,6 +111,47 @@ export async function POST(req: NextRequest) {
     ];
     const CLICHE_KEYWORDS = ["isolated", "white background", "studio shot", "stock"];
 
+    // 인물·모델·얼굴 사진 차단 — 카드뉴스 슬라이드에 갑자기 외국인 모델 얼굴 떨어지는 거 방지.
+    // 호출자가 명시적으로 인물을 원하면 (allowPeople: true) 페널티 해제.
+    const allowPeople = body.allowPeople === true;
+    const PEOPLE_KEYWORDS = [
+      "portrait",
+      "model",
+      "fashion",
+      "headshot",
+      "selfie",
+      "face",
+      "woman wearing",
+      "man wearing",
+      "girl",
+      "boy",
+      "smiling",
+      "posing",
+      "person standing",
+      "person sitting",
+      "people walking",
+      "young woman",
+      "young man",
+      "young girl",
+      "young boy",
+      "businessman",
+      "businesswoman",
+      "couple",
+      "child",
+      "kid ",
+      "baby",
+      "wedding",
+      "bride",
+      "groom",
+      "bikini",
+      "swimsuit",
+      "lingerie",
+      "underwear",
+      "naked",
+      "nude",
+      "shirtless",
+    ];
+
     const scored = photos.map((p, i) => {
       const alt = (p.alt ?? "").toLowerCase();
       let score = 0;
@@ -120,6 +161,14 @@ export async function POST(req: NextRequest) {
       CLICHE_KEYWORDS.forEach((k) => {
         if (alt.includes(k)) score -= 3;
       });
+      // 인물 사진 강 페널티 — 단 한 키워드만 맞아도 사실상 후순위로 보냄
+      if (!allowPeople) {
+        let peopleHits = 0;
+        for (const k of PEOPLE_KEYWORDS) {
+          if (alt.includes(k)) peopleHits++;
+        }
+        if (peopleHits > 0) score -= 50 * peopleHits;
+      }
       // 가로 비율 — 9:16 캔버스에는 1.0~0.6 정도 (세로형) 선호
       // Pexels의 portrait orientation 으로 이미 필터링됨, 추가 가산점은 부드럽게
       score += Math.max(0, 5 - i * 0.2); // 앞쪽 결과에 살짝 가산
@@ -127,12 +176,16 @@ export async function POST(req: NextRequest) {
     });
     scored.sort((a, b) => b.score - a.score);
 
+    // 인물 페널티 (-50 이하) 면 후보에서 완전 제거. 남는 게 없으면 그대로 사용.
+    const filtered = allowPeople ? scored : scored.filter((s) => s.score > -20);
+    const pool = filtered.length > 0 ? filtered : scored;
+
     // pickIndex 명시되면 그대로, 아니면 top 5 중 랜덤 (다양성 + 품질)
     let pick;
     if (pickIndex >= 0 && pickIndex < photos.length) {
       pick = photos[pickIndex];
     } else {
-      const topN = scored.slice(0, Math.min(5, scored.length));
+      const topN = pool.slice(0, Math.min(5, pool.length));
       pick = topN[Math.floor(Math.random() * topN.length)].p;
     }
     const imageUrl = pick.src.large2x || pick.src.large || pick.src.original;
@@ -144,7 +197,7 @@ export async function POST(req: NextRequest) {
         ? Math.max(1, Math.min(9, Math.floor(body.candidateCount)))
         : 3;
     const candidates = returnCandidates
-      ? scored
+      ? pool
           .slice(0, candidateCount)
           .map(({ p }) => ({
             url: p.src.large2x || p.src.large || p.src.original,

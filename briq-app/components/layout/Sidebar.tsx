@@ -5,15 +5,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { Menu, X } from "lucide-react";
-import { navGroups } from "@/lib/nav";
+import { navGroups, SETTINGS_ITEM } from "@/lib/nav";
 import { ThemeToggle } from "./ThemeToggle";
 import { cn } from "@/lib/utils";
 
 const badgeColor = {
-  amber: "bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
-  rose: "bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300",
-  sky: "bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300",
-  emerald: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
+  amber: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
+  rose: "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300",
+  sky: "bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300",
+  emerald: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
 };
 
 type SidebarBodyProps = {
@@ -23,18 +23,24 @@ type SidebarBodyProps = {
 };
 
 function SidebarBody({ pathname, onNavigate, variant }: SidebarBodyProps) {
+  const SettingsIcon = SETTINGS_ITEM.icon;
+  const settingsActive = pathname.startsWith(SETTINGS_ITEM.href);
+
   return (
     <>
+      {/* 매거진 마스트헤드 — gradient 박스 제거, 잉크 한 글자 */}
       <Link
         href="/dashboard"
         onClick={onNavigate}
-        className="px-5 py-5 flex items-center gap-2 border-b border-zinc-100 dark:border-zinc-900"
+        className="px-5 py-5 flex items-baseline gap-2 border-b border-zinc-100 dark:border-zinc-900"
       >
-        <div className="h-7 w-7 rounded-md bg-gradient-to-br from-indigo-500 via-violet-600 to-pink-500 grid place-items-center text-white text-xs font-bold">
-          B
-        </div>
-        <span className="text-sm font-semibold tracking-tight">BRIQ</span>
-        <span className="ml-auto text-[10px] px-1.5 py-px rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400">
+        <span
+          className="text-[18px] tracking-[-0.02em] font-medium text-zinc-900 dark:text-zinc-100"
+          style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 600 }}
+        >
+          BRIQ
+        </span>
+        <span className="ml-auto text-[10px] tracking-[0.15em] uppercase text-zinc-400">
           v0.3
         </span>
       </Link>
@@ -56,20 +62,20 @@ function SidebarBody({ pathname, onNavigate, variant }: SidebarBodyProps) {
                   href={item.href}
                   onClick={onNavigate}
                   className={cn(
-                    "relative flex items-center gap-2.5 px-2.5 py-2.5 md:py-1.5 rounded-md text-[13px] md:text-xs font-medium transition-colors",
+                    "relative flex items-center gap-2.5 px-2.5 py-2.5 md:py-2 rounded-md text-[13px] md:text-[12.5px] font-medium transition-colors",
                     active
-                      ? "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-50 shadow-sm"
-                      : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-zinc-100",
+                      ? "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-50"
+                      : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/70 dark:hover:bg-zinc-900/70 hover:text-zinc-900 dark:hover:text-zinc-100",
                   )}
                 >
                   {active && (
                     <motion.span
                       layoutId={`nav-indicator-${variant}`}
-                      className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-0.5 rounded-full bg-gradient-to-b from-indigo-500 to-pink-500"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 h-3.5 w-px bg-zinc-900 dark:bg-zinc-100"
                       transition={{ type: "spring", stiffness: 380, damping: 30 }}
                     />
                   )}
-                  <Icon className="h-3.5 w-3.5 opacity-70" />
+                  <Icon className="h-3.5 w-3.5 opacity-60" />
                   <span className="flex-1">{item.label}</span>
                   {item.badge && (
                     <span
@@ -88,12 +94,29 @@ function SidebarBody({ pathname, onNavigate, variant }: SidebarBodyProps) {
         ))}
       </nav>
 
+      {/* 사용자 + 설정 톱니 + 테마 — Settings 는 메뉴 줄 차지 않고 여기서만 진입 */}
       <div className="border-t border-zinc-100 dark:border-zinc-900 p-3 flex items-center gap-2.5">
-        <div className="h-7 w-7 rounded-full bg-gradient-to-br from-amber-400 to-rose-500 shrink-0" />
+        <div className="h-7 w-7 rounded-full bg-zinc-200 dark:bg-zinc-800 shrink-0 grid place-items-center text-[10px] text-zinc-500">
+          허
+        </div>
         <div className="flex-1 min-w-0">
-          <div className="text-xs font-medium truncate">허은애</div>
+          <div className="text-[12px] font-medium truncate">허은애</div>
           <div className="text-[10px] text-zinc-500 dark:text-zinc-500 truncate">미옥당 외 5</div>
         </div>
+        <Link
+          href={SETTINGS_ITEM.href}
+          onClick={onNavigate}
+          aria-label="설정"
+          title="설정"
+          className={cn(
+            "h-7 w-7 grid place-items-center rounded-md transition-colors",
+            settingsActive
+              ? "text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-900"
+              : "text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100/70 dark:hover:bg-zinc-900/70",
+          )}
+        >
+          <SettingsIcon className="h-3.5 w-3.5" />
+        </Link>
         <ThemeToggle />
       </div>
     </>
@@ -104,12 +127,10 @@ export function Sidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
-  // Close drawer on route change
   React.useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
 
-  // Lock body scroll while drawer open
   React.useEffect(() => {
     if (mobileOpen) {
       document.body.style.overflow = "hidden";
@@ -119,7 +140,6 @@ export function Sidebar() {
     }
   }, [mobileOpen]);
 
-  // Expose open trigger via custom event (Topbar will dispatch)
   React.useEffect(() => {
     const handler = () => setMobileOpen(true);
     window.addEventListener("briq:open-sidebar", handler);
@@ -128,12 +148,10 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Desktop */}
       <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-zinc-100 dark:border-zinc-900 bg-zinc-50/40 dark:bg-zinc-950/50 sticky top-0 h-screen">
         <SidebarBody pathname={pathname} variant="desktop" />
       </aside>
 
-      {/* Mobile drawer */}
       <AnimatePresence>
         {mobileOpen && (
           <>

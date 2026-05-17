@@ -4,33 +4,38 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --bg: #ffffff;
-  --bg-soft: #fafafa;
+  /* 에디토리얼 모노톤 — 종이 같은 흰색·잉크 같은 검정·한 점의 따뜻한 잉크 */
+  --bg: #fafaf7;            /* 종이 흰색 (살짝 따뜻) */
+  --bg-soft: #f4f3ee;       /* 매트 보더 */
   --bg-card: #ffffff;
-  --border: #e5e7eb;
-  --border-soft: #f3f4f6;
-  --text: #111827;
-  --text-soft: #6b7280;
-  --text-muted: #9ca3af;
-  --accent: #111827;
-  --accent-fg: #ffffff;
-  --gradient-from: #6366f1;
-  --gradient-via: #a855f7;
-  --gradient-to: #ec4899;
-  --radius: 0.875rem;
+  --border: #e4e2db;        /* 헤어라인 보더 */
+  --border-soft: #efede5;
+  --text: #1a1a1a;          /* 잉크 검정 */
+  --text-soft: #555550;
+  --text-muted: #94918a;
+  --accent: #1a1a1a;        /* 액센트 = 단일 검정 */
+  --accent-fg: #fafaf7;
+  /* 시그니처 한 점 — 매거진 톤 (warm ink, 거의 회색에 가까운 깊은 갈색) */
+  --ink: #2b2017;
+  /* gradient 변수 유지하되 더 이상 시각에 사용 안 함 — 정리 진행 중에 호환 위해 */
+  --gradient-from: #1a1a1a;
+  --gradient-via: #1a1a1a;
+  --gradient-to: #1a1a1a;
+  --radius: 0.5rem;          /* 더 절제된 라운드 (0.875 → 0.5) */
 }
 
 .dark {
-  --bg: #0a0a0b;
-  --bg-soft: #0f0f12;
-  --bg-card: #16161a;
-  --border: #27272a;
-  --border-soft: #1f1f23;
-  --text: #fafafa;
-  --text-soft: #a1a1aa;
-  --text-muted: #71717a;
-  --accent: #ffffff;
-  --accent-fg: #18181b;
+  --bg: #111110;            /* 잉크 종이 톤 다크 */
+  --bg-soft: #181816;
+  --bg-card: #1a1a18;
+  --border: #2a2a26;
+  --border-soft: #222220;
+  --text: #f0eee6;
+  --text-soft: #9a9890;
+  --text-muted: #6a6862;
+  --accent: #f0eee6;
+  --accent-fg: #111110;
+  --ink: #d8d4c4;
 }
 
 @theme inline {
@@ -138,23 +143,45 @@ input, select, textarea {
   background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.45) 50%, transparent 100%);
 }
 
-/* Utilities */
+/* Utilities — 에디토리얼 모노톤. gradient-text 는 단일 ink 색으로 폴백 (기존 사용처 보호) */
 .gradient-text {
-  background: linear-gradient(135deg, var(--gradient-from), var(--gradient-via) 50%, var(--gradient-to));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--ink);
+  font-feature-settings: "ss01", "ss02", "tnum";
 }
 
 .glow {
-  box-shadow:
-    0 30px 80px -20px color-mix(in oklab, var(--gradient-from) 35%, transparent),
-    0 10px 30px -10px color-mix(in oklab, var(--gradient-via) 25%, transparent);
+  /* 데모톤 그라디언트 글로우 제거. 절제된 그림자만 */
+  box-shadow: 0 8px 24px -12px rgba(26, 26, 26, 0.12);
 }
 
 .grid-bg {
-  background-image: radial-gradient(circle at 1px 1px, color-mix(in oklab, var(--text) 10%, transparent) 1px, transparent 0);
-  background-size: 24px 24px;
+  /* 도트 배경 제거 — 종이 같은 단색 */
+  background: var(--bg);
+}
+
+/* 에디토리얼 헤드라인 — 잡지·매거진 톤 */
+.editorial-display {
+  font-family: "Cormorant Garamond", "Nanum Myeongjo", serif;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  font-feature-settings: "kern", "liga";
+}
+.editorial-serif {
+  font-family: "Nanum Myeongjo", "Cormorant Garamond", serif;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+}
+.editorial-label {
+  font-family: "Pretendard Variable", sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+.hairline {
+  border-color: var(--border);
+  border-width: 0.5px;
 }
 
 .nav-blur {

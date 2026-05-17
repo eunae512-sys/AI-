@@ -19,8 +19,17 @@ export async function POST(req: NextRequest) {
   }
 
   const prompt = typeof body.prompt === "string" ? body.prompt : "";
-  const size = (typeof body.size === "string" ? body.size : "1024x1536") || "1024x1536";
-  const provider = (typeof body.provider === "string" ? body.provider : "auto") || "auto";
+  // Codex 지원 사이즈: 1024x1024 / 1024x1536 / 1536x1024 / 2048x* / 3840x*
+  // 카드뉴스 4:5 (1024x1280) 같은 비지원 비율은 1024x1536 으로 정규화 후 클라이언트에서 crop.
+  const rawSize = (typeof body.size === "string" ? body.size : "1024x1536") || "1024x1536";
+  const SUPPORTED_SIZES = new Set([
+    "1024x1024", "1024x1536", "1536x1024",
+    "2048x2048", "2048x1152", "3840x2160", "2160x3840",
+    "auto",
+  ]);
+  const size = SUPPORTED_SIZES.has(rawSize) ? rawSize : "1024x1536";
+  // 디폴트는 private-codex — auto 는 codex-cli 로 fallback 할 때 size 옵션과 충돌.
+  const provider = (typeof body.provider === "string" ? body.provider : "private-codex") || "private-codex";
   const model = (typeof body.model === "string" ? body.model : "gpt-5.4") || "gpt-5.4";
   const images = Array.isArray(body.images) ? (body.images as string[]) : undefined;
   const slideId = body.slideId;
