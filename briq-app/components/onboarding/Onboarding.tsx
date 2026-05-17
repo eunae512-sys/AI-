@@ -432,25 +432,42 @@ export function Onboarding() {
             </motion.section>
           )}
 
-          {/* Step 3 - Instagram connect */}
+          {/* Step 3 - Instagram connect (현재 베타: 직접 업로드만) */}
           {step === 3 && (
             <motion.section key="s3" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.35 }}>
               <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">STEP 03</div>
-              <h1 className="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight">인스타 계정을 연결할게요</h1>
-              <p className="mt-3 text-base text-zinc-600 dark:text-zinc-400">기존 게시물에서 브랜드 톤을 자동 학습합니다.</p>
+              <h1 className="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight">인스타 자동 분배는 곧 열립니다</h1>
+              <p className="mt-3 text-base text-zinc-600 dark:text-zinc-400">
+                지금은 사장님이 카드뉴스·캡션을 한 번에 만든 뒤, 인스타에 직접 올리시는 방식이에요. <br className="hidden sm:block" />
+                Meta 비즈니스 API 연동은 베타 다음 단계에서 자동으로 사장님 계정에 연결됩니다.
+              </p>
               <div className="mt-10 space-y-3">
-                <button
-                  onClick={() => setTimeout(next, 350)}
-                  className="w-full rounded-xl border border-zinc-200 dark:border-zinc-800 hover:border-zinc-900 dark:hover:border-zinc-100 p-5 flex items-center gap-4 text-left transition-all"
-                >
-                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-fuchsia-500 via-pink-500 to-orange-400 grid place-items-center text-white font-bold text-lg">IG</div>
+                <div className="w-full rounded-xl border border-zinc-200 dark:border-zinc-800 p-5 flex items-center gap-4 text-left">
+                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-fuchsia-500/40 via-pink-500/40 to-orange-400/40 grid place-items-center text-white font-bold text-lg">IG</div>
                   <div className="flex-1">
-                    <div className="font-semibold text-sm">Instagram 계정 연결</div>
-                    <div className="text-[12px] text-zinc-500 mt-0.5">Meta OAuth · 공식 비즈니스 API · 안전</div>
+                    <div className="font-semibold text-sm">Instagram 자동 분배 — 준비 중</div>
+                    <div className="text-[12px] text-zinc-500 mt-0.5">Meta 비즈니스 API 심사 진행 중 · 베타 다음 단계</div>
                   </div>
-                  <span className="text-zinc-400">→</span>
+                  <span className="text-[10px] tracking-[0.12em] uppercase px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300">곧</span>
+                </div>
+                <div className="rounded-xl border border-emerald-200 dark:border-emerald-900/40 bg-emerald-50/40 dark:bg-emerald-500/5 p-5">
+                  <div className="font-semibold text-sm">지금은 — 사진 직접 업로드</div>
+                  <div className="text-[12px] text-zinc-600 dark:text-zinc-400 mt-1">
+                    매장 사진 5~10장을 다음 단계에서 올려주시면, 카드뉴스·캡션·블로그·릴스가 자동으로 만들어집니다.
+                    인스타에는 한 번의 복사·붙여넣기로 올리실 수 있어요.
+                  </div>
+                </div>
+              </div>
+              <div className="mt-10 flex items-center justify-between">
+                <button onClick={back} className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 inline-flex items-center gap-1">
+                  <ChevronLeft className="h-3 w-3" />이전
                 </button>
-                <button onClick={() => setTimeout(next, 350)} className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 mt-2">나중에 할게요 (사진 직접 업로드) →</button>
+                <button
+                  onClick={next}
+                  className="text-sm font-medium px-5 py-2.5 rounded-md bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900 hover:opacity-90"
+                >
+                  사진 올리러 가기 →
+                </button>
               </div>
             </motion.section>
           )}
@@ -486,6 +503,7 @@ export function Onboarding() {
                 type="file"
                 multiple
                 accept="image/*"
+                /* 모바일에선 갤러리 + 카메라 직접 촬영 둘 다 선택 가능 */
                 className="hidden"
                 onChange={onPhotoChange}
               />

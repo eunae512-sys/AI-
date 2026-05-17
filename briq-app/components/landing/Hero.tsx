@@ -14,7 +14,7 @@ export function Hero() {
         {/* Masthead — 매거진 결 */}
         <div className="flex items-baseline justify-between border-b border-zinc-300 dark:border-zinc-700 pb-3">
           <div className="editorial-label">BRIQ</div>
-          <div className="editorial-label">Auto-Running SNS Operations</div>
+          <div className="editorial-label">자동으로 굴러가는 SNS 운영</div>
         </div>
 
         {/* 메인 헤드라인 */}
@@ -148,11 +148,11 @@ function LiveStat({
 }
 
 const WEEK = [
-  { day: "월", channel: "Instagram", title: "오늘 한 컷 · 점심 자리 안내", status: "Issued" },
-  { day: "화", channel: "Naver Blog", title: "5월 봄나물 코스 — 산지 후기", status: "Scheduled" },
-  { day: "수", channel: "Instagram", title: "오늘 한 컷 · 시그니처 메뉴", status: "Drafting" },
-  { day: "목", channel: "Instagram", title: "주말 예약 안내 카드뉴스", status: "Drafting" },
-  { day: "금", channel: "Instagram", title: "릴스 · 시즌 한 컷", status: "Queued" },
-  { day: "토", channel: "Story", title: "토요일 영업 안내", status: "Auto" },
-  { day: "일", channel: "—", title: "쉼", status: "Off" },
+  { day: "월", channel: "인스타", title: "오늘 한 컷 · 점심 자리 안내", status: "발행됨" },
+  { day: "화", channel: "네이버 블로그", title: "5월 봄나물 코스 — 산지 후기", status: "예약" },
+  { day: "수", channel: "인스타", title: "오늘 한 컷 · 시그니처 메뉴", status: "초안" },
+  { day: "목", channel: "인스타", title: "주말 예약 안내 카드뉴스", status: "초안" },
+  { day: "금", channel: "인스타", title: "릴스 · 시즌 한 컷", status: "대기" },
+  { day: "토", channel: "스토리", title: "토요일 영업 안내", status: "자동" },
+  { day: "일", channel: "—", title: "쉼", status: "쉼" },
 ];

@@ -312,6 +312,90 @@ export function CardnewsScreen() {
 
   // 지금 컨텍스트 — 자동으로 GPT 프롬프트에 들어감, 사용자에게 배지로 노출
   const ctx = useMemo(() => getContext(), []);
+
+  // 산업 × 월 매트릭스 — placeholder 가 오늘 시점에 자연스럽게 보이도록
+  const topicPlaceholder = useMemo(() => {
+    const month = new Date().getMonth() + 1;
+    const tableByIndustry: Record<string, string[]> = {
+      restaurant: [
+        "신년 회식 코스 안내",
+        "졸업·입학 축하 한 상",
+        "봄 신메뉴 한 상 안내",
+        "어버이날 효도 코스",
+        "5월 봄나물 코스 안내",
+        "초여름 보양 한 상",
+        "여름 점심 자리 안내",
+        "삼복 보양식 코스",
+        "추석 가족 모임 자리",
+        "가을 송이 한 상",
+        "연말 모임 코스 안내",
+        "송년회 단체 자리",
+      ],
+      cafe: [
+        "신년 시즌 라떼 한 잔",
+        "발렌타인 디저트 한 잔",
+        "봄 시즌 신메뉴 안내",
+        "벚꽃 한정 음료",
+        "콜드브루 시즌 시작",
+        "여름 시그니처 한 잔",
+        "한여름 빙수 한 그릇",
+        "8월 휴가 영업 안내",
+        "가을 시즌 라떼 라인업",
+        "10월 핸드드립 라인업",
+        "겨울 따뜻한 한 잔",
+        "크리스마스 시즌 메뉴",
+      ],
+      dessert: [
+        "신년 디저트 선물 박스",
+        "발렌타인 한정 케이크",
+        "봄 시즌 마들렌",
+        "딸기 시즌 케이크",
+        "5월 어버이날 케이크",
+        "여름 수박 케이크",
+        "한여름 빙수 디저트",
+        "여름 휴가 픽업 안내",
+        "가을 시즌 몽블랑",
+        "할로윈 한정 쿠키",
+        "겨울 시즌 슈톨렌",
+        "크리스마스 케이크 예약",
+      ],
+      beauty: [
+        "신년 셀프 케어 시술",
+        "졸업·입학 단정 룩",
+        "봄 컬러 룩북",
+        "벚꽃 시즌 결혼식 하객",
+        "5월 봄 결혼 시즌 룩",
+        "초여름 시원한 컬러",
+        "여름 휴가 룩 시술",
+        "8월 펌 관리 가이드",
+        "가을 컬러 룩북",
+        "10월 결혼식 하객 룩",
+        "겨울 보호 시술 안내",
+        "연말 모임 단정 룩",
+      ],
+      stay: [
+        "신년 한옥 1박 패키지",
+        "졸업 가족 여행",
+        "봄 한옥 산책 1박",
+        "벚꽃 시즌 한옥스테이",
+        "어버이날 효도 1박",
+        "초여름 한옥 1박",
+        "장마철 한옥 1박 패키지",
+        "여름 휴가 한옥스테이",
+        "추석 가족 모임 한옥",
+        "단풍 한옥 1박",
+        "겨울 한옥 따뜻한 1박",
+        "연말 한옥 패키지",
+      ],
+    };
+    const list = tableByIndustry[brand.industry] ?? tableByIndustry.restaurant;
+    const idx = Math.min(11, Math.max(0, month - 1));
+    const a = list[idx];
+    const b = list[(idx + 1) % 12];
+    const c = list[(idx + 2) % 12];
+    return `예: ${a} · ${b} · ${c}`;
+  }, [brand.industry]);
+
   const ctxLabel = useMemo(() => {
     const season = { spring: "봄", summer: "여름", fall: "가을", winter: "겨울" }[ctx.season];
     const slot = {
@@ -1000,8 +1084,7 @@ export function CardnewsScreen() {
               <span className="text-[11px] uppercase tracking-wider font-semibold text-violet-700 dark:text-violet-300">
                 주제 한 줄 → 카드뉴스 6장 자동 구성
               </span>
-              <Badge tone="violet">신규</Badge>
-              <Badge tone="amber">지금: {ctxLabel}</Badge>
+              <Badge tone="amber" title="오늘의 계절·시간대·요일이 자동으로 카피 톤에 반영됩니다">{ctxLabel}</Badge>
             </div>
             <p className="text-[12.5px] text-zinc-600 dark:text-zinc-400 mt-1">
               주제만 적으면 글 + <b>페이지별 레이아웃</b>까지 AI 가 결정 — 표지·인용·메뉴 리스트·단계·CTA 가 모두 다른 디자인으로 짜집니다.
@@ -1045,7 +1128,7 @@ export function CardnewsScreen() {
             onKeyDown={(e) => {
               if (e.key === "Enter" && topicInput.trim() && !composing) composeFromTopic();
             }}
-            placeholder="예: 어버이날 한정식 코스 안내 · 5월 봄나물 신메뉴 소개 · 주말 한옥스테이 1박"
+            placeholder={topicPlaceholder}
             className="flex-1 px-3 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-violet-500"
             disabled={composing}
           />
