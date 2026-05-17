@@ -429,7 +429,9 @@ export function CardnewsScreen() {
 
   const queries = PEXELS_QUERY_BY_BRAND[templateBrandId] ?? PEXELS_QUERY_BY_BRAND.miokdang;
 
-  // 브랜드 전환 시 상태 리셋
+  // 브랜드 전환 시 상태 리셋 — templateBrandId 도 deps 에 포함 (사용자 브랜드 산업 변경 대응).
+  // brand.id 변경 + templateBrandId 변경(예: 산업 매핑 변경) 모두 트리거되어
+  // slides/images/approved 가 새 브랜드 템플릿으로 즉시 갱신.
   useEffect(() => {
     const fresh = SLIDES_BY_BRAND[templateBrandId] ?? SLIDES_BY_BRAND.miokdang;
     setSlides(fresh);
@@ -437,7 +439,7 @@ export function CardnewsScreen() {
     setApproved(fresh.map(() => false));
     setFactCheck(null);
     setEditing(null);
-  }, [brand.id]);
+  }, [brand.id, templateBrandId]);
 
   // 키 누락 사전 점검
   useEffect(() => {

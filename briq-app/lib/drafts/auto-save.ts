@@ -83,28 +83,39 @@ export function useAutoSaveDraft<T = Record<string, unknown>>(opts: {
 }): { lastSavedAt: number | null; clear: () => void } {
   const { scope, brandId, value, onRestore, debounceMs = 800, enabled = true } = opts;
   const [lastSavedAt, setLastSavedAt] = React.useState<number | null>(null);
-  const restored = React.useRef(false);
+  // 브랜드별로 "이미 이 brand 의 draft 를 복원했는가" 추적.
+  // 단순 boolean 으로는 브랜드 전환 시 새 brand 의 draft 가 복원 안 됨 (버그).
+  // → 마지막 복원한 (scope|brandId) key 를 보관.
+  const lastRestoredKey = React.useRef<string | null>(null);
   // onRestore 를 ref 로 잡아서 effect dep 폭발 방지
   const onRestoreRef = React.useRef(onRestore);
   React.useEffect(() => {
     onRestoreRef.current = onRestore;
   }, [onRestore]);
 
-  // 진입 시 1회 복원
+  // 브랜드 (또는 scope) 가 바뀔 때마다 새 brand 의 draft 복원
   React.useEffect(() => {
-    if (!enabled || restored.current) return;
-    restored.current = true;
+    if (!enabled) return;
+    const key = `${scope}:${brandId}`;
+    if (lastRestoredKey.current === key) return; // 같은 brand 면 중복 복원 안 함
+    lastRestoredKey.current = key;
     const draft = loadDraft<T>(scope, brandId);
     if (draft && onRestoreRef.current) {
       onRestoreRef.current(draft);
       setLastSavedAt(draft.__meta?.savedAt ?? Date.now());
+    } else {
+      // 새 brand 에 draft 없으면 lastSavedAt 초기화
+      setLastSavedAt(null);
     }
   }, [scope, brandId, enabled]);
 
-  // value 변경 시 debounce 저장
+  // value 변경 시 debounce 저장 — 복원 완료된 brand 에 대해서만
   React.useEffect(() => {
     if (!enabled) return;
-    if (!restored.current) return; // 복원 전엔 저장 X (덮어쓰기 방지)
+    const key = `${scope}:${brandId}`;
+    // 현재 brand 의 draft 가 아직 복원 시도 안 됐으면 저장 X (덮어쓰기 방지)
+    // brand 전환 직후 이전 brand value 가 새 brand 의 draft 를 덮어쓰는 race 방지.
+    if (lastRestoredKey.current !== key) return;
     const timer = setTimeout(() => {
       saveDraft(scope, brandId, value);
       setLastSavedAt(Date.now());
@@ -116,7 +127,8 @@ export function useAutoSaveDraft<T = Record<string, unknown>>(opts: {
   const clear = React.useCallback(() => {
     clearDraft(scope, brandId);
     setLastSavedAt(null);
-    restored.current = false;
+    // 같은 brand 재진입 시 다시 복원 시도하도록 key 비움
+    lastRestoredKey.current = null;
   }, [scope, brandId]);
 
   return { lastSavedAt, clear };
