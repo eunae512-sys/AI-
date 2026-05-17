@@ -20,6 +20,9 @@ import type { Brand } from "@/types";
 import type { CardnewsSlide, CardnewsMarketing, SlideRole } from "@/components/campaigns/types";
 import { brandHandle, brandWordmark } from "@/lib/brand/brand-context";
 import { 은, 이, 을 } from "@/lib/utils/korean-particles";
+// 시중 잘된 카드뉴스 학습 패턴 — 후크 7종 · 업종별 시퀀스 · 톤 매핑.
+// 출처: docs/cardnews-branding-research.md (29CM · 무신사 · 콤포타블 · 노티드 등).
+import { HOOK_PATTERNS_BY_TYPE } from "@/lib/cardnews/hook-patterns";
 
 export type CardnewsCampaignKind =
   | "신메뉴"
@@ -316,22 +319,30 @@ function processVerb(process: string): string {
   return process + "려고";
 }
 
-function hookPoolFor(kind: CardnewsCampaignKind) {
+function hookPoolFor(kind: CardnewsCampaignKind): ((c: Ctx) => string)[] {
+  // 캠페인 종류별 기본 후크 풀 + 리서치 7패턴 (situational/promise/quote/twist) 합치기.
+  // 잘된 카드뉴스 사례에서 반복 검증된 후크 골격을 모든 캠페인 종류가 공유.
+  const sharedPatterns: ((c: Ctx) => string)[] = [
+    ...HOOK_PATTERNS_BY_TYPE.situational,
+    ...HOOK_PATTERNS_BY_TYPE.promise,
+    ...HOOK_PATTERNS_BY_TYPE.quote,
+    ...HOOK_PATTERNS_BY_TYPE.twist,
+  ];
   switch (kind) {
     case "신메뉴":
     case "신상품":
-      return HOOK_NEW_MENU;
+      return [...HOOK_NEW_MENU, ...HOOK_PATTERNS_BY_TYPE.numeric, ...HOOK_PATTERNS_BY_TYPE.secret, ...sharedPatterns];
     case "시즌":
     case "예약":
-      return HOOK_SEASON;
+      return [...HOOK_SEASON, ...HOOK_PATTERNS_BY_TYPE.numeric, ...sharedPatterns];
     case "단골":
-      return HOOK_RETURNING;
+      return [...HOOK_RETURNING, ...HOOK_PATTERNS_BY_TYPE.secret, ...sharedPatterns];
     case "리뷰":
-      return HOOK_REVIEW;
+      return [...HOOK_REVIEW, ...HOOK_PATTERNS_BY_TYPE.quote, ...HOOK_PATTERNS_BY_TYPE.twist];
     case "트렌드":
-      return HOOK_TREND;
+      return [...HOOK_TREND, ...HOOK_PATTERNS_BY_TYPE.question, ...HOOK_PATTERNS_BY_TYPE.situational];
     case "이벤트":
-      return HOOK_EVENT;
+      return [...HOOK_EVENT, ...HOOK_PATTERNS_BY_TYPE.numeric];
   }
 }
 

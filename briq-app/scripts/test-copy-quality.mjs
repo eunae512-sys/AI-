@@ -72,6 +72,39 @@ for (const pat of fdPatterns) {
   test(`"${pat}" 자동 생성 경로 0건`, n === 0, n > 0 ? `${n}건` : "");
 }
 
+console.log("\n[6] 시중 브랜딩 안티패턴 — 광고티·과장 카피 0건");
+// docs/cardnews-branding-research.md §9 안티패턴 회피.
+const antiPatterns = [
+  "100% 만족", "지금 바로 구매", "놓치면 후회",
+  "오늘만 특가", "마지막 기회", "전국 1위",
+];
+for (const pat of antiPatterns) {
+  // hook-patterns.ts 안의 COPY_ANTIPATTERNS 정의 라인은 제외.
+  const cmd = `grep -F "${pat}" lib/cardnews/hook-generator.ts lib/content/multi-channel-generator.ts 2>/dev/null | grep -v "// " | grep -v "정책:" | wc -l`;
+  const n = parseInt(execSync(cmd, { encoding: "utf-8" }).trim(), 10);
+  test(`"${pat}" 생성 카피 0건`, n === 0, n > 0 ? `${n}건` : "");
+}
+
+console.log("\n[7] 시중 브랜딩 패턴 라이브러리 통합 확인");
+const hookGenSrc = execSync("cat lib/cardnews/hook-generator.ts", { encoding: "utf-8" });
+test("hook-patterns.ts import", hookGenSrc.includes("HOOK_PATTERNS_BY_TYPE"));
+test("후크 풀에 7패턴 통합 (situational/promise/quote/twist)",
+  hookGenSrc.includes("HOOK_PATTERNS_BY_TYPE.situational") &&
+  hookGenSrc.includes("HOOK_PATTERNS_BY_TYPE.promise") &&
+  hookGenSrc.includes("HOOK_PATTERNS_BY_TYPE.quote") &&
+  hookGenSrc.includes("HOOK_PATTERNS_BY_TYPE.twist"));
+const patternsSrc = execSync("cat lib/cardnews/hook-patterns.ts", { encoding: "utf-8" });
+test("HOOK_PATTERNS_BY_TYPE 7종 정의됨",
+  ["situational:","numeric:","question:","promise:","quote:","twist:","secret:"].every((k) =>
+    patternsSrc.includes(k)));
+test("INDUSTRY_SEQUENCE 6업종 정의됨",
+  ["restaurant:","cafe:","dessert:","beauty:","stay:","local:"].every((k) =>
+    patternsSrc.includes(k)));
+test("INDUSTRY_TONE_MAP 6업종 정의됨", patternsSrc.includes("INDUSTRY_TONE_MAP"));
+test("CTA_BY_INTENSITY 5단계 정의됨",
+  ["gentle:","save:","dm:","link:","countdown:"].every((k) =>
+    patternsSrc.includes(k)));
+
 const pass = tests.filter((t) => t.ok).length;
 const fail = tests.filter((t) => !t.ok);
 console.log(`\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);

@@ -70,7 +70,9 @@ console.log("\n[3] 거짓 디테일 — 자동 생성 코드 경로 0건");
 const { execSync } = await import("node:child_process");
 const FORBIDDEN = ["새벽 4시", "재방문율 62", "별점 4.9", "후기 247", "1만 9천", "한 코스 3시간", "20년차"];
 for (const pat of FORBIDDEN) {
-  const cmd = `grep -r "${pat}" lib/cardnews/ lib/content/ 2>/dev/null | grep -v "정책:" | grep -v "// " | wc -l`;
+  // hook-patterns.ts 의 COPY_ANTIPATTERNS 는 *의도된* 안티패턴 카탈로그
+  // (회귀 검증용) — 실 생성 카피가 아니므로 제외.
+  const cmd = `grep -r "${pat}" lib/cardnews/ lib/content/ 2>/dev/null | grep -v "정책:" | grep -v "// " | grep -v "hook-patterns.ts" | wc -l`;
   const c = parseInt(execSync(cmd, { encoding: "utf-8" }).trim(), 10);
   test(`"${pat}" 미포함`, c === 0, c > 0 ? `${c}건 남음` : "");
 }
