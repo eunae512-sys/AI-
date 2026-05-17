@@ -122,14 +122,16 @@ const INDUSTRY_VIDEO_CONTEXT: Record<string, string> = {
   local: "minimal boutique fashion lookbook editorial",
 };
 
-// 산업 → 항상 끝에 붙는 짧은 톤 키워드 (Pexels 검색 정확도↑)
+// 산업 → 항상 끝에 붙는 톤 키워드 — 정갈/에디토리얼/미니멀 강화.
+// 시중 잘된 카드뉴스 (29CM · 무신사 매거진 · 콤포타블 등) 의 비디오 결을
+// Pexels 매칭에 강제 — aesthetic, minimal, editorial 자동 부착.
 const INDUSTRY_VIDEO_TONE: Record<string, string> = {
-  restaurant: "editorial slow motion natural light vertical",
-  cafe: "slow pour vertical cinematic morning light",
-  dessert: "patisserie close up vertical natural light",
-  beauty: "salon editorial close up vertical soft light",
-  stay: "interior vertical sunlight wooden warm",
-  local: "lookbook fabric texture detail vertical",
+  restaurant: "editorial minimal aesthetic slow plating soft natural light vertical",
+  cafe: "minimal aesthetic slow pour cinematic muted morning vertical",
+  dessert: "editorial minimal close up aesthetic muted vertical",
+  beauty: "editorial minimal aesthetic salon soft close up vertical",
+  stay: "minimal aesthetic interior sunlight muted wooden vertical",
+  local: "editorial minimal aesthetic lookbook muted vertical",
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

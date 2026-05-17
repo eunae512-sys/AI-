@@ -27,60 +27,66 @@ type PexelsVideo = {
 };
 
 // 데모 비디오 fallback — PEXELS_API_KEY 미설정 시 사용.
-// 2026-05: 활성 사용되는 새 Pexels 비디오 URL 들로 갱신. 매장/음식/카페/한옥/
-// 디저트/미용/패션 7업종 매장 무드 영상. 모두 HTTP 200 검증 완료.
-// 사용 패턴 + 인기도가 높은 비디오는 Pexels CDN 캐시에 유지되어 hot-link 가능.
+// 2026-05: editorial/aesthetic/minimal 톤 검색에서 점수화로 골라낸
+// 7개 매장 무드 영상 큐레이트. 모두 HD 720p 9:16 portrait + 검증된 작가
+// (cottonbro studio · ArtHouse Studio · Timur Weber · Mizuno K 등).
 type DemoVideo = { url: string; poster: string; photographer: string; alt: string; industry?: string };
 
 const DEMO_VIDEOS: DemoVideo[] = [
   {
     industry: "restaurant",
-    url: "https://videos.pexels.com/video-files/29267692/12625261_360_640_60fps.mp4",
-    poster: "https://images.pexels.com/photos/1640773/pexels-photo-1640773.jpeg?auto=compress&cs=tinysrgb&w=940&h=1700",
-    photographer: "Sapol Churanon",
-    alt: "Korean restaurant cooking moment",
+    // 식 플레이팅 — 조용한 손동작, 채도 낮은 매거진 톤
+    url: "https://videos.pexels.com/video-files/5269551/5269551-hd_720_1280_24fps.mp4",
+    poster: "https://images.pexels.com/videos/5269551/pictures/preview-0.jpeg",
+    photographer: "宇航 钱",
+    alt: "Food preparation editorial plating",
   },
   {
     industry: "cafe",
+    // 도자 잔에 커피 푸어 — 미니멀 한 잔
     url: "https://videos.pexels.com/video-files/13737157/13737157-hd_720_1280_24fps.mp4",
-    poster: "https://images.pexels.com/photos/776538/pexels-photo-776538.jpeg?auto=compress&cs=tinysrgb&w=940&h=1700",
+    poster: "https://images.pexels.com/videos/13737157/pictures/preview-0.jpeg",
     photographer: "Mizuno K",
-    alt: "Specialty coffee pour vertical",
+    alt: "Coffee pour into ceramic cup",
   },
   {
     industry: "stay",
-    url: "https://videos.pexels.com/video-files/7328522/7328522-hd_720_1280_25fps.mp4",
-    poster: "https://images.pexels.com/photos/2103949/pexels-photo-2103949.jpeg?auto=compress&cs=tinysrgb&w=940&h=1700",
-    photographer: "Mart Production",
-    alt: "Hanok stay sunlight",
+    // 식물 잎에 미스팅 — 차분한 인테리어 무드
+    url: "https://videos.pexels.com/video-files/7292472/7292472-hd_720_1280_24fps.mp4",
+    poster: "https://images.pexels.com/videos/7292472/pictures/preview-0.jpeg",
+    photographer: "ArtHouse Studio",
+    alt: "Plant misting interior moment",
   },
   {
     industry: "dessert",
-    url: "https://videos.pexels.com/video-files/3827379/3827379-hd_720_1280_30fps.mp4",
-    poster: "https://images.pexels.com/photos/1024359/pexels-photo-1024359.jpeg?auto=compress&cs=tinysrgb&w=940&h=1700",
-    photographer: "Peggy Anke",
-    alt: "Boutique dessert moment",
+    // 유리잔 과일 주스 클로즈업 — 결 정갈
+    url: "https://videos.pexels.com/video-files/8677691/8677691-hd_720_1280_60fps.mp4",
+    poster: "https://images.pexels.com/videos/8677691/pictures/preview-0.jpeg",
+    photographer: "Timur Weber",
+    alt: "Fresh fruit close up vertical",
   },
   {
     industry: "beauty",
-    url: "https://videos.pexels.com/video-files/3997180/3997180-hd_720_1366_50fps.mp4",
-    poster: "https://images.pexels.com/photos/3993454/pexels-photo-3993454.jpeg?auto=compress&cs=tinysrgb&w=940&h=1700",
+    // 헤어 드라이 시술 — cottonbro studio 검증 작가
+    url: "https://videos.pexels.com/video-files/7440184/7440184-hd_1080_2048_25fps.mp4",
+    poster: "https://images.pexels.com/videos/7440184/pictures/preview-0.jpeg",
     photographer: "cottonbro studio",
-    alt: "Hair salon styling",
+    alt: "Hair styling editorial",
   },
   {
     industry: "local",
-    url: "https://videos.pexels.com/video-files/8322394/8322394-hd_1080_2048_25fps.mp4",
-    poster: "https://images.pexels.com/photos/3184339/pexels-photo-3184339.jpeg?auto=compress&cs=tinysrgb&w=940&h=1700",
-    photographer: "Ron Lach",
-    alt: "Fashion shop lifestyle",
+    // 정갈 패션 — 손과 의류 디테일
+    url: "https://videos.pexels.com/video-files/8513139/8513139-hd_720_1280_30fps.mp4",
+    poster: "https://images.pexels.com/videos/8513139/pictures/preview-0.jpeg",
+    photographer: "Artem Podrez",
+    alt: "Minimal fashion long sleeve",
   },
   {
-    // 추가 매장 일반 — slideId 7+ 또는 industry unmatched 시 사용
-    url: "https://videos.pexels.com/video-files/35446427/15017557_360_640_30fps.mp4",
-    poster: "https://images.pexels.com/photos/2253643/pexels-photo-2253643.jpeg?auto=compress&cs=tinysrgb&w=940&h=1700",
-    photographer: "md Jahangir alam",
-    alt: "Street local shop",
+    // 일반 매장 — 추가 fallback, 라운드 로빈용
+    url: "https://videos.pexels.com/video-files/29267692/12625261_360_640_60fps.mp4",
+    poster: "https://images.pexels.com/videos/29267692/pictures/preview-0.jpeg",
+    photographer: "Sapol Churanon",
+    alt: "Editorial cooking warmth",
   },
 ];
 
@@ -244,22 +250,42 @@ export async function POST(req: NextRequest) {
 
       // 7) ★ 에디토리얼/시네마 톤 — avg_color HSL 분석
       //    채도 낮음 + 명도 중간 = 무드 있는 톤 (muted aesthetic)
-      //    채도 높음 = 비비드/광고/홈비디오 톤 → 페널티
+      //    채도 높음 = 비비드/광고/홈비디오 톤 → 강한 페널티 (사장님 "정갈" 요구)
       if (v.avg_color) {
         const hsl = hexToHsl(v.avg_color);
         if (hsl) {
           const [, s, l] = hsl;
-          // 채도 0~100, 명도 0~100
-          if (s < 25) score += 18;           // 거의 흑백/베이지 — 매거진 톤
-          else if (s < 40) score += 12;       // muted
-          else if (s < 60) score += 4;        // 중간
-          else if (s >= 75) score -= 12;      // 비비드 (페널티)
+          // 채도 0~100, 명도 0~100 — 정갈한 결을 위해 가중치 강화
+          if (s < 20) score += 24;           // 거의 흑백/베이지 — 최상 매거진 톤
+          else if (s < 35) score += 16;      // muted (정갈)
+          else if (s < 50) score += 6;       // 중간
+          else if (s >= 65) score -= 18;     // 비비드 → 강한 페널티 (광고/스톡 톤)
+          else if (s >= 75) score -= 28;     // 매우 비비드 → 매우 강한 페널티
 
           // 명도가 너무 어둡거나 너무 밝으면 톤 깨짐
-          if (l >= 25 && l <= 75) score += 4;
-          else if (l < 10 || l > 92) score -= 6;
+          if (l >= 30 && l <= 72) score += 6;  // 미드톤 — 매거진 sweet spot
+          else if (l < 10 || l > 92) score -= 10;
         }
       }
+
+      // 8) ★ 검증된 작가 화이트리스트 — 시중 카드뉴스 톤 부합 작가들
+      //    Pexels 에서 일관되게 정갈/에디토리얼 결을 내는 사진가/영상가.
+      const userName = (v.user?.name || "").toLowerCase();
+      const editorialAuthors = [
+        "cottonbro studio", "mart production", "arthouse studio", "timur weber",
+        "mizuno k", "peggy anke", "ron lach", "artem podrez", "tima miroshnichenko",
+        "rdne stock project", "mikhail nilov", "anete lusina", "polina tankilevitch",
+        "kampus production", "sora shimazaki", "ivan samkov",
+      ];
+      if (editorialAuthors.some((a) => userName.includes(a))) score += 15;
+
+      // 9) ★ alt/title 톤 매칭 — URL 슬러그에서 "editorial/minimal/aesthetic" 단어
+      //    부정 키워드 (광고티) 있으면 페널티
+      const slug = (v.url || "").toLowerCase();
+      const positiveTokens = ["editorial", "minimal", "aesthetic", "ceramic", "wooden", "linen", "still", "soft"];
+      const negativeTokens = ["sale", "discount", "promotion", "advertisement", "logo", "watermark", "smile", "selfie"];
+      score += positiveTokens.filter((t) => slug.includes(t)).length * 4;
+      score -= negativeTokens.filter((t) => slug.includes(t)).length * 10;
 
       return { v, i, score };
     });
