@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { Check, Upload, Loader2, ArrowRight } from "lucide-react";
+import { Check, Upload, Loader2, ArrowRight, RefreshCw } from "lucide-react";
 import type { Brand } from "@/types";
 import { useBrand } from "@/components/brand/BrandProvider";
 import {
@@ -481,8 +481,9 @@ function CoverStory({
     setLoadingCover(true);
     // tone 별로 다른 query 사용 — 사장님이 톤 토글 시 사진도 함께 바뀜
     const query = COVER_QUERY[brand.industry]?.[tone] ?? COVER_QUERY[brand.industry]?.editorial ?? "editorial natural light";
-    // 같은 brand 면 pageSeed 누적, 첫 진입 시 brand.id hash 로 페이지 분산
-    const effectivePage = pageSeed > 1 ? pageSeed : brandPageOffset;
+    // brandPageOffset 이 base, pageSeed 가 1씩 누적 → "다른 사진" 누를 때마다 +1 페이지.
+    // pageSeed=1 → brandPageOffset, =2 → +1, =3 → +2... 매번 새로운 풀.
+    const effectivePage = brandPageOffset + (pageSeed - 1);
     (async () => {
       try {
         const res = await fetch("/api/search-pexels", {
@@ -599,12 +600,25 @@ function CoverStory({
               })}
             </div>
           </div>
-          <div className="mt-2.5 flex items-center gap-4 text-[11px] text-zinc-500 dark:text-zinc-500">
-            <button type="button" onClick={() => setPageSeed((p) => p + 1)} className="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">다음 시트 →</button>
-            <span className="text-zinc-300 dark:text-zinc-700">·</span>
-            <button type="button" onClick={() => fileInputRef.current?.click()} className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
-              <Upload className="h-3 w-3" /> 직접 올리기
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setPageSeed((p) => p + 1)}
+              disabled={loadingCover}
+              className="inline-flex items-center gap-1.5 h-9 px-3.5 text-[12px] tracking-[0.04em] font-medium border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${loadingCover ? "animate-spin" : ""}`} />
+              {loadingCover ? "찾는 중…" : "다른 사진 추천"}
             </button>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="inline-flex items-center gap-1.5 h-9 px-3.5 text-[12px] tracking-[0.04em] font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+            >
+              <Upload className="h-3.5 w-3.5" />
+              직접 올리기
+            </button>
+            <span className="ml-auto text-[10.5px] text-zinc-400 tabular-nums">시트 {pageSeed}</span>
           </div>
         </motion.div>
 
