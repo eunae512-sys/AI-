@@ -10,6 +10,7 @@ import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import type { ReelsClip } from "./types";
 import { Play, Pause, Heart, MessageCircle, Send, Bookmark, RefreshCw, Volume2, VolumeX, Plus, Trash2, Pencil } from "lucide-react";
+import { buildVideoQueryDetailed } from "@/lib/cardnews/video-query";
 
 type Props = {
   clip: ReelsClip;
@@ -536,21 +537,13 @@ export function ReelsPreview({ clip: initial, title, handle, industry }: Props) 
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 비디오 쿼리 합성 — industry 기반 매거진 톤 결
+// 비디오 쿼리 합성 — 한국어 토픽에서 식재료/시즌/메뉴 추출 → 영문 키워드.
+// lib/cardnews/video-query.ts 의 buildVideoQueryDetailed 위임.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const INDUSTRY_VIDEO: Record<string, string> = {
-  restaurant: "korean fine dining chef hands cooking close up vertical",
-  cafe: "barista pour coffee slow motion vertical cinematic",
-  dessert: "cake slice plating dessert close up vertical",
-  beauty: "hair stylist hands minimal salon vertical",
-  stay: "warm hanok interior morning light vertical",
-  local: "boutique fashion fabric texture detail vertical",
-};
-
-const VIDEO_TAIL = "cinematic, slow motion, natural light, no faces, editorial, vertical 9:16";
-
 function buildVideoQuery(industry?: string, title?: string): string {
-  const base = (industry && INDUSTRY_VIDEO[industry]) ?? "korean restaurant editorial vertical";
-  return [base, title?.slice(0, 30), VIDEO_TAIL].filter(Boolean).join(", ");
+  return buildVideoQueryDetailed({
+    industry: industry as Parameters<typeof buildVideoQueryDetailed>[0]["industry"],
+    topic: title,
+  });
 }
