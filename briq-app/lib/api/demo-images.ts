@@ -82,10 +82,10 @@ export const DEMO_IMAGES: DemoImage[] = [
   { url: PEXELS_IMG(34094489), industry: "local", keywords: ["shop", "interior"], photographer: "Pexels", photographerUrl: "https://www.pexels.com/", pexelsUrl: PEXELS_PAGE(34094489), alt: "Concept store interior" },
   { url: PEXELS_IMG(33401682), industry: "local", keywords: ["folded", "still"], photographer: "Pexels", photographerUrl: "https://www.pexels.com/", pexelsUrl: PEXELS_PAGE(33401682), alt: "Folded apparel still" },
   { url: PEXELS_IMG(27843893), industry: "local", keywords: ["fashion", "muted"], photographer: "Pexels", photographerUrl: "https://www.pexels.com/", pexelsUrl: PEXELS_PAGE(27843893), alt: "Muted fashion editorial" },
-  // 일반 보강 — 3장
-  { url: PEXELS_IMG(34179560), industry: "local", keywords: ["interior", "wooden"], photographer: "Pexels", photographerUrl: "https://www.pexels.com/", pexelsUrl: PEXELS_PAGE(34179560), alt: "Wooden warm interior" },
-  { url: PEXELS_IMG(23355655), industry: "local", keywords: ["still life", "warm"], photographer: "Pexels", photographerUrl: "https://www.pexels.com/", pexelsUrl: PEXELS_PAGE(23355655), alt: "Warm still life" },
-  { url: PEXELS_IMG(27969063), industry: "local", keywords: ["lantern", "evening"], photographer: "Pexels", photographerUrl: "https://www.pexels.com/", pexelsUrl: PEXELS_PAGE(27969063), alt: "Evening lantern" },
+  // 패션 보강 — 실제 매장·옷걸이·니트 (이전 음식점/등불 사진 교체)
+  { url: PEXELS_IMG(12111440), industry: "local", keywords: ["hangers", "boutique"], photographer: "Pexels", photographerUrl: "https://www.pexels.com/", pexelsUrl: PEXELS_PAGE(12111440), alt: "Clothing on hangers boutique" },
+  { url: PEXELS_IMG(12299947), industry: "local", keywords: ["concept store", "interior"], photographer: "Pexels", photographerUrl: "https://www.pexels.com/", pexelsUrl: PEXELS_PAGE(12299947), alt: "Chic clothing store interior" },
+  { url: PEXELS_IMG(12931727), industry: "local", keywords: ["knit", "sweater"], photographer: "Pexels", photographerUrl: "https://www.pexels.com/", pexelsUrl: PEXELS_PAGE(12931727), alt: "Warm knit sweater close up" },
 ];
 
 // ─────────────────────────────────────────────────────────────
@@ -202,16 +202,25 @@ function isPortraitPrompt(query: string | undefined): boolean {
   return /portrait|persona|model|headshot|recurring|korean (woman|man|person|female|male)/.test(q);
 }
 
-// industry 후보 키워드 → DEMO_IMAGES.industry 매칭
+// industry 후보 키워드 → DEMO_IMAGES.industry 매칭.
+// 순서가 중요: 더 specific 한 산업 먼저 검사. "wooden" 같은 일반어로 stay 가
+// fashion/cafe query 까지 가로채면 안 됨 → stay 키워드는 hanok·courtyard 같이
+// 매우 specific 한 것으로 한정.
 function inferIndustry(query: string | undefined): string | undefined {
   if (!query) return undefined;
   const q = query.toLowerCase();
-  if (/(coffee|espresso|latte|cafe|pour over|colombian|brew|barista)/.test(q)) return "cafe";
-  if (/(patisserie|pastry|cake|dessert|bakery|tart|macaron|cookie)/.test(q)) return "dessert";
-  if (/(salon|hair|stylist|scissors|color swatch|cosmetic)/.test(q)) return "beauty";
-  if (/(hanok|stay|wooden|interior|sunlight|lantern|courtyard|bed|window)/.test(q)) return "stay";
-  if (/(fashion|lookbook|linen|apparel|hanger|store|shop|fabric|concept)/.test(q)) return "local";
-  if (/(plating|dining|chef|food|table|banquet|ceramic|한정식|코스|한 상)/.test(q)) return "restaurant";
+  // 1. 패션 — linen/hanger/clothing 키워드 (stay 의 wooden 보다 우선)
+  if (/(fashion|lookbook|apparel|hanger|boutique|clothing|knit|sweater|coat|linen shirt|fabric|concept store)/.test(q)) return "local";
+  // 2. 카페
+  if (/(coffee|espresso|latte|cafe|pour over|colombian|brew|barista|cappuccino)/.test(q)) return "cafe";
+  // 3. 디저트
+  if (/(patisserie|pastry|cake|dessert|bakery|tart|macaron|cookie|scone|croissant)/.test(q)) return "dessert";
+  // 4. 미용
+  if (/(salon|hair|stylist|scissors|color swatch|cosmetic|nail|manicure|perm)/.test(q)) return "beauty";
+  // 5. 한옥/숙소 — hanok 또는 lantern/courtyard 같은 매우 specific 한 단어만
+  if (/(hanok|courtyard|tea pot|lantern|traditional korean|guest room|stay)/.test(q)) return "stay";
+  // 6. 음식점 — 음식 plate/bowl/ceramic 도 매칭
+  if (/(plating|dining|chef|food|table|banquet|ceramic|bowl|한정식|코스|한 상|kitchen|side dish|chopstick)/.test(q)) return "restaurant";
   return undefined;
 }
 
