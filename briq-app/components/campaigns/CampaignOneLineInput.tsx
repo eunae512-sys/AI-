@@ -10,14 +10,7 @@ import { motion, AnimatePresence } from "motion/react";
 import type { CampaignDraft } from "./types";
 import type { Brand } from "@/types";
 import { generateCardnewsCampaign, inferKindFromTopic, type CardnewsCampaignKind } from "@/lib/cardnews/hook-generator";
-
-const QUICK_TOPICS = [
-  "신메뉴 출시",
-  "단골 재방문 안내",
-  "주말 특별 코스",
-  "리뷰 이벤트",
-  "시즌 한정 메뉴",
-];
+import { buildSuggestedTopics, pushRecentTopic, type SuggestedTopic } from "@/lib/campaigns/campaign-recipes";
 
 export function CampaignOneLineInput({
   onSubmit,
@@ -29,16 +22,30 @@ export function CampaignOneLineInput({
   const [value, setValue] = React.useState("");
   const [thinking, setThinking] = React.useState(false);
 
+  // 브랜드별 추천 풀 — 사장님 최근 입력 + 이번 달 시즌 + 산업 베이스 결합.
+  // 마운트 후에만 (localStorage 접근) 새로 계산. brand 바뀔 때마다 갱신.
+  const [suggestions, setSuggestions] = React.useState<SuggestedTopic[]>([]);
+  React.useEffect(() => {
+    if (!brand) {
+      setSuggestions([]);
+      return;
+    }
+    setSuggestions(buildSuggestedTopics({ brand, limit: 6 }));
+  }, [brand?.id]);
+
   const submit = async (raw: string) => {
     const topic = raw.trim();
     if (!topic) return;
     setThinking(true);
+    // 사장님 본인 입력 누적 → 다음에 본인 가게 추천 풀에 반영
+    if (brand) pushRecentTopic(brand.id, topic);
     // 데모: 실제 환경에선 Trigger.dev workflow 가 카드/릴스/캡션/해시태그를 병렬 생성.
-    // 여기선 600ms 의 "조용한 생각" 후 한 줄 → 통째 캠페인 초안 한 건.
     await new Promise((r) => setTimeout(r, 600));
     onSubmit(buildDraftFromTopic(topic, undefined, brand));
     setThinking(false);
     setValue("");
+    // 추천 풀 새로고침 (방금 누른 토픽이 'recent' 로 떠오르도록)
+    if (brand) setSuggestions(buildSuggestedTopics({ brand, limit: 6 }));
   };
 
   return (
@@ -76,20 +83,36 @@ export function CampaignOneLineInput({
             </button>
           </form>
 
-          {/* 빠른 토픽 — 마치 매거진 사이드 노트 */}
-          <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2">
+          {/* 자주 적는 캠페인 — 브랜드 산업 × 이번 달 시즌 × 사장님 본인 입력 학습 */}
+          <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2">
             <span className="text-[10px] tracking-[0.15em] uppercase text-zinc-400">
               자주 적는 캠페인
             </span>
-            {QUICK_TOPICS.map((t) => (
+            {suggestions.map((s) => (
               <button
-                key={t}
+                key={`${s.source}-${s.text}`}
                 type="button"
-                onClick={() => submit(t)}
+                onClick={() => submit(s.text)}
                 disabled={thinking}
-                className="text-[12.5px] text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 underline underline-offset-4 decoration-[0.5px] decoration-zinc-300 disabled:opacity-40 transition-colors"
+                title={
+                  s.source === "recent"
+                    ? "사장님이 최근 사용한 캠페인"
+                    : s.source === "seasonal"
+                    ? "이번 달에 자주 쓰는 시즌 캠페인"
+                    : "이 업종에서 자주 쓰는 캠페인"
+                }
+                className={
+                  "inline-flex items-center gap-1.5 text-[12.5px] disabled:opacity-40 transition-colors " +
+                  (s.source === "recent"
+                    ? "text-zinc-900 dark:text-zinc-100 underline underline-offset-4 decoration-zinc-900 dark:decoration-zinc-100 decoration-[0.75px] hover:decoration-2"
+                    : s.source === "seasonal"
+                    ? "text-amber-700 dark:text-amber-300 underline underline-offset-4 decoration-amber-300 dark:decoration-amber-500/40 decoration-[0.5px] hover:decoration-amber-700 dark:hover:decoration-amber-300"
+                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 underline underline-offset-4 decoration-[0.5px] decoration-zinc-300")
+                }
               >
-                {t}
+                {s.source === "recent" && <span aria-hidden className="text-[9px] tracking-[0.15em] text-zinc-400">↻</span>}
+                {s.source === "seasonal" && <span aria-hidden className="h-1 w-1 rounded-full bg-amber-500" />}
+                {s.text}
               </button>
             ))}
           </div>
