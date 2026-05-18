@@ -1,232 +1,333 @@
 "use client";
 
-// Landing Hero — 2026 SaaS 랜딩 디자인 원칙
+// Landing Hero — 매거진 스프레드 결.
 //
-// 모노톤 + 단일 액센트(sage). 29CM · Aesop · Linear · Vercel 결.
-// 모바일 우선 — 24px 가장자리, 풍부한 수직 리듬, 단일 검정 CTA.
+// 10년차 베테랑 무브: SaaS 시그널(그라데이션·블롭·다색·큰 그림자) 전부 제거.
+// 타이포가 디자인 그 자체가 되도록 — Aesop · Hermès · Apartamento · Kinfolk 결.
 //
-// 정보 위계:
-//   ① Eyebrow — 카테고리 식별
-//   ② Headline — 한 줄 가치 제안 (세리프, 핵심 단어 하이라이트)
-//   ③ Sub-deck — 보조 한 문장
-//   ④ Trust strip — 즉시 신뢰 증거
-//   ⑤ Primary CTA — 검정 단일 버튼 + 부가 텍스트 링크
-//   ⑥ Live board — 운영 중 표시 (단일 톤)
-//   ⑦ Editorial calendar — 발행 일정
-//   ⑧ Mobile sticky CTA
+// 골격 (모두 매거진 본 권의 한 꼭지처럼):
+//   I.   Folio — 발행 메타데이터 한 줄 (BRIQ · MMXXVI · VOL.I)
+//   II.  Display — 헤드라인. 세리프 이탤릭 액센트 단어 두 개만 강조.
+//   III. Lede — 본문 첫 문단. 드롭캡 없이도 위계 분명.
+//   IV.  Apparatus — CTA + 미세 신뢰 라인 (헤어라인 룰 사이).
+//   V.   Field Notes — 라이브 운영 상황. 박스 카드 대신 매거진 산문.
+//   VI.  Diary — 이번 주 발행 일지. 시간 도장 이탤릭.
+//   VII. Colophon — 푸터 한 줄. (Issued from Seoul · Daily, except Sundays.)
+//
+// 컬러: warm ink + paper. 액센트는 색이 아니라 *이탤릭*.
 
 import * as React from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { ArrowRight, Check } from "lucide-react";
 
 // ─────────────────────────────────────────────────────────────
-// 컬러 토큰 — 한 곳에서 관리 (light/dark 통일)
+// Color tokens — 종이 + 잉크. 단 한 가지 액센트.
 // ─────────────────────────────────────────────────────────────
-const SAGE = "#5C6F5A";          // 사지 그린 액센트
-const CREAM_HL = "#E8E4D5";      // 헤드라인 하이라이트 (cream)
-const SAGE_DARK = "#7A8B78";     // dark mode sage
+const INK = "#14130F";              // warm black (절대 #000 아님)
+const INK_SOFT = "#4A4742";         // 보조 본문
+const INK_MUTE = "#8C8881";         // 메타 텍스트
+const RULE = "rgba(20,19,15,0.12)"; // hairline 룰 (0.5px)
+const PAPER_WASH = "#FAF7EE";       // 페이지 종이 톤 (Hero에만 입힘)
+const SAGE = "#4F5F4B";             // 단 한 컬러 액센트 — 거의 안 씀
+const HL = "#E6DDC8";               // 헤드라인 하이라이트 (cream)
+
+const SERIF_LATIN = "'Cormorant Garamond', 'Nanum Myeongjo', serif";
+const SERIF_HANGUL = "'Nanum Myeongjo', 'Cormorant Garamond', serif";
+
+// 모션 — 절제. 큰 translate 없음. 1~2px nudging + opacity.
+const fade = {
+  initial: { opacity: 0, y: 4 },
+  animate: { opacity: 1, y: 0 },
+};
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden bg-[color:var(--bg)]">
-      {/* 절제된 단색 블롭 — sage 단일 톤, 매우 부드럽게 */}
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div
-          className="absolute -top-40 -right-32 h-[520px] w-[520px] rounded-full opacity-[0.18] dark:opacity-[0.08]"
-          style={{
-            background: `radial-gradient(closest-side, ${SAGE} 0%, transparent 70%)`,
-            filter: "blur(80px)",
-          }}
-        />
-        <div
-          className="absolute top-1/2 -left-32 h-[400px] w-[400px] rounded-full opacity-[0.10] dark:opacity-[0.06]"
-          style={{
-            background: `radial-gradient(closest-side, ${CREAM_HL} 0%, transparent 70%)`,
-            filter: "blur(100px)",
-          }}
-        />
-      </div>
+    <section
+      className="relative overflow-hidden"
+      style={{
+        // 라이트 모드에 한해 종이톤 워시 — 다크 모드는 var(--bg) 그대로.
+        background: `linear-gradient(180deg, ${PAPER_WASH} 0%, ${PAPER_WASH} 88%, transparent 100%)`,
+      }}
+    >
+      {/* 좌측 editorial spine — 데스크탑에서만, 0.5px 라인 */}
+      <div
+        aria-hidden
+        className="hidden lg:block absolute left-[88px] top-0 bottom-0"
+        style={{ width: 0.5, background: RULE }}
+      />
 
-      <div className="relative max-w-[1180px] mx-auto px-6 sm:px-12 pt-14 sm:pt-28 pb-20 sm:pb-28">
-        {/* ── 1. Eyebrow + Trust signal (한 줄로 통합) ──────────────────── */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
+      <div className="relative max-w-[1240px] mx-auto px-6 sm:px-14 lg:pl-[160px] lg:pr-20 pt-10 sm:pt-20 pb-24 sm:pb-32">
+        {/* ── I. Folio — 발행 메타 한 줄 ─────────────────────────────────── */}
+        <motion.header
+          {...fade}
           transition={{ duration: 0.5 }}
-          className="flex items-center gap-2.5"
+          className="flex items-center justify-between gap-6 pb-4 border-b"
+          style={{ borderColor: RULE }}
         >
-          <span
-            className="inline-block h-1.5 w-1.5 rounded-full"
-            style={{ background: SAGE }}
-          />
-          <span className="text-[11px] tracking-[0.18em] uppercase font-medium text-zinc-700 dark:text-zinc-300">
-            BRIQ
-          </span>
-          <span className="text-zinc-300 dark:text-zinc-700 text-[11px]">·</span>
-          <span className="text-[11px] tracking-[0.08em] text-zinc-500 dark:text-zinc-500">
-            소상공인 SNS 자동화 · 2026
-          </span>
-        </motion.div>
-
-        {/* ── 2. Headline ──────────────────────────────────────────────── */}
-        <motion.h1
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.2, 0.7, 0.2, 1], delay: 0.05 }}
-          className="mt-8 sm:mt-12 text-[40px] sm:text-[68px] md:text-[88px] leading-[1.02] sm:leading-[0.98] tracking-[-0.025em] font-medium max-w-[1000px] text-zinc-900 dark:text-zinc-50"
-          style={{ fontFamily: "'Cormorant Garamond', 'Nanum Myeongjo', serif", fontWeight: 500 }}
-        >
-          사장님은{" "}
-          <span className="relative inline-block">
-            <span className="relative z-10">장사만</span>
-            {/* 크림 하이라이트 — 절제된 결 */}
-            <span
-              aria-hidden
-              className="absolute inset-x-0 bottom-1 h-[10px] sm:h-[14px] -z-0"
-              style={{ background: CREAM_HL, opacity: 0.85 }}
-            />
-          </span>{" "}
-          하세요.
-          <br />
-          <span className="text-zinc-400 dark:text-zinc-600">SNS 는 </span>
-          <em
-            className="italic font-medium"
-            style={{ color: SAGE, fontStyle: "italic" }}
-          >
-            자동으로
-          </em>{" "}
-          <span className="text-zinc-400 dark:text-zinc-600">굴러갑니다.</span>
-        </motion.h1>
-
-        {/* ── 3. Sub-deck ──────────────────────────────────────────────── */}
-        <motion.p
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.15 }}
-          className="mt-6 sm:mt-8 max-w-[580px] text-[15px] sm:text-[17px] leading-[1.65] text-zinc-600 dark:text-zinc-400"
-        >
-          매일 한 컷씩 발행되고, 댓글이 응답되고, 다음 주 일정이 미리 짜집니다.
-          사장님은 가게에 집중하시고, 인스타·블로그·카카오 운영은 BRIQ 가 대신합니다.
-        </motion.p>
-
-        {/* ── 4. CTA + Trust ───────────────────────────────────────────── */}
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.25 }}
-          className="mt-10 sm:mt-12"
-        >
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-5">
-            {/* Primary — ink 단일 버튼 (그라데이션·그림자 제거) */}
-            <Link
-              href="/onboarding"
-              className="group inline-flex items-center justify-center gap-2.5 h-14 sm:h-[52px] px-7 sm:px-9 bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 text-[14.5px] sm:text-[14px] tracking-[0.02em] font-medium hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors"
-            >
-              지금 바로 시작
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </Link>
-            {/* Secondary — 텍스트 링크 (절제) */}
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center justify-center sm:justify-start gap-1 text-[14px] tracking-[0.02em] text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-50 underline underline-offset-[6px] decoration-[0.5px] decoration-zinc-300 dark:decoration-zinc-700 hover:decoration-zinc-900 dark:hover:decoration-zinc-50"
-            >
-              데모 먼저 보기
-            </Link>
-          </div>
-
-          {/* Trust micro — CTA 아래 작은 한 줄, 절제 */}
-          <ul className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[12px] text-zinc-500 dark:text-zinc-500">
-            <li className="inline-flex items-center gap-1.5">
-              <Check className="h-3 w-3" style={{ color: SAGE }} />
-              14일 무료
-            </li>
-            <li className="inline-flex items-center gap-1.5">
-              <Check className="h-3 w-3" style={{ color: SAGE }} />
-              신용카드 입력 X
-            </li>
-            <li className="inline-flex items-center gap-1.5">
-              <Check className="h-3 w-3" style={{ color: SAGE }} />
-              3분 가입
-            </li>
-            <li className="hidden sm:inline-flex items-center gap-1.5 ml-2">
-              <span className="inline-block h-1 w-1 rounded-full" style={{ background: SAGE }} />
-              한국 소상공인 200+ 가게가 사용 중
-            </li>
-          </ul>
-        </motion.div>
-
-        {/* ── 5. Live operations board ─────────────────────────────────── */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.4 }}
-          className="mt-20 sm:mt-32"
-        >
-          <div className="flex items-baseline justify-between mb-5 sm:mb-6">
-            <div className="editorial-label">지금 가게에서</div>
-            <div className="text-[11px] text-zinc-500 dark:text-zinc-500 tabular-nums">
-              <NowClock /> · 자동 갱신
+          <div className="flex items-center gap-3 sm:gap-4">
+            <SectionMark numeral="I" />
+            <div className="text-[10.5px] tracking-[0.24em] uppercase" style={{ color: INK }}>
+              BRIQ
+            </div>
+            <div style={{ color: INK_MUTE }} className="text-[10px]">·</div>
+            <div className="text-[10px] tracking-[0.18em] uppercase" style={{ color: INK_MUTE }}>
+              An Operator for Small Businesses
             </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-0 gap-y-10 sm:gap-y-12 border-y border-zinc-200 dark:border-zinc-800 py-8 sm:py-10">
-            <LiveStat label="오늘 자동 발행" value="2" unit="건" detail="오전 10:18 · 오후 7:12" />
-            <LiveStat label="이번 주 예약" value="12" unit="건" detail="인스타 9 · 블로그 3" />
-            <LiveStat label="자동 응답" value="ON" detail="댓글·DM 평균 3분 회신" pill />
-            <LiveStat label="이번 주 캠페인" value="2" unit="개" detail="신메뉴 · 어버이날" />
+          <div className="hidden sm:flex items-center gap-3 text-[10px] tracking-[0.18em] uppercase" style={{ color: INK_MUTE }}>
+            <span>Vol. I</span>
+            <span>·</span>
+            <span className="tabular-nums">MMXXVI</span>
+            <span>·</span>
+            <NowClock />
+          </div>
+          <div className="sm:hidden text-[10px] tracking-[0.18em] uppercase tabular-nums" style={{ color: INK_MUTE }}>
+            <NowClock />
+          </div>
+        </motion.header>
+
+        {/* ── II. Display ─────────────────────────────────────────────── */}
+        <motion.div
+          {...fade}
+          transition={{ duration: 0.7, delay: 0.08, ease: [0.2, 0.7, 0.2, 1] }}
+          className="mt-10 sm:mt-20 grid grid-cols-12 gap-x-6"
+        >
+          <div className="col-span-12 lg:col-span-1 lg:pt-3">
+            <SectionMark numeral="II" />
+          </div>
+          <h1
+            className="col-span-12 lg:col-span-11 text-[44px] sm:text-[80px] md:text-[104px] lg:text-[120px] leading-[0.96] tracking-[-0.035em] font-normal"
+            style={{ fontFamily: SERIF_LATIN, fontWeight: 400, color: INK }}
+          >
+            <span className="block">
+              사장님은{" "}
+              <Hilight>장사만</Hilight>
+              <span className="hidden sm:inline">,</span>
+            </span>
+            <span className="block mt-1 sm:mt-2">
+              <Quiet>SNS 는{" "}</Quiet>
+              <em
+                className="italic"
+                style={{ fontFamily: SERIF_LATIN, fontStyle: "italic", color: INK, fontWeight: 400 }}
+              >
+                자동으로
+              </em>
+              <Quiet>{" "}굴러갑니다.</Quiet>
+            </span>
+          </h1>
+        </motion.div>
+
+        {/* ── III. Lede ───────────────────────────────────────────────── */}
+        <motion.div
+          {...fade}
+          transition={{ duration: 0.6, delay: 0.18 }}
+          className="mt-14 sm:mt-20 grid grid-cols-12 gap-x-6"
+        >
+          <div className="col-span-12 lg:col-span-1">
+            <SectionMark numeral="III" />
+          </div>
+          <p
+            className="col-span-12 lg:col-span-7 text-[16px] sm:text-[19px] leading-[1.7]"
+            style={{ fontFamily: SERIF_HANGUL, color: INK_SOFT }}
+          >
+            매일 한 컷이 발행되고, 댓글이 응답되고, 다음 주 일정이 미리
+            짜집니다. 사장님은 가게에 집중하시고, 인스타·블로그·카카오 운영은
+            BRIQ 가 대신합니다.
+          </p>
+          <aside
+            className="col-span-12 lg:col-span-3 lg:col-start-10 mt-6 lg:mt-2 lg:pl-6 lg:border-l"
+            style={{ borderColor: RULE }}
+          >
+            <div className="text-[10px] tracking-[0.22em] uppercase" style={{ color: INK_MUTE }}>
+              At a glance
+            </div>
+            <ul className="mt-3 space-y-1.5 text-[12.5px]" style={{ color: INK_SOFT, fontFamily: SERIF_HANGUL }}>
+              <li>· 14일 무료 · 카드 입력 없음</li>
+              <li>· 3분 만에 가입</li>
+              <li>· 한국 소상공인 <em className="not-italic tabular-nums">200+</em> 가게 사용 중</li>
+            </ul>
+          </aside>
+        </motion.div>
+
+        {/* ── IV. Apparatus — CTA ─────────────────────────────────────── */}
+        <motion.div
+          {...fade}
+          transition={{ duration: 0.6, delay: 0.28 }}
+          className="mt-14 sm:mt-20 grid grid-cols-12 gap-x-6"
+        >
+          <div className="col-span-12 lg:col-span-1">
+            <SectionMark numeral="IV" />
+          </div>
+          <div
+            className="col-span-12 lg:col-span-11 flex flex-col sm:flex-row items-stretch sm:items-baseline gap-x-8 gap-y-5 pb-6 border-b"
+            style={{ borderColor: RULE }}
+          >
+            {/* Primary — 솔리드 잉크. 작고 단정. */}
+            <Link
+              href="/onboarding"
+              className="group inline-flex items-center justify-center gap-3 h-12 sm:h-[46px] px-7 text-[12.5px] tracking-[0.16em] uppercase font-medium transition-colors"
+              style={{ background: INK, color: PAPER_WASH }}
+            >
+              Begin
+              <span aria-hidden className="text-[14px] tracking-normal transition-transform group-hover:translate-x-0.5">→</span>
+            </Link>
+            {/* Secondary — 헤어라인 outlined */}
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center justify-center gap-2 h-12 sm:h-[46px] px-6 text-[12.5px] tracking-[0.16em] uppercase transition-colors hover:bg-[rgba(20,19,15,0.04)]"
+              style={{ border: `0.5px solid ${INK}`, color: INK }}
+            >
+              View the demo
+            </Link>
+            {/* Tertiary — pure underline link, 매거진 결 */}
+            <Link
+              href="/pricing"
+              className="hidden sm:inline-block text-[12.5px] tracking-[0.04em] underline underline-offset-[6px] decoration-[0.5px]"
+              style={{ color: INK_SOFT, textDecorationColor: RULE }}
+            >
+              가격 — 한 장으로 정리
+            </Link>
+          </div>
+        </motion.div>
+
+        {/* ── V. Field Notes — 운영 산문 ─────────────────────────────────── */}
+        <motion.section
+          {...fade}
+          transition={{ duration: 0.7, delay: 0.4 }}
+          className="mt-20 sm:mt-32 grid grid-cols-12 gap-x-6"
+        >
+          <div className="col-span-12 lg:col-span-1">
+            <SectionMark numeral="V" />
+          </div>
+          <div className="col-span-12 lg:col-span-11">
+            <Kicker>Field Notes · 지금 가게에서</Kicker>
+            <p
+              className="mt-5 text-[18px] sm:text-[22px] leading-[1.55] max-w-[820px]"
+              style={{ fontFamily: SERIF_HANGUL, color: INK }}
+            >
+              오늘 오전 <Stamp>10:18</Stamp> 에 두 컷이 자동 발행되었고,
+              이번 주 <Stamp>12</Stamp> 건이 예약되어 있습니다. 댓글·DM 자동
+              응답은 <em className="italic" style={{ fontFamily: SERIF_LATIN }}>ON</em>{" "}
+              — 평균 <Stamp>3분</Stamp> 안에 회신합니다. 이번 주 진행 중인
+              캠페인은 두 개, <em className="italic" style={{ fontFamily: SERIF_LATIN }}>신메뉴</em>{" "}
+              와 <em className="italic" style={{ fontFamily: SERIF_LATIN }}>어버이날</em>.
+            </p>
+
+            {/* 라이브 메트릭 — 박스 없이 본문 사이에 numbered figures */}
+            <dl className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-x-0 gap-y-6 pt-6 border-t" style={{ borderColor: RULE }}>
+              <Figure label="Today / posted" value="2" detail="10:18 · 19:12" />
+              <Figure label="This week / scheduled" value="12" detail="인스타 9 · 블로그 3" />
+              <Figure label="Auto-reply" value="ON" italic detail="comments · DMs · 3 min" />
+              <Figure label="Campaigns" value="2" detail="신메뉴 · 어버이날" />
+            </dl>
           </div>
         </motion.section>
 
-        {/* ── 6. This week schedule (editorial calendar) ─────────────────── */}
+        {/* ── VI. Diary — 이번 주 일지 ─────────────────────────────────── */}
         <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          {...fade}
           transition={{ duration: 0.7, delay: 0.5 }}
-          className="mt-16 sm:mt-20"
+          className="mt-20 sm:mt-28 grid grid-cols-12 gap-x-6"
         >
-          <div className="editorial-label mb-5 sm:mb-6">이번 주 발행 일정</div>
-          <ol className="divide-y divide-zinc-200 dark:divide-zinc-800 border-y border-zinc-200 dark:border-zinc-800">
-            {WEEK.map((w) => (
-              <li
-                key={w.day}
-                className="grid grid-cols-12 items-baseline gap-3 py-4 sm:py-4 hover:bg-zinc-50/40 dark:hover:bg-zinc-900/40 transition-colors px-2 -mx-2"
-              >
-                <div className="col-span-2 sm:col-span-1 editorial-label">{w.day}</div>
-                <div className="col-span-3 sm:col-span-2 text-[11px] tracking-[0.12em] uppercase text-zinc-500 dark:text-zinc-500">
-                  {w.channel}
-                </div>
-                <div
-                  className="col-span-5 sm:col-span-7 text-[13.5px] sm:text-[14.5px] leading-snug text-zinc-800 dark:text-zinc-200"
-                  style={{ fontFamily: "'Nanum Myeongjo', serif" }}
+          <div className="col-span-12 lg:col-span-1">
+            <SectionMark numeral="VI" />
+          </div>
+          <div className="col-span-12 lg:col-span-11">
+            <Kicker>Diary · 이번 주 발행 일지</Kicker>
+            <ol className="mt-5 border-t" style={{ borderColor: RULE }}>
+              {WEEK.map((w, i) => (
+                <li
+                  key={w.day}
+                  className="group grid grid-cols-12 items-baseline gap-x-3 sm:gap-x-6 py-5 border-b transition-colors hover:bg-[rgba(20,19,15,0.025)]"
+                  style={{ borderColor: RULE }}
                 >
-                  {w.title}
-                </div>
-                <div className="col-span-2 sm:col-span-2 text-right">
-                  <StatusChip status={w.status} />
-                </div>
-              </li>
-            ))}
-          </ol>
+                  {/* 인덱스 — 로만/타뷸러 */}
+                  <div
+                    className="col-span-2 sm:col-span-1 text-[10.5px] tracking-[0.18em] uppercase tabular-nums"
+                    style={{ color: INK_MUTE }}
+                  >
+                    {String(i + 1).padStart(2, "0")}
+                  </div>
+                  {/* 요일 — 세리프 */}
+                  <div
+                    className="col-span-2 sm:col-span-1 text-[17px] sm:text-[19px] leading-none"
+                    style={{ fontFamily: SERIF_HANGUL, color: INK, fontWeight: 500 }}
+                  >
+                    {w.day}
+                  </div>
+                  {/* 시간 — 이탤릭 타뷸러 */}
+                  <div
+                    className="col-span-3 sm:col-span-2 text-[12.5px] tabular-nums italic"
+                    style={{ color: INK_SOFT, fontFamily: SERIF_LATIN }}
+                  >
+                    {w.time}
+                  </div>
+                  {/* 채널 — small caps */}
+                  <div
+                    className="hidden sm:block col-span-2 text-[10.5px] tracking-[0.18em] uppercase"
+                    style={{ color: INK_MUTE }}
+                  >
+                    {w.channel}
+                  </div>
+                  {/* 제목 — 본문 세리프 */}
+                  <div
+                    className="col-span-5 sm:col-span-5 text-[14px] sm:text-[15.5px] leading-snug"
+                    style={{ fontFamily: SERIF_HANGUL, color: INK }}
+                  >
+                    {w.title}
+                  </div>
+                  {/* 상태 */}
+                  <div className="col-span-12 sm:col-span-1 sm:text-right mt-1 sm:mt-0">
+                    <StatusMark status={w.status} />
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
         </motion.section>
+
+        {/* ── VII. Colophon ─────────────────────────────────────────────── */}
+        <motion.footer
+          {...fade}
+          transition={{ duration: 0.6, delay: 0.7 }}
+          className="mt-24 sm:mt-32 grid grid-cols-12 gap-x-6"
+        >
+          <div className="col-span-12 lg:col-span-1">
+            <SectionMark numeral="VII" />
+          </div>
+          <div className="col-span-12 lg:col-span-11 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-3 pt-6 border-t" style={{ borderColor: RULE }}>
+            <div
+              className="text-[11.5px] tracking-[0.04em]"
+              style={{ color: INK_MUTE, fontFamily: SERIF_LATIN, fontStyle: "italic" }}
+            >
+              Issued from Seoul. Daily, except Sundays.
+              <span aria-hidden className="mx-2" style={{ color: SAGE }}>¶</span>
+              Operated quietly, in the background.
+            </div>
+            <div className="text-[10px] tracking-[0.22em] uppercase" style={{ color: INK_MUTE }}>
+              BRIQ — Set in Cormorant &amp; Nanum Myeongjo
+            </div>
+          </div>
+        </motion.footer>
       </div>
 
-      {/* ── 7. Mobile sticky CTA ───────────────────────────────────────── */}
+      {/* ── Mobile sticky CTA — 절제된 잉크 바, 라벨 미니멀 ─────────────── */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        {...fade}
         transition={{ duration: 0.5, delay: 0.9 }}
         className="sm:hidden fixed bottom-4 left-4 right-4 z-30"
       >
         <Link
           href="/onboarding"
-          className="flex items-center justify-center gap-2 w-full h-13 leading-[3.25rem] text-center bg-zinc-900 text-white text-[14px] tracking-[0.04em] font-medium hover:bg-zinc-800 transition-colors"
+          className="flex items-center justify-between gap-2 w-full h-12 px-5 text-[12px] tracking-[0.18em] uppercase font-medium"
           style={{
-            // 절제된 그림자 — 그라데이션 제거, 깊이감만
-            boxShadow: "0 8px 24px -6px rgba(0,0,0,0.25), 0 2px 6px -2px rgba(0,0,0,0.1)",
+            background: INK,
+            color: PAPER_WASH,
+            boxShadow: "0 6px 20px -8px rgba(20,19,15,0.35)",
           }}
         >
-          3분 만에 시작하기
-          <ArrowRight className="h-3.5 w-3.5" />
+          <span>Begin · 3분 만에 시작</span>
+          <span aria-hidden>→</span>
         </Link>
       </motion.div>
     </section>
@@ -234,97 +335,148 @@ export function Hero() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Sub-components
+// Sub-components — 매거진 결의 작은 부속들
 // ─────────────────────────────────────────────────────────────
 
-function NowClock() {
-  const [time, setTime] = React.useState("");
-  React.useEffect(() => {
-    setTime(new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" }));
-  }, []);
-  return <span>{time}</span>;
+/** 섹션 번호 마커 — 로만 숫자, 헤어라인 결 */
+function SectionMark({ numeral }: { numeral: string }) {
+  return (
+    <div
+      className="inline-flex items-baseline gap-1.5 text-[10.5px] tracking-[0.22em] uppercase tabular-nums"
+      style={{ color: INK_MUTE, fontFamily: SERIF_LATIN, fontStyle: "italic" }}
+    >
+      <span aria-hidden style={{ color: RULE }}>—</span>
+      <span>{numeral}.</span>
+    </div>
+  );
 }
 
-function LiveStat({
+/** 본문 톤다운 텍스트 (헤드라인용) */
+function Quiet({ children }: { children: React.ReactNode }) {
+  return <span style={{ color: INK_MUTE }}>{children}</span>;
+}
+
+/** 크림 하이라이트 — 글자 뒤에 깔리는 종이결, 매우 절제 */
+function Hilight({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="relative inline-block">
+      <span className="relative z-10">{children}</span>
+      <span
+        aria-hidden
+        className="absolute inset-x-[-2px] bottom-[6px] sm:bottom-[10px] h-[10px] sm:h-[16px] -z-0"
+        style={{ background: HL, opacity: 0.9 }}
+      />
+    </span>
+  );
+}
+
+/** Field Notes 산문 안 숫자/시간 도장 — 이탤릭 + 헤어라인 박스 */
+function Stamp({ children }: { children: React.ReactNode }) {
+  return (
+    <em
+      className="inline-block tabular-nums italic px-[6px] py-[1px] mx-[1px] text-[0.92em]"
+      style={{
+        fontFamily: SERIF_LATIN,
+        fontStyle: "italic",
+        color: INK,
+        borderBottom: `0.5px solid ${INK}`,
+      }}
+    >
+      {children}
+    </em>
+  );
+}
+
+/** 섹션 키커 라인 — small caps, 헤어라인 룰 위 */
+function Kicker({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="text-[10.5px] tracking-[0.22em] uppercase" style={{ color: INK_MUTE }}>
+        {children}
+      </div>
+      <div className="flex-1 h-px" style={{ background: RULE }} />
+    </div>
+  );
+}
+
+/** 라이브 메트릭 — 박스 없음, 매거진의 numbered figure */
+function Figure({
   label,
   value,
-  unit,
   detail,
-  pill = false,
+  italic = false,
 }: {
   label: string;
   value: string;
-  unit?: string;
   detail: string;
-  /** ON/OFF 같은 상태 값 — pill 형태로 강조 */
-  pill?: boolean;
+  italic?: boolean;
 }) {
   return (
-    <div className="px-5 first:pl-0 md:border-l md:border-zinc-200 dark:md:border-zinc-800 md:first:border-l-0">
-      <div className="inline-flex items-center gap-1.5">
-        <span
-          className="inline-block h-1 w-1 rounded-full"
-          style={{ background: SAGE }}
-        />
-        <div className="editorial-label">{label}</div>
+    <div className="px-0 sm:px-5 first:pl-0 md:border-l md:first:border-l-0" style={{ borderColor: RULE }}>
+      <div className="text-[10px] tracking-[0.22em] uppercase" style={{ color: INK_MUTE }}>
+        {label}
       </div>
-      <div className="mt-3 flex items-baseline gap-1.5">
-        {pill ? (
-          <span
-            className="inline-flex items-center h-7 px-2.5 text-[12px] tracking-[0.08em] font-medium uppercase text-white dark:text-zinc-900"
-            style={{ background: SAGE }}
-          >
-            {value}
-          </span>
-        ) : (
-          <>
-            <div
-              className="text-[36px] sm:text-[44px] tabular-nums leading-none tracking-tight font-medium text-zinc-900 dark:text-zinc-50"
-              style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 500 }}
-            >
-              {value}
-            </div>
-            {unit && <div className="text-[13px] text-zinc-500 dark:text-zinc-500">{unit}</div>}
-          </>
-        )}
+      <div
+        className="mt-2 text-[40px] sm:text-[52px] leading-none tabular-nums"
+        style={{
+          fontFamily: SERIF_LATIN,
+          fontWeight: 400,
+          color: INK,
+          fontStyle: italic ? "italic" : "normal",
+        }}
+      >
+        {value}
       </div>
-      <div className="mt-2 text-[11.5px] text-zinc-500 dark:text-zinc-500 leading-snug">
+      <div className="mt-2.5 text-[11.5px] tabular-nums" style={{ color: INK_SOFT, fontFamily: SERIF_LATIN, fontStyle: "italic" }}>
         {detail}
       </div>
     </div>
   );
 }
 
-function StatusChip({ status }: { status: string }) {
-  // 절제된 단일 톤 시스템 — sage 변형 + zinc
-  const tone: Record<string, { bg: string; text: string }> = {
-    발행됨: { bg: "rgba(92,111,90,0.10)", text: SAGE },
-    예약: { bg: "rgba(92,111,90,0.06)", text: SAGE },
-    초안: { bg: "rgba(24,24,27,0.04)", text: "#52525b" },
-    대기: { bg: "rgba(24,24,27,0.04)", text: "#71717a" },
-    자동: { bg: "rgba(92,111,90,0.08)", text: SAGE },
-    쉼: { bg: "transparent", text: "#a1a1aa" },
-  };
-  const t = tone[status] ?? tone.초안;
+/** 상태 — 색 없이 점 한 개 + 텍스트. 진정한 절제. */
+function StatusMark({ status }: { status: string }) {
+  const dot = (() => {
+    switch (status) {
+      case "발행됨":
+      case "자동":
+        return INK;
+      case "예약":
+        return SAGE;
+      case "초안":
+      case "대기":
+        return INK_MUTE;
+      default:
+        return "transparent";
+    }
+  })();
   return (
     <span
-      className="inline-block px-2 py-0.5 text-[10.5px] tracking-[0.04em]"
-      style={{ background: t.bg, color: t.text }}
+      className="inline-flex items-center gap-1.5 text-[10.5px] tracking-[0.18em] uppercase"
+      style={{ color: INK_SOFT }}
     >
+      <span aria-hidden className="inline-block h-[5px] w-[5px] rounded-full" style={{ background: dot }} />
       {status}
     </span>
   );
 }
 
-const WEEK = [
-  { day: "월", channel: "인스타", title: "오늘 한 컷 · 점심 자리 안내", status: "발행됨" },
-  { day: "화", channel: "네이버 블로그", title: "5월 봄나물 코스 — 산지 후기", status: "예약" },
-  { day: "수", channel: "인스타", title: "오늘 한 컷 · 시그니처 메뉴", status: "초안" },
-  { day: "목", channel: "인스타", title: "주말 예약 안내 카드뉴스", status: "초안" },
-  { day: "금", channel: "인스타", title: "릴스 · 시즌 한 컷", status: "대기" },
-  { day: "토", channel: "스토리", title: "토요일 영업 안내", status: "자동" },
-  { day: "일", channel: "—", title: "쉼", status: "쉼" },
-];
+function NowClock() {
+  const [time, setTime] = React.useState("");
+  React.useEffect(() => {
+    setTime(
+      new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })
+    );
+  }, []);
+  return <span className="tabular-nums">{time || "—"}</span>;
+}
 
-// SAGE_DARK reserved for future dark-mode swap if needed
-void SAGE_DARK;
+const WEEK = [
+  { day: "월", time: "10:18", channel: "Instagram", title: "오늘 한 컷 — 점심 자리 안내", status: "발행됨" },
+  { day: "화", time: "11:24", channel: "Naver", title: "5월 봄나물 코스 · 산지 후기", status: "예약" },
+  { day: "수", time: "10:42", channel: "Instagram", title: "오늘 한 컷 · 시그니처 메뉴", status: "초안" },
+  { day: "목", time: "12:08", channel: "Instagram", title: "주말 예약 안내 카드뉴스", status: "초안" },
+  { day: "금", time: "18:30", channel: "Instagram", title: "릴스 — 시즌 한 컷", status: "대기" },
+  { day: "토", time: "09:00", channel: "Story", title: "토요일 영업 안내", status: "자동" },
+  { day: "일", time: "—",     channel: "—",         title: "쉼.",                       status: "쉼" },
+];
