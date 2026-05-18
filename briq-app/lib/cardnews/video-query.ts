@@ -41,6 +41,52 @@ const INGREDIENT_KO_EN: Record<string, string> = {
   쌀: "korean rice",
   된장: "doenjang fermented paste",
   김치: "kimchi fermented",
+  // 한식 메뉴/요리 — 사장님 signatureMenu 와 직접 매칭
+  갈비찜: "braised short ribs galbi jjim",
+  떡갈비: "tteokgalbi grilled patty",
+  잡채: "japchae glass noodles",
+  불고기: "bulgogi grilled beef",
+  닭갈비: "dak galbi spicy chicken",
+  김치찌개: "kimchi stew",
+  된장찌개: "doenjang stew",
+  순두부찌개: "soft tofu stew",
+  부대찌개: "budae jjigae stew",
+  육개장: "yukgaejang spicy beef soup",
+  설렁탕: "seolleongtang ox bone soup",
+  곰탕: "gomtang beef soup",
+  냉이된장국: "namul soybean paste soup",
+  파전: "scallion pancake pajeon",
+  해물파전: "seafood scallion pancake",
+  보쌈: "bossam boiled pork",
+  족발: "jokbal braised pork trotter",
+  삼겹살: "grilled pork belly samgyeopsal",
+  삼계탕: "samgyetang chicken ginseng soup",
+  떡볶이: "tteokbokki spicy rice cake",
+  순대: "sundae korean blood sausage",
+  전복죽: "abalone porridge",
+  쌈밥: "lettuce wrap ssambap",
+  한정식: "korean traditional banquet hanjeongsik",
+  "5첩 한정식": "korean banquet five sides",
+  "7첩 한정식": "korean banquet seven sides",
+  돌솥비빔밥: "stone bowl bibimbap dolsot",
+  // 카페·디저트 보강
+  아메리카노: "americano black coffee",
+  카푸치노: "cappuccino foam art",
+  바닐라라떼: "vanilla latte",
+  플랫화이트: "flat white",
+  스콘: "scone bakery",
+  크루아상: "croissant flaky pastry",
+  티라미수: "tiramisu dessert",
+  롤케이크: "roll cake swiss",
+  // 미용
+  컬러: "hair color salon",
+  펌: "hair perm styling",
+  염색: "hair dye salon",
+  네일: "manicure nail art",
+  // 패션·잡화
+  린넨: "linen fabric texture",
+  코트: "minimal coat outerwear",
+  니트: "knit sweater editorial",
   // 카페·디저트
   콜드브루: "cold brew iced coffee",
   라떼: "latte",
@@ -192,6 +238,10 @@ export function extractVideoTokens(topic: string): VideoTopicTokens {
 export function buildVideoQueryDetailed(opts: {
   industry?: Brand["industry"];
   topic?: string;
+  /** 캠페인 헤드라인 — 있으면 topic 보다 우선 (더 구체적인 키워드 보유) */
+  campaignHeadline?: string;
+  /** 사장님 시그니처 메뉴/상품 — 사전 매칭 시 영상에 정밀 반영 */
+  signatureMenu?: string[];
   /** 명시적 영문 keyword 가 있으면 그것 우선 (caller 가 결정한 시드) */
   seedQuery?: string;
 }): string {
@@ -201,7 +251,20 @@ export function buildVideoQueryDetailed(opts: {
   }
 
   const industry = opts.industry ?? "restaurant";
-  const tokens = extractVideoTokens(opts.topic ?? "");
+
+  // 토픽 소스 결합 — campaignHeadline 우선, topic, signatureMenu 합쳐서 추출.
+  // 사장님이 캠페인 헤드라인을 "5월 봄나물 코스 안내" 로 설정하면 그것이 가장 정확한
+  // 영상 매칭 시드. 토픽(릴스 메타 타이틀)은 보조. signatureMenu 는 한식 메뉴 사전 매칭.
+  const topicSources: string[] = [];
+  if (opts.campaignHeadline) topicSources.push(opts.campaignHeadline);
+  if (opts.topic && opts.topic !== opts.campaignHeadline) topicSources.push(opts.topic);
+  if (opts.signatureMenu && opts.signatureMenu.length > 0) {
+    // 시그니처 메뉴 첫 2개를 추가 — 다국어 사전 매칭 대상
+    topicSources.push(opts.signatureMenu.slice(0, 2).join(" "));
+  }
+  const combinedTopic = topicSources.join(" ");
+
+  const tokens = extractVideoTokens(combinedTopic);
 
   // 매칭된 디테일이 있으면 산업 컨텍스트는 1단어 정도만, 토픽 디테일 우선
   const hasDetail =
@@ -211,13 +274,12 @@ export function buildVideoQueryDetailed(opts: {
 
   const parts: string[] = [];
 
-  // 1. 매칭된 토픽 디테일 (가장 중요)
-  parts.push(...tokens.ingredients);
-  parts.push(...tokens.menu);
+  // 1. 매칭된 토픽 디테일 (가장 중요) — ingredients 가 menu 보다 우선
+  parts.push(...tokens.ingredients.slice(0, 2));
+  parts.push(...tokens.menu.slice(0, 1));
 
   // 2. 산업 컨텍스트 — 디테일 있으면 짧게, 없으면 풀 컨텍스트
   if (hasDetail) {
-    // 디테일 매칭되면 산업 핵심 한 단어만
     const shortContext: Record<string, string> = {
       restaurant: "korean dining",
       cafe: "cafe",
@@ -235,10 +297,10 @@ export function buildVideoQueryDetailed(opts: {
   if (tokens.season.length > 0) parts.push(tokens.season[0]);
   if (tokens.time.length > 0 && tokens.season.length === 0) parts.push(tokens.time[0]);
 
-  // 4. 톤 (vertical 포함)
+  // 4. 톤 (vertical 포함, editorial minimal aesthetic 자동)
   parts.push(INDUSTRY_VIDEO_TONE[industry] ?? "editorial vertical");
 
-  // 중복 제거 + 8 단어 한도 (Pexels 가 너무 긴 검색어엔 정확도 떨어짐)
+  // 중복 제거 + 10 단어 한도
   const cleaned = parts
     .filter(Boolean)
     .join(" ")

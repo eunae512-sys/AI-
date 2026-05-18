@@ -18,9 +18,13 @@ type Props = {
   handle?: string;
   /** 가게 컨텍스트 — 비디오 검색 쿼리 보강 */
   industry?: string;
+  /** 캠페인 헤드라인 — "5월 봄나물 코스 안내" 같은 구체 토픽 (영상 매칭 시드 1순위) */
+  campaignHeadline?: string;
+  /** 사장님 시그니처 메뉴/상품 — 사전 매칭 (갈비찜·콜드브루·딸기 케이크 등) */
+  signatureMenu?: string[];
 };
 
-export function ReelsPreview({ clip: initial, title, handle, industry }: Props) {
+export function ReelsPreview({ clip: initial, title, handle, industry, campaignHeadline, signatureMenu }: Props) {
   const [clip, setClip] = React.useState<ReelsClip>(initial);
   const [playing, setPlaying] = React.useState(true);
   const [muted, setMuted] = React.useState(true);
@@ -80,7 +84,7 @@ export function ReelsPreview({ clip: initial, title, handle, industry }: Props) 
     async (opts?: { queryOverride?: string }) => {
       setFetching(true);
       try {
-        const query = opts?.queryOverride ?? initial.videoQuery ?? buildVideoQuery(industry, title);
+        const query = opts?.queryOverride ?? initial.videoQuery ?? buildVideoQuery({ industry, title, campaignHeadline, signatureMenu });
         const r = await fetch("/api/search-pexels-video", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -118,7 +122,7 @@ export function ReelsPreview({ clip: initial, title, handle, industry }: Props) 
         setFetching(false);
       }
     },
-    [industry, title, initial.videoQuery],
+    [industry, title, campaignHeadline, signatureMenu, initial.videoQuery],
   );
 
   // 브랜드/토픽이 바뀌어 새 clip 이 들어오면 내부 state 동기 + seenIds 리셋 + 새 비디오 페치
@@ -537,13 +541,19 @@ export function ReelsPreview({ clip: initial, title, handle, industry }: Props) 
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 비디오 쿼리 합성 — 한국어 토픽에서 식재료/시즌/메뉴 추출 → 영문 키워드.
-// lib/cardnews/video-query.ts 의 buildVideoQueryDetailed 위임.
+// 비디오 쿼리 합성 — 캠페인 헤드라인·시그니처 메뉴·산업 결합 → 정밀 영문 키워드.
 // ─────────────────────────────────────────────────────────────────────────────
 
-function buildVideoQuery(industry?: string, title?: string): string {
+function buildVideoQuery(opts: {
+  industry?: string;
+  title?: string;
+  campaignHeadline?: string;
+  signatureMenu?: string[];
+}): string {
   return buildVideoQueryDetailed({
-    industry: industry as Parameters<typeof buildVideoQueryDetailed>[0]["industry"],
-    topic: title,
+    industry: opts.industry as Parameters<typeof buildVideoQueryDetailed>[0]["industry"],
+    topic: opts.title,
+    campaignHeadline: opts.campaignHeadline,
+    signatureMenu: opts.signatureMenu,
   });
 }

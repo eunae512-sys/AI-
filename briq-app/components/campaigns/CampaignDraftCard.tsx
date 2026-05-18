@@ -17,6 +17,7 @@ import { CardnewsCarousel } from "./CardnewsCarousel";
 import { ReelsPreview } from "./ReelsPreview";
 import { CampaignMarketingPanel } from "./CampaignMarketingPanel";
 import { brandHandle, brandWordmark } from "@/lib/brand/brand-context";
+import { useBrand } from "@/components/brand/BrandProvider";
 
 type Props = {
   index: number;
@@ -27,8 +28,12 @@ type Props = {
 };
 
 export function CampaignDraftCard({ index, draft, brand, onApprove, onSkip }: Props) {
+  const { userBrand } = useBrand();
   const [polishOpen, setPolishOpen] = React.useState(false);
   const [polishText, setPolishText] = React.useState("");
+
+  // 사장님 가게 시그니처 메뉴 — 영상 매칭 시드. 사용자 브랜드면 본인 메뉴, 데모면 빈 배열.
+  const signatureMenu = userBrand?.id === brand.id ? userBrand.signatureMenu ?? [] : [];
 
   const cardnews = draft.pieces.find((p): p is Extract<CampaignPiece, { kind: "cardnews" }> => p.kind === "cardnews");
   const reels = draft.pieces.find((p): p is Extract<CampaignPiece, { kind: "reels" }> => p.kind === "reels");
@@ -114,7 +119,14 @@ export function CampaignDraftCard({ index, draft, brand, onApprove, onSkip }: Pr
             )}
             {reels && (
               <div className="lg:col-span-5">
-                <ReelsPreview clip={reels.reels} title={reels.title} handle={brandHandle(brand)} industry={brand.industry} />
+                <ReelsPreview
+                  clip={reels.reels}
+                  title={reels.title}
+                  handle={brandHandle(brand)}
+                  industry={brand.industry}
+                  campaignHeadline={draft.headline}
+                  signatureMenu={signatureMenu}
+                />
                 <p className="mt-3 text-[11.5px] text-zinc-500 leading-relaxed">
                   <span className="text-[10px] tracking-[0.15em] uppercase text-zinc-400 mr-2">릴스 캡션</span>
                   {reels.copyPreview}
