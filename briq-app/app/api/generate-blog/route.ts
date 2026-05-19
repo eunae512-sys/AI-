@@ -311,7 +311,7 @@ ${topSnippets}
 가게 자체보다 그 가게가 만들어내는 결·기준·자리매김을 천천히 묘사하세요.
 
 [3인칭 톤]
-- "이 가게는", "이곳은", "주인 ___ 씨는", "${brand}은(는) ~한다"
+- "이 가게는", "이곳은", "주인 ___ 씨는", "이 가게는 ~한다" (가게명 직접 호명은 1~2회로 절제)
 - "~한다", "~이다" — 평서체. 정중체(~합니다)는 사용 금지. 잡지 기사 체.
 - "손님" 보다 "찾는 이들", "방문자", "단골" 같은 거리감 있는 단어 우선.
 
@@ -346,9 +346,34 @@ ${topSnippets}
 
   const { role, styleGuide } = perspectiveBlocks[perspective];
 
+  // 첫 문장 권장 키워드 — 가장 중요한 키워드 하나만 추출 (콤마 기준 split)
+  const firstKeyword = keywords.split(",")[0]?.trim() || "";
+
   const systemPrompt = `${role}
 
-==== 다녀온 가게 정보 ====
+════════════════════════════════════════════════
+★ 이 글의 단 하나의 주제 (글 전체가 여기에만 집중) ★
+════════════════════════════════════════════════
+주제: "${topic}"
+${firstKeyword ? `핵심 키워드: "${firstKeyword}"` : ""}
+업종: ${industry}
+
+이 글은 "${topic}" 에 대한 글입니다. 다른 주제로 이탈하지 마세요.
+모든 문단이 위 주제와 직접 연관되어야 합니다.
+
+════════════════════════════════════════════════
+한국어 조사 규칙 (★ 중요 ★)
+════════════════════════════════════════════════
+- 가게명·메뉴명 뒤에 조사를 붙일 때 받침 유무를 정확히 판단해 사용.
+  예) "${brand}" 뒤에 → 받침 있으면 "은/이/을/과", 없으면 "는/가/를/와"
+- "은(는)", "이(가)", "을(를)" 같은 괄호 표기를 본문에 절대 출력하지 마세요.
+  내부적으로 받침을 판단해 둘 중 하나만 골라 쓰세요.
+- 영문 단어 뒤 조사는 발음 기준 ("Wool 은" X → "Wool은" 처럼 자연스러운 한국어로).
+- "${brand}" 라는 가게명은 본문에 1~2회만 직접 호명. 그 외엔 "이 가게/이곳/여기" 로 대체.
+
+════════════════════════════════════════════════
+가게 정보 (배경 — 주제에 직접 관련될 때만 본문에 인용)
+════════════════════════════════════════════════
 - 가게명: ${brand}
 - 업종: ${industry}
 - 위치: ${location}
@@ -357,37 +382,34 @@ ${menuLine}
 ${knownFactsBlock}
 ${serpBlock}
 
-==== 글 주제 ====
-${topic}
-${keywordsLine}
-
 ${styleGuide}
 
-==== 추가 규칙 ====
+════════════════════════════════════════════════
+출력 전 ★ 자기 검토 4단계 ★
+════════════════════════════════════════════════
+글을 다 쓴 다음, 반드시 아래 4가지를 본인 확인하세요:
+1. [주제 일치] 모든 문단이 "${topic}" 과 직접 관련 있는가? 다른 주제로 새지 않았는가?
+2. [업종 일치] 본문에 등장하는 메뉴/장면이 "${industry}" 업종과 맞는가? (예: 카페 글에 한정식 메뉴가 끼어들지 않았는지)
+3. [조사 정확성] "은(는)", "이(가)", "을(를)" 같은 괄호 표기가 본문에 남아 있지 않은가? 받침에 맞는 조사 하나만 골라 썼는가?
+4. [어조 일치] perspective "${perspective}" 어조 마커가 골고루 들어갔는가? 광고 카피·AI 클리셰 한 줄도 없는가?
+하나라도 어긋나면 그 문단을 다시 쓰세요.
+
+════════════════════════════════════════════════
+추가 규칙
+════════════════════════════════════════════════
 1. 금지어 (절대): ${forbidden}
 2. 표시광고법·의료광고법 — 효능·100%·치료·완치 단정 금지
 3. 이모지·해시태그·마크다운 헤더(#, ##) 금지. 줄바꿈만 사용
-4. 모르는 사실(가격·전화번호·정확 운영시간·인증) 절대 추정 금지. 모르면 일반화 ("가시기 전 한 번 확인하시면 좋습니다")
-5. 업종 일관성 — 위 "업종: ${industry}" 에서 벗어난 비유·표현 금지
-6. 첫 문장에 ${keywords ? `"${keywords.split(",")[0]?.trim() || "주제"}" 키워드` : "주제 단어"} 자연스럽게 포함 (강제 끼워 넣기 X)
+4. 모르는 사실(가격·전화·정확 운영시간·인증) 추정 금지 — "가시기 전 한 번 확인하시면 좋습니다" 같은 안전 표현
+5. ${firstKeyword ? `첫 문장에 "${firstKeyword}" 자연스럽게 포함 (강제 끼우기 X — 문맥에 녹여서)` : "첫 문장은 주제로 자연스럽게 시작"}
+6. 분량 — 공백 제외 ${Math.max(1500, targetChars - 200)}~${targetChars + 500}자 (대략 30~42 문장)
 
-==== 분량 ====
-공백 제외 ${Math.max(1500, targetChars - 200)}~${targetChars + 500}자 (대략 30~42 문장).
-짧게 끝나면 네이버 노출이 안 잡힙니다.
-
-==== 출력 형식 ====
-오직 JSON 만 출력. 설명·마크다운 코드블록 금지.
-
+════════════════════════════════════════════════
+출력 형식 (JSON 만)
+════════════════════════════════════════════════
 {
   "body": "본문 전체. 문단 사이는 \\n\\n 로 구분."
 }
-
-==== 자기 검토 ====
-글을 쓰고 나서 마지막에 본인 검토:
-1. "AI 가 쓴 듯한 빈말 한 줄" 있으면 다시 써라.
-2. 시간·숫자·구체 명사 없는 문단은 다시 써라.
-3. 마지막 문장이 광고 마무리("들러주세요/감사합니다/꼭 한 번")면 다시 써라.
-4. 이 perspective("${perspective}")의 어조 마커가 한 글에 골고루 들어갔는지 확인.
 
 ${buildViralMandate({ voice, platform: "naver" })}`;
 
@@ -474,6 +496,56 @@ ${buildViralMandate({ voice, platform: "naver" })}`;
       }
     }
 
+    // 한국어 조사 자동 보정 — 모델이 가끔 "은(는)" 같은 placeholder 를 그대로 출력
+    // 앞 글자의 받침 유무로 자동 선택. Hangul Unicode 기준 (AC00 + 28 base + T offset).
+    const fixKoreanParticles = (text: string): { text: string; fixed: number } => {
+      let fixed = 0;
+      const hasFinal = (ch: string): boolean | null => {
+        if (!ch) return null;
+        const code = ch.charCodeAt(0);
+        if (code < 0xac00 || code > 0xd7a3) {
+          // 영문/숫자 — 영문 발음 끝 자음 여부로 근사. 정확치 않아도 모델이 잘 쓸 확률 높음.
+          if (/[a-zA-Z]/.test(ch)) {
+            // 자음으로 끝나면 받침 있음 (대략). l, n, m, r 등.
+            return /[bcdfghjklmnpqrstvwxz]/i.test(ch);
+          }
+          if (/\d/.test(ch)) {
+            // 0=영(받침), 1=일(받침), 2=이(없음), 3=삼(받침)... 마지막 글자 기준 근사
+            const map: Record<string, boolean> = { "0": true, "1": true, "3": true, "6": true, "7": true, "8": true, "9": false, "2": false, "4": false, "5": false };
+            return map[ch] ?? false;
+          }
+          return null;
+        }
+        return ((code - 0xac00) % 28) !== 0;
+      };
+      const PAIRS: { pattern: RegExp; withFinal: string; withoutFinal: string }[] = [
+        { pattern: /은\(는\)/g, withFinal: "은", withoutFinal: "는" },
+        { pattern: /는\(은\)/g, withFinal: "은", withoutFinal: "는" },
+        { pattern: /이\(가\)/g, withFinal: "이", withoutFinal: "가" },
+        { pattern: /가\(이\)/g, withFinal: "이", withoutFinal: "가" },
+        { pattern: /을\(를\)/g, withFinal: "을", withoutFinal: "를" },
+        { pattern: /를\(을\)/g, withFinal: "을", withoutFinal: "를" },
+        { pattern: /과\(와\)/g, withFinal: "과", withoutFinal: "와" },
+        { pattern: /와\(과\)/g, withFinal: "과", withoutFinal: "와" },
+        { pattern: /으로\(로\)/g, withFinal: "으로", withoutFinal: "로" },
+        { pattern: /로\(으로\)/g, withFinal: "으로", withoutFinal: "로" },
+      ];
+      let out = text;
+      for (const { pattern, withFinal, withoutFinal } of PAIRS) {
+        // 캡처 그룹 없는 정규식 — replace 콜백 시그니처: (match, offset, source)
+        out = out.replace(pattern, (_match: string, offset: number) => {
+          const prevChar = offset > 0 ? out[offset - 1] : "";
+          const has = hasFinal(prevChar);
+          fixed += 1;
+          // 받침 판단 안 되면 받침 없음 으로 보수적 fallback
+          return has === true ? withFinal : withoutFinal;
+        });
+      }
+      return { text: out, fixed };
+    };
+    const { text: cleanedBody, fixed: particlesFixed } = fixKoreanParticles(bodyText);
+    bodyText = cleanedBody;
+
     // 금지어 + (viral 모드일 때) AI 클리셰 검사
     const forbiddenList = forbidden
       .split(/[,，]/)
@@ -513,6 +585,7 @@ ${buildViralMandate({ voice, platform: "naver" })}`;
         charCount: bodyText.replace(/\s+/g, "").length,
         initialCharCount,
         expandedOnce,
+        particlesFixed,
         latencyMs,
         costUsd: Number(costUsd.toFixed(6)),
         costKrw: Math.round(costUsd * 1400),

@@ -329,7 +329,10 @@ export function BlogScreen() {
       const demo = data.meta?.demoMode ? " (데모)" : "";
       const expanded = data.meta?.expandedOnce ? " · 자동 확장 1회" : "";
       const serpUsed = analysisToSend ? " · 상위 글 분석 반영" : "";
-      toast.success(`본문 ${chars}자 생성${expanded}${serpUsed}${cost ? ` · ₩${cost}` : ""}${demo}`);
+      const particles = data.meta?.particlesFixed
+        ? ` · 조사 보정 ${data.meta.particlesFixed}건`
+        : "";
+      toast.success(`본문 ${chars}자 생성${expanded}${serpUsed}${particles}${cost ? ` · ₩${cost}` : ""}${demo}`);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       toast.warn(`본문 생성 오류: ${msg}`);
