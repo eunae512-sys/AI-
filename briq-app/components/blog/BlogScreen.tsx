@@ -170,9 +170,12 @@ export function BlogScreen() {
   });
 
   React.useEffect(() => {
+    // 브랜드 전환 시: preset·주제·본문·분석 모두 리셋.
+    // serp 가 남으면 다른 브랜드/주제의 상위 글 패턴이 새 본문에 침범한다.
     setActivePreset(0);
     setTopic(presets[0]?.title ?? "");
     setBody("");
+    setSerp(null);
   }, [brand.id, presets]);
 
   // 1) 키워드 분석 — 상위 노출 글 패턴 추출
@@ -482,6 +485,12 @@ export function BlogScreen() {
                 <button
                   key={i}
                   onClick={() => {
+                    // 다른 preset 으로 옮길 때 — 이전 주제의 상위글 분석(serp) 과 본문이
+                    // 새 prompt 에 침범하지 않도록 깨끗이 정리한다.
+                    if (i !== activePreset) {
+                      setSerp(null);
+                      setBody("");
+                    }
                     setActivePreset(i);
                     setTopic(p.title);
                   }}
