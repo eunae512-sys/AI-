@@ -270,9 +270,16 @@ export function Onboarding() {
       {/* Header */}
       <header className="border-b border-zinc-100 dark:border-zinc-900 backdrop-blur sticky top-0 z-10 bg-white/70 dark:bg-zinc-950/70">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-md bg-gradient-to-br from-indigo-500 via-violet-600 to-pink-500 grid place-items-center text-white text-xs font-bold">B</div>
-            <span className="text-sm font-semibold">BRIQ</span>
+          <Link href="/" className="flex items-baseline gap-2">
+            <span
+              className="text-[18px] leading-none tracking-[-0.02em]"
+              style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 500 }}
+            >
+              BRIQ
+            </span>
+            <span className="text-[9.5px] tracking-[0.22em] uppercase text-zinc-400">
+              Onboarding
+            </span>
           </Link>
           <div className="flex items-center gap-1.5">
             {Array.from({ length: totalSteps }).map((_, i) => {
@@ -712,22 +719,34 @@ export function Onboarding() {
                 </div>
               </div>
 
-              <div className="mt-10 flex items-center justify-between">
+              <div className="mt-10 flex items-center justify-between gap-3 flex-wrap">
                 <button onClick={back} className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 inline-flex items-center gap-1">
                   <ChevronLeft className="h-3 w-3" />이전
                 </button>
-                <button
-                  onClick={next}
-                  disabled={photos.length < MIN_PHOTOS}
-                  className={cn(
-                    "text-sm font-medium px-5 py-2.5 rounded-md transition-colors",
-                    photos.length >= MIN_PHOTOS
-                      ? "bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900 hover:opacity-90"
-                      : "bg-zinc-200 text-zinc-400 cursor-not-allowed dark:bg-zinc-800 dark:text-zinc-600",
+                <div className="flex items-center gap-4 ml-auto">
+                  {/* 사진 없이도 데모 흐름을 볼 수 있는 비상구 — 사장님 의사결정 가속 */}
+                  {photos.length < MIN_PHOTOS && (
+                    <button
+                      onClick={next}
+                      className="text-[12.5px] underline underline-offset-[6px] decoration-[0.5px] decoration-zinc-300 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+                      title="기본 톤으로 일단 시작 — 사진은 나중에 추가하실 수 있습니다"
+                    >
+                      사진 없이 일단 시작
+                    </button>
                   )}
-                >
-                  분석 시작 →
-                </button>
+                  <button
+                    onClick={next}
+                    disabled={photos.length < MIN_PHOTOS}
+                    className={cn(
+                      "text-sm font-medium px-5 py-2.5 rounded-md transition-colors",
+                      photos.length >= MIN_PHOTOS
+                        ? "bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900 hover:opacity-90"
+                        : "bg-zinc-200 text-zinc-400 cursor-not-allowed dark:bg-zinc-800 dark:text-zinc-600",
+                    )}
+                  >
+                    분석 시작 →
+                  </button>
+                </div>
               </div>
             </motion.section>
           )}

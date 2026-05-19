@@ -2,9 +2,17 @@
 
 // 로그인 — 매거진 결. 좌측 폼, 우측 후기 인쇄면.
 // 컬러 시스템: lib/landing/tokens 공유.
+//
+// 데모 동작:
+//   · 저장된 사용자 브랜드(localStorage) 가 있으면 /dashboard
+//   · 없으면 /onboarding 으로 자동 진행 (SSO·이메일 동일)
+//   · 클릭 시 즉시 시각 피드백(busy → 이동) 으로 "아무 일도 안 일어남" 방지
 
+import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
+import { loadUserBrand } from "@/lib/brand/user-brand";
 import { INK, INK_SOFT, INK_MUTE, RULE, RULE_SOFT, PAPER, SERIF_LATIN, SERIF_HANGUL } from "@/lib/landing/tokens";
 
 const fade = {
@@ -12,7 +20,30 @@ const fade = {
   animate: { opacity: 1, y: 0 },
 };
 
+type Provider = "google" | "kakao" | "email";
+
 export default function LoginPage() {
+  const router = useRouter();
+  const [busy, setBusy] = React.useState<Provider | null>(null);
+
+  // 데모 흐름: 저장된 브랜드가 있으면 대시보드로, 없으면 온보딩으로.
+  const route = React.useCallback(
+    async (provider: Provider) => {
+      if (busy) return;
+      setBusy(provider);
+      // 사용자가 클릭을 인지할 만한 200ms — 진짜 모달이 떴다 닫히는 결.
+      await new Promise((r) => setTimeout(r, 220));
+      const existing = loadUserBrand();
+      router.push(existing ? "/dashboard" : "/onboarding");
+    },
+    [busy, router],
+  );
+
+  const onSubmitEmail = (e: React.FormEvent) => {
+    e.preventDefault();
+    route("email");
+  };
+
   return (
     <div className="min-h-screen grid lg:grid-cols-2" style={{ background: PAPER }}>
       {/* ── Left · 폼 ─────────────────────────────────────────────── */}
@@ -65,15 +96,19 @@ export default function LoginPage() {
             <div className="mt-9 space-y-2.5">
               <button
                 type="button"
-                className="w-full inline-flex items-center justify-center gap-3 h-12 px-5 text-[13px] transition-colors hover:bg-[rgba(20,19,15,0.035)]"
+                onClick={() => route("google")}
+                disabled={busy !== null}
+                className="w-full inline-flex items-center justify-center gap-3 h-12 px-5 text-[13px] transition-colors hover:bg-[rgba(20,19,15,0.035)] disabled:opacity-60"
                 style={{ border: `0.5px solid ${INK}`, color: INK, fontFamily: SERIF_HANGUL }}
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.5 12.3c0-.7-.1-1.4-.2-2H12v3.8h5.9c-.3 1.5-1.1 2.7-2.3 3.5v2.9h3.7c2.2-2 3.5-5 3.5-8.2z"/><path fill="#34A853" d="M12 23c3.1 0 5.7-1 7.6-2.8l-3.7-2.9c-1 .7-2.4 1.1-3.9 1.1-3 0-5.5-2-6.4-4.7H1.7v3c1.9 3.8 5.8 6.3 10.3 6.3z"/><path fill="#FBBC04" d="M5.6 13.7c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2v-3H1.7C.6 8.4 0 10.1 0 12s.6 3.6 1.7 5.7l3.9-3z"/><path fill="#EA4335" d="M12 4.7c1.7 0 3.2.6 4.4 1.8l3.3-3.3C17.7 1.1 15.1 0 12 0 7.5 0 3.6 2.5 1.7 6.3l3.9 3C6.5 6.7 9 4.7 12 4.7z"/></svg>
-                Google 로 계속하기
+                {busy === "google" ? "이동 중…" : "Google 로 계속하기"}
               </button>
               <button
                 type="button"
-                className="w-full inline-flex items-center justify-center gap-3 h-12 px-5 text-[13px] transition-colors hover:bg-[rgba(20,19,15,0.035)]"
+                onClick={() => route("kakao")}
+                disabled={busy !== null}
+                className="w-full inline-flex items-center justify-center gap-3 h-12 px-5 text-[13px] transition-colors hover:bg-[rgba(20,19,15,0.035)] disabled:opacity-60"
                 style={{ border: `0.5px solid ${INK}`, color: INK, fontFamily: SERIF_HANGUL }}
               >
                 <span
@@ -83,7 +118,7 @@ export default function LoginPage() {
                 >
                   K
                 </span>
-                카카오로 계속하기
+                {busy === "kakao" ? "이동 중…" : "카카오로 계속하기"}
               </button>
             </div>
 
@@ -100,15 +135,16 @@ export default function LoginPage() {
             </div>
 
             {/* Email form — 헤어라인 underline 입력 */}
-            <form className="space-y-5">
+            <form className="space-y-5" onSubmit={onSubmitEmail}>
               <Field label="이메일" type="email" placeholder="you@example.com" />
               <Field label="비밀번호" type="password" placeholder="••••••••" />
               <button
                 type="submit"
-                className="w-full inline-flex items-center justify-center gap-3 h-12 text-[12.5px] tracking-[0.18em] uppercase font-medium transition-colors"
+                disabled={busy !== null}
+                className="w-full inline-flex items-center justify-center gap-3 h-12 text-[12.5px] tracking-[0.18em] uppercase font-medium transition-colors disabled:opacity-60"
                 style={{ background: INK, color: PAPER }}
               >
-                로그인
+                {busy === "email" ? "이동 중…" : "로그인"}
                 <span aria-hidden className="text-[14px] tracking-normal">→</span>
               </button>
             </form>
