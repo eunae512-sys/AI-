@@ -10,7 +10,7 @@ import { useBrand } from "@/components/brand/BrandProvider";
 import { useToast } from "@/components/ui/toast";
 import { getBrandDetail } from "@/lib/dummy/brand-detail";
 import { cn } from "@/lib/utils";
-import { useAutoSaveDraft, formatSavedAt } from "@/lib/drafts/auto-save";
+import { useAutoSaveDraft, formatSavedAt, loadDraft } from "@/lib/drafts/auto-save";
 import { SAMPLE_REAL_BRANDS, type SampleRealBrand } from "@/lib/dummy/sample-real-brands";
 
 // 업종별 네이버 블로그 SEO 후보 (사장님이 빠르게 선택)
@@ -143,24 +143,42 @@ export function BlogScreen() {
   const [analyzing, setAnalyzing] = React.useState(false);
   const [phase, setPhase] = React.useState<"idle" | "analyzing" | "generating">("idle");
 
-  // 샘플 검증 모드 — 실제 운영 가게 공개 자료로 본문 검증
+  // 샘플 검증 모드 — 실제 운영 가게 공개 자료로 본문 검증 (sandbox, 영속화 X)
   const [sampleBrand, setSampleBrand] = React.useState<SampleRealBrand | null>(null);
   const applySample = (b: SampleRealBrand) => {
     setSampleBrand(b);
     setTopic(b.suggestedTopic);
     setBody("");
     setSerp(null);
+    setActivePreset(0); // 활성 브랜드 preset 강조와 섞이지 않게 0 으로 정렬
     toast.info(`샘플 검증: ${b.name} · 공개 자료 기반 — 생성 결과는 발행물 아님`);
   };
   const clearSample = () => {
     setSampleBrand(null);
-    toast.info("샘플 검증 모드 해제 — 활성 브랜드로 복귀");
+    // 샘플 종료 — 활성 브랜드의 저장된 작업물(있으면)을 복원, 없으면 preset 0 로 초기화.
+    const saved = loadDraft<{ topic?: string; body?: string; activePreset?: number }>(
+      "blog",
+      brand.id,
+    );
+    if (saved) {
+      setActivePreset(typeof saved.activePreset === "number" ? saved.activePreset : 0);
+      setTopic(typeof saved.topic === "string" ? saved.topic : presets[0]?.title ?? "");
+      setBody(typeof saved.body === "string" ? saved.body : "");
+    } else {
+      setActivePreset(0);
+      setTopic(presets[0]?.title ?? "");
+      setBody("");
+    }
+    setSerp(null);
+    toast.info(saved ? "샘플 해제 — 작업 중이던 활성 브랜드 글로 복귀" : "샘플 해제 — 활성 브랜드로 복귀");
   };
 
-  // 자동 저장 — 새로고침/탭 닫기에도 작업 복원
+  // 자동 저장 — 활성 브랜드 작업만 영속화 (샘플은 sandbox 라 비활성).
+  // 이렇게 분리하지 않으면 샘플 본문이 다음 새로고침 시 활성 브랜드 화면에 떠올라 섞인다.
   const { lastSavedAt } = useAutoSaveDraft({
     scope: "blog",
     brandId: brand.id,
+    enabled: !sampleBrand,
     value: { topic, body, activePreset },
     onRestore: (draft) => {
       if (typeof draft.topic === "string") setTopic(draft.topic);
@@ -170,12 +188,14 @@ export function BlogScreen() {
   });
 
   React.useEffect(() => {
-    // 브랜드 전환 시: preset·주제·본문·분석 모두 리셋.
-    // serp 가 남으면 다른 브랜드/주제의 상위 글 패턴이 새 본문에 침범한다.
+    // 브랜드 전환 시: preset·주제·본문·분석·샘플 모두 리셋.
+    // sampleBrand 가 남으면 새 브랜드 화면에서도 헤더는 옛 샘플 이름, ctxBrandName
+    // 도 sample 로 가버려 API 가 잘못된 가게로 본문을 만든다.
     setActivePreset(0);
     setTopic(presets[0]?.title ?? "");
     setBody("");
     setSerp(null);
+    setSampleBrand(null);
   }, [brand.id, presets]);
 
   // 1) 키워드 분석 — 상위 노출 글 패턴 추출
