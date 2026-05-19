@@ -22,6 +22,8 @@ export type UserBrandData = {
   signatureMenu?: string[]; // ["갈비찜", "냉이된장국", "5첩 한정식"]
   ownerName?: string; // 사장님 이름 (Settings 프로필용)
   ownerEmail?: string; // 사장님 이메일
+  // 가격 페이지 deep-link 로 들어온 경우 — 결제 화면에서 미리 선택돼 있도록.
+  selectedPlan?: "free" | "pro" | "studio" | "agency";
   createdAt: number;
 };
 

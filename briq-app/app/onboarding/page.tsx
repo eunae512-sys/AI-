@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Onboarding } from "@/components/onboarding/Onboarding";
 
 export const metadata: Metadata = {
@@ -9,5 +10,10 @@ export const metadata: Metadata = {
 };
 
 export default function OnboardingPage() {
-  return <Onboarding />;
+  // useSearchParams 사용 시 Suspense 안에서만 안전 (prerender 깨짐 방지)
+  return (
+    <Suspense fallback={null}>
+      <Onboarding />
+    </Suspense>
+  );
 }

@@ -7,7 +7,7 @@ import { Coffee, Cake, Home, UtensilsCrossed, Scissors, Sparkles, ChevronLeft, C
 import { cn } from "@/lib/utils";
 import { extractPaletteFromPhotos, type ExtractedColor } from "@/lib/colors/extract-palette";
 import { saveUserBrand } from "@/lib/brand/user-brand";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { Industry as IndustryType, Mood as MoodIdType } from "@/types";
 
 // 업종 id → 한국 도시 기본값 (사용자가 도시 미입력 시)
@@ -153,8 +153,20 @@ const STAGES = [
   { id: 5, title: "브랜드 키트 · 첫 콘텐츠 생성", sub: "" },
 ];
 
+// 가격 페이지 ?plan=pro|studio|agency|free deep-link 인식
+const PLAN_LABEL: Record<string, string> = {
+  free: "Free",
+  pro: "Pro",
+  studio: "Studio",
+  agency: "Agency",
+};
+
 export function Onboarding() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  // /onboarding?plan=pro → selectedPlan = "pro"
+  const planParam = searchParams?.get("plan") ?? null;
+  const selectedPlan = (planParam && PLAN_LABEL[planParam]) ? planParam as "free" | "pro" | "studio" | "agency" : undefined;
   const [step, setStep] = React.useState(1);
   const totalSteps = 7;
   const [industry, setIndustry] = React.useState<string>();
@@ -289,6 +301,25 @@ export function Onboarding() {
       </header>
 
       <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 sm:py-12 md:py-20">
+        {selectedPlan && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="mb-8 sm:mb-10 -mt-2 sm:-mt-6 flex items-baseline gap-3 border-l-2 pl-4 py-2"
+            style={{ borderColor: "#14130F" }}
+          >
+            <span className="text-[10.5px] tracking-[0.22em] uppercase text-zinc-500 dark:text-zinc-400">
+              Selected plan
+            </span>
+            <span
+              className="text-[15px] sm:text-[17px]"
+              style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontWeight: 500 }}
+            >
+              {PLAN_LABEL[selectedPlan]} 플랜으로 시작합니다 — 신용카드 입력 없이 14일 무료.
+            </span>
+          </motion.div>
+        )}
         <AnimatePresence mode="wait">
           {/* Step 1 - Industry */}
           {step === 1 && (
@@ -965,6 +996,7 @@ export function Onboarding() {
                       signatureMenu: cleanMenu.length ? cleanMenu : undefined,
                       ownerName: ownerName.trim() || undefined,
                       ownerEmail: ownerEmail.trim() || undefined,
+                      selectedPlan,
                       createdAt: Date.now(),
                     });
                     // BrandProvider 동기화 알림

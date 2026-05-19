@@ -41,6 +41,25 @@ const fade = {
 };
 
 export function Hero() {
+  // 라이브 — 오늘의 요일·반(오전/오후) 한국어로 자연스러운 문장에 짜 넣음.
+  // hydration 미스매치 방지: 마운트 후에만 set.
+  const [today, setToday] = React.useState<{
+    weekdayIdx: number; // 0=월 … 6=일
+    weekdayKo: string;
+    half: "오전" | "오후";
+    timeHm: string;
+  } | null>(null);
+  React.useEffect(() => {
+    const d = new Date();
+    // Date.getDay(): 0=일, 1=월, … → 우리는 월=0 으로 변환
+    const weekdayIdx = (d.getDay() + 6) % 7;
+    const weekdays = ["월", "화", "수", "목", "금", "토", "일"];
+    const half: "오전" | "오후" = d.getHours() < 12 ? "오전" : "오후";
+    const hh = ((d.getHours() + 11) % 12 + 1).toString().padStart(2, "0");
+    const mm = d.getMinutes().toString().padStart(2, "0");
+    setToday({ weekdayIdx, weekdayKo: weekdays[weekdayIdx], half, timeHm: `${hh}:${mm}` });
+  }, []);
+
   return (
     <section
       className="relative overflow-hidden"
@@ -56,7 +75,7 @@ export function Hero() {
         style={{ width: 0.5, background: RULE }}
       />
 
-      <div className="relative max-w-[1240px] mx-auto px-6 sm:px-14 lg:pl-[160px] lg:pr-20 pt-10 sm:pt-20 pb-24 sm:pb-32">
+      <div className="relative max-w-[1240px] mx-auto px-6 sm:px-14 lg:pl-[160px] lg:pr-20 pt-10 sm:pt-20 pb-40 sm:pb-32">
         {/* ── I. Folio — 발행 메타 한 줄 ─────────────────────────────────── */}
         <motion.header
           {...fade}
@@ -179,10 +198,10 @@ export function Hero() {
             >
               View the demo
             </Link>
-            {/* Tertiary — pure underline link, 매거진 결 */}
+            {/* Tertiary — pure underline link, 매거진 결 (모바일에서도 노출) */}
             <Link
               href="/pricing"
-              className="hidden sm:inline-block text-[12.5px] tracking-[0.04em] underline underline-offset-[6px] decoration-[0.5px]"
+              className="self-center sm:self-auto text-[12px] sm:text-[12.5px] tracking-[0.04em] underline underline-offset-[6px] decoration-[0.5px]"
               style={{ color: INK_SOFT, textDecorationColor: RULE }}
             >
               가격 — 한 장으로 정리
@@ -200,13 +219,22 @@ export function Hero() {
             <SectionMark numeral="V" />
           </div>
           <div className="col-span-12 lg:col-span-11">
-            <Kicker>Field Notes · 지금 가게에서</Kicker>
+            <Kicker>
+              Field Notes · 지금 가게에서
+              {today && (
+                <span className="ml-3 italic" style={{ fontFamily: SERIF_LATIN, color: INK_SOFT, fontStyle: "italic", textTransform: "none", letterSpacing: 0 }}>
+                  오늘은 {today.weekdayKo}요일입니다
+                </span>
+              )}
+            </Kicker>
             <p
               className="mt-5 text-[18px] sm:text-[22px] leading-[1.55] max-w-[820px]"
               style={{ fontFamily: SERIF_HANGUL, color: INK }}
             >
-              오늘 오전 <Stamp>10:18</Stamp> 에 두 컷이 자동 발행되었고,
-              이번 주 <Stamp>12</Stamp> 건이 예약되어 있습니다. 댓글·DM 자동
+              {today ? `오늘 ${today.half}` : "오늘 오전"}{" "}
+              <Stamp>{today?.timeHm ?? "10:18"}</Stamp> 기준,
+              이번 주 <Stamp>12</Stamp> 건이 예약되어 있고
+              오늘 자동 발행은 <Stamp>2</Stamp> 건 완료되었습니다. 댓글·DM 자동
               응답은 <em className="italic" style={{ fontFamily: SERIF_LATIN }}>ON</em>{" "}
               — 평균 <Stamp>3분</Stamp> 안에 회신합니다. 이번 주 진행 중인
               캠페인은 두 개, <em className="italic" style={{ fontFamily: SERIF_LATIN }}>신메뉴</em>{" "}
@@ -235,30 +263,40 @@ export function Hero() {
           <div className="col-span-12 lg:col-span-11">
             <Kicker>Diary · 이번 주 발행 일지</Kicker>
             <ol className="mt-5 border-t" style={{ borderColor: RULE }}>
-              {WEEK.map((w, i) => (
+              {WEEK.map((w, i) => {
+                const isToday = today?.weekdayIdx === i;
+                return (
                 <li
                   key={w.day}
                   className="group grid grid-cols-12 items-baseline gap-x-3 sm:gap-x-6 py-5 border-b transition-colors hover:bg-[rgba(20,19,15,0.025)]"
-                  style={{ borderColor: RULE }}
+                  style={{
+                    borderColor: RULE,
+                    background: isToday ? "rgba(230,221,200,0.28)" : undefined,
+                  }}
                 >
-                  {/* 인덱스 — 로만/타뷸러 */}
+                  {/* 인덱스 — 로만/타뷸러 (오늘은 별표) */}
                   <div
                     className="col-span-2 sm:col-span-1 text-[10.5px] tracking-[0.18em] uppercase tabular-nums"
-                    style={{ color: INK_MUTE }}
+                    style={{ color: isToday ? INK : INK_MUTE }}
                   >
-                    {String(i + 1).padStart(2, "0")}
+                    {isToday ? "✱" : String(i + 1).padStart(2, "0")}
                   </div>
-                  {/* 요일 — 세리프 */}
+                  {/* 요일 — 세리프, 오늘은 italic */}
                   <div
                     className="col-span-2 sm:col-span-1 text-[17px] sm:text-[19px] leading-none"
-                    style={{ fontFamily: SERIF_HANGUL, color: INK, fontWeight: 500 }}
+                    style={{
+                      fontFamily: SERIF_HANGUL,
+                      color: INK,
+                      fontWeight: isToday ? 600 : 500,
+                      fontStyle: isToday ? "italic" : "normal",
+                    }}
                   >
                     {w.day}
                   </div>
                   {/* 시간 — 이탤릭 타뷸러 */}
                   <div
                     className="col-span-3 sm:col-span-2 text-[12.5px] tabular-nums italic"
-                    style={{ color: INK_SOFT, fontFamily: SERIF_LATIN }}
+                    style={{ color: isToday ? INK : INK_SOFT, fontFamily: SERIF_LATIN }}
                   >
                     {w.time}
                   </div>
@@ -281,7 +319,8 @@ export function Hero() {
                     <StatusMark status={w.status} />
                   </div>
                 </li>
-              ))}
+                );
+              })}
             </ol>
           </div>
         </motion.section>

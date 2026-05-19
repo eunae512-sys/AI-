@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { useBrand } from "@/components/brand/BrandProvider";
 import { loadUserBrand, saveUserBrand } from "@/lib/brand/user-brand";
+import { PLANS } from "@/lib/billing/plans";
 
 type Profile = { name: string; email: string; role: string };
 type Payment = { holder: string; last4: string; expiry: string; brand: "VISA" | "MASTER" | "AMEX" };
@@ -179,19 +180,27 @@ export function SettingsScreen() {
           </div>
         </Card>
 
-        {/* 플랜 · 다음 결제일 카드 */}
+        {/* 플랜 · 다음 결제일 카드 — 온보딩 ?plan deep-link 결과 반영 */}
         <Card className="p-5">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold flex items-center gap-1.5">
-              <Sparkles className="h-4 w-4 text-violet-500" /> 현재 플랜
-            </h3>
-            <Badge tone="violet">PRO ★</Badge>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-            <div className="rounded-lg bg-zinc-50 dark:bg-zinc-900/40 p-3">
-              <div className="text-[11px] text-zinc-500 font-medium">월 요금</div>
-              <div className="mt-1 text-base font-semibold tabular-nums">₩99,000</div>
-            </div>
+          {(() => {
+            const planId = userBrand?.selectedPlan ?? "pro";
+            const plan = PLANS.find((p) => p.id === planId) ?? PLANS.find((p) => p.id === "pro")!;
+            const priceLabel = planId === "agency" ? "요청 견적" : `₩${plan.priceMonthly.toLocaleString("ko-KR")}`;
+            const badgeTone: "violet" | "emerald" | "amber" | "default" =
+              planId === "agency" ? "amber" : planId === "studio" ? "emerald" : planId === "free" ? "default" : "violet";
+            return (
+              <>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold flex items-center gap-1.5">
+                    <Sparkles className="h-4 w-4 text-violet-500" /> 현재 플랜
+                  </h3>
+                  <Badge tone={badgeTone}>{plan.name.toUpperCase()} ★</Badge>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                  <div className="rounded-lg bg-zinc-50 dark:bg-zinc-900/40 p-3">
+                    <div className="text-[11px] text-zinc-500 font-medium">월 요금</div>
+                    <div className="mt-1 text-base font-semibold tabular-nums">{priceLabel}</div>
+                  </div>
             <div className="rounded-lg bg-zinc-50 dark:bg-zinc-900/40 p-3">
               <div className="text-[11px] text-zinc-500 font-medium">다음 결제</div>
               <div className="mt-1 text-base font-semibold tabular-nums">2026-06-08</div>
@@ -210,14 +219,23 @@ export function SettingsScreen() {
             <Button variant="outline" size="sm" onClick={openPayment}>
               결제 수단 변경
             </Button>
+            <Link
+              href="/pricing"
+              className="inline-flex items-center px-3 h-8 text-[12px] border border-zinc-200 dark:border-zinc-800 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+            >
+              플랜 변경
+            </Link>
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => toast.warn("플랜 취소 — 다음 결제일까지 PRO 기능 유지됩니다")}
+              onClick={() => toast.warn(`플랜 취소 — 다음 결제일까지 ${plan.name.toUpperCase()} 기능 유지됩니다`)}
             >
               취소
             </Button>
           </div>
+              </>
+            );
+          })()}
         </Card>
 
         {/* 이번 달 사용량 카드 */}
