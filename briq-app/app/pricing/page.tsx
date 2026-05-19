@@ -128,7 +128,10 @@ export default function PricingPage() {
           <p className="mt-6 text-[11px] text-zinc-400 text-center">
             VAT 포함. 결제는 Toss Payments 로 안전하게 진행됩니다.
           </p>
-          <p className="mt-1.5 text-[10.5px] text-amber-600 dark:text-amber-400 text-center">
+          <p
+            className="mt-1.5 text-[10.5px] text-center italic"
+            style={{ color: "#4A4742", fontFamily: "'Cormorant Garamond', serif" }}
+          >
             ※ 현재 베타 — 결제 연동은 준비 중입니다. 가입 후 14일 무료 체험 동안 모든 기능 사용 가능.
           </p>
         </section>

@@ -370,15 +370,18 @@ export function Hero() {
       >
         <Link
           href="/onboarding"
-          className="flex items-center justify-between gap-2 w-full h-12 px-5 text-[12px] tracking-[0.18em] uppercase font-medium"
+          className="grid grid-cols-[1fr_auto_1fr] items-center w-full h-12 px-4 text-[12px] tracking-[0.18em] uppercase font-medium"
           style={{
             background: INK,
             color: PAPER_WASH,
             boxShadow: "0 6px 20px -8px rgba(20,19,15,0.35)",
           }}
         >
-          <span>Begin · 3분 만에 시작</span>
-          <span aria-hidden>→</span>
+          <span aria-hidden className="text-left italic" style={{ fontFamily: SERIF_LATIN, fontStyle: "italic", letterSpacing: 0, textTransform: "none", opacity: 0.55 }}>
+            3 min
+          </span>
+          <span className="text-center">Begin</span>
+          <span aria-hidden className="text-right text-[14px] tracking-normal">→</span>
         </Link>
       </motion.div>
     </section>
