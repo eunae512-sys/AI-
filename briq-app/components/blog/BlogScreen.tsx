@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion } from "motion/react";
-import { Sparkles, Loader2, Copy, Check, FileText, MapPin, Image as ImageIcon, Wand2, Search, TrendingUp, X, FlaskConical, Info, ExternalLink } from "lucide-react";
+import { Sparkles, Loader2, Copy, Check, FileText, MapPin, Image as ImageIcon, Wand2, Search, TrendingUp, X, FlaskConical, Info, ExternalLink, Send } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -46,6 +46,34 @@ const TOPIC_PRESETS: Record<string, { title: string; keywords: string[]; intent:
     { title: "한국 컨템포러리 5 — 가격대·소재·핏", keywords: ["한국 디자이너 브랜드"], intent: "브랜드 비교" },
   ],
 };
+
+// 한국 주요 동/구 이름 — 추천 주제 자동 치환에 사용
+const KOREAN_DISTRICTS = [
+  "강남구", "강남", "양평", "서촌", "성수동", "성수", "북촌", "종로구", "종로",
+  "한남동", "한남", "이태원", "홍대", "압구정", "광화문", "을지로",
+];
+
+// brand.city 에 붙은 "구"/"동" 접미사 제거 → 토픽 치환에 쓰기 좋게 정규화
+const normalizeCityName = (city: string): string =>
+  city.replace(/(구|동|읍|면)$/, "");
+
+// 추천 주제 한 줄에 박힌 지역명을 사장님 가게 도시로 치환.
+// 예: "어버이날 한정식 예약 가이드 — 강남 상견례 룸" → 가게가 한남동이면 "— 한남 상견례 룸"
+function localizeTopic(title: string, brandCity: string): string {
+  const my = normalizeCityName(brandCity);
+  if (!my) return title;
+  // 사장님 가게가 이미 그 지역이면 변경 X
+  if (KOREAN_DISTRICTS.some((d) => my.includes(d) || d.includes(my))) {
+    if (title.includes(my)) return title;
+  }
+  // 타이틀에 등장하는 첫 번째 지역명을 사장님 도시로 치환
+  for (const d of KOREAN_DISTRICTS) {
+    if (title.includes(d) && d !== my) {
+      return title.split(d).join(my);
+    }
+  }
+  return title;
+}
 
 // 업종별 본문 톤
 const BODY_TONE: Record<string, string> = {
@@ -108,7 +136,14 @@ export function BlogScreen() {
   const isUserBrand = !!userBrand && brand.id === userBrand.id;
   const toast = useToast();
   const detail = getBrandDetail(brand.id);
-  const presets = TOPIC_PRESETS[brand.industry] ?? TOPIC_PRESETS.restaurant;
+  // 사장님 가게 도시로 추천 주제 자동 치환 ("강남 상견례" → "한남 상견례" 등)
+  const presets = React.useMemo(() => {
+    const base = TOPIC_PRESETS[brand.industry] ?? TOPIC_PRESETS.restaurant;
+    return base.map((p) => ({
+      ...p,
+      title: localizeTopic(p.title, brand.city),
+    }));
+  }, [brand.industry, brand.city]);
   const tone = BODY_TONE[brand.industry] ?? BODY_TONE.restaurant;
 
   const [activePreset, setActivePreset] = React.useState(0);
@@ -365,6 +400,28 @@ export function BlogScreen() {
     }
   };
 
+  // 네이버 블로그 글쓰기로 가기 — 클립보드에 자동 복사 후 새 탭으로 열기.
+  // 사장님이 "그래서 어떻게 올리지?" 멈추는 마찰을 한 클릭으로 메움.
+  const sendToNaver = async () => {
+    if (!body) return;
+    try {
+      await navigator.clipboard.writeText(`${topic}\n\n${body}`);
+      toast.success("본문이 클립보드에 복사됐어요. 네이버 글쓰기에서 Cmd/Ctrl+V 로 붙여넣으세요.");
+    } catch {
+      // 클립보드 실패해도 새 탭은 열어둠
+      toast.info("새 탭이 열렸습니다. 본문은 화면에서 직접 복사해 주세요.");
+    }
+    // 네이버 블로그 글쓰기 페이지
+    window.open("https://blog.naver.com/PostWriteForm.naver", "_blank", "noopener,noreferrer");
+  };
+
+  // 같은 주제로 한 번 더 생성 — 사장님이 결과가 마음에 안 들 때.
+  const regenerate = async () => {
+    if (loading || analyzing) return;
+    // serp 는 그대로 두고 본문만 다시. SERP 없으면 그냥 generate.
+    await generateBody(serp);
+  };
+
   const wordCount = body.replace(/\s+/g, "").length;
   const seoTarget = 1500;
   const seoPct = Math.min(100, Math.round((wordCount / seoTarget) * 100));
@@ -592,7 +649,7 @@ export function BlogScreen() {
               <div>분석 키워드: <span className="text-violet-700 dark:text-violet-300 font-medium">{presets[activePreset]?.keywords?.[0] ?? topic}</span></div>
             </div>
 
-            {/* 1순위 — 상위 글 분석 + 본문 생성 (권장) */}
+            {/* 1순위 — 본문 만들기 (네이버 상위 글 분석 포함). 사장님이 가장 자주 누를 버튼. */}
             <Button
               onClick={analyzeAndGenerate}
               disabled={loading || analyzing}
@@ -601,7 +658,7 @@ export function BlogScreen() {
               {phase === "analyzing" ? (
                 <>
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  상위 글 분석 중...
+                  네이버 상위 글 분석 중...
                 </>
               ) : phase === "generating" ? (
                 <>
@@ -611,18 +668,18 @@ export function BlogScreen() {
               ) : (
                 <>
                   <TrendingUp className="h-3.5 w-3.5" />
-                  상위 글 분석 + 본문 자동 생성
+                  본문 만들기 (네이버 노출 분석 포함)
                 </>
               )}
             </Button>
 
-            {/* 2순위 — 분석 없이 바로 (기존 흐름) */}
+            {/* 2순위 — 빠르게 (분석 단계 생략, 10초 내외) */}
             <button
               onClick={generate}
               disabled={loading || analyzing}
               className="w-full mt-2 text-[11px] text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-50"
             >
-              분석 없이 바로 생성 →
+              분석 생략하고 빠르게 (10초) →
             </button>
           </Card>
 
@@ -738,12 +795,30 @@ export function BlogScreen() {
                 ✓ {formatSavedAt(lastSavedAt)}
               </span>
               <button
+                onClick={regenerate}
+                disabled={!body || loading || analyzing}
+                title="같은 주제로 본문만 다시"
+                className="text-[11px] inline-flex items-center gap-1 px-2 py-1 rounded-md border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-40"
+              >
+                <Wand2 className="h-3 w-3" />
+                한 번 더
+              </button>
+              <button
                 onClick={copyAll}
                 disabled={!body}
                 className="text-[11px] inline-flex items-center gap-1 px-2 py-1 rounded-md border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-40"
               >
                 {copied ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
                 {copied ? "복사됨" : "복사"}
+              </button>
+              <button
+                onClick={sendToNaver}
+                disabled={!body}
+                title="클립보드에 복사 + 네이버 블로그 글쓰기 열기"
+                className="text-[11px] inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#03C75A] text-white hover:bg-[#02B850] disabled:opacity-40 disabled:hover:bg-[#03C75A] font-medium"
+              >
+                <Send className="h-3 w-3" />
+                네이버 글쓰기로
               </button>
             </div>
           </div>
