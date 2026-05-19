@@ -19,20 +19,21 @@
 import * as React from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
+import {
+  INK,
+  INK_SOFT,
+  INK_MUTE,
+  RULE,
+  PAPER,
+  SAGE,
+  HL,
+  SERIF_LATIN,
+  SERIF_HANGUL,
+} from "@/lib/landing/tokens";
 
-// ─────────────────────────────────────────────────────────────
-// Color tokens — 종이 + 잉크. 단 한 가지 액센트.
-// ─────────────────────────────────────────────────────────────
-const INK = "#14130F";              // warm black (절대 #000 아님)
-const INK_SOFT = "#4A4742";         // 보조 본문
-const INK_MUTE = "#8C8881";         // 메타 텍스트
-const RULE = "rgba(20,19,15,0.12)"; // hairline 룰 (0.5px)
-const PAPER_WASH = "#FAF7EE";       // 페이지 종이 톤 (Hero에만 입힘)
-const SAGE = "#4F5F4B";             // 단 한 컬러 액센트 — 거의 안 씀
-const HL = "#E6DDC8";               // 헤드라인 하이라이트 (cream)
-
-const SERIF_LATIN = "'Cormorant Garamond', 'Nanum Myeongjo', serif";
-const SERIF_HANGUL = "'Nanum Myeongjo', 'Cormorant Garamond', serif";
+// 페이지 main 에 #FAF7EE 페이퍼 워시가 깔려 있어서 Hero 자체는 transparent.
+// 단, sticky CTA 의 텍스트 색만 한 번 재참조.
+const PAPER_WASH = PAPER;
 
 // 모션 — 절제. 큰 translate 없음. 1~2px nudging + opacity.
 const fade = {
@@ -216,14 +217,15 @@ export function Hero() {
             <SectionMark numeral="V" />
           </div>
           <div className="col-span-12 lg:col-span-11">
-            <Kicker>
-              Field Notes · 지금 가게에서
-              {today && (
-                <span className="ml-3 italic" style={{ fontFamily: SERIF_LATIN, color: INK_SOFT, fontStyle: "italic", textTransform: "none", letterSpacing: 0 }}>
-                  오늘은 {today.weekdayKo}요일입니다
-                </span>
-              )}
-            </Kicker>
+            <Kicker>Field Notes · 지금 가게에서</Kicker>
+            {today && (
+              <div
+                className="mt-2 text-[12px] italic"
+                style={{ fontFamily: SERIF_LATIN, color: INK_SOFT }}
+              >
+                오늘은 <em className="not-italic" style={{ fontFamily: SERIF_HANGUL, color: INK, fontWeight: 500 }}>{today.weekdayKo}요일</em>입니다.
+              </div>
+            )}
             <p
               className="mt-5 text-[18px] sm:text-[22px] leading-[1.55] max-w-[820px]"
               style={{ fontFamily: SERIF_HANGUL, color: INK }}
@@ -271,12 +273,25 @@ export function Hero() {
                     background: isToday ? "rgba(230,221,200,0.28)" : undefined,
                   }}
                 >
-                  {/* 인덱스 — 로만/타뷸러 (오늘은 별표) */}
+                  {/* 인덱스 — 로만/타뷸러. 오늘은 작은 dot + Today 라벨 */}
                   <div
-                    className="col-span-2 sm:col-span-1 text-[10.5px] tracking-[0.18em] uppercase tabular-nums"
+                    className="col-span-2 sm:col-span-1 text-[10.5px] tracking-[0.18em] uppercase tabular-nums inline-flex items-center gap-1.5"
                     style={{ color: isToday ? INK : INK_MUTE }}
                   >
-                    {isToday ? "✱" : String(i + 1).padStart(2, "0")}
+                    {isToday ? (
+                      <>
+                        <span
+                          aria-hidden
+                          className="inline-block h-[5px] w-[5px] rounded-full"
+                          style={{ background: INK }}
+                        />
+                        <span className="italic" style={{ fontFamily: SERIF_LATIN }}>
+                          Today
+                        </span>
+                      </>
+                    ) : (
+                      String(i + 1).padStart(2, "0")
+                    )}
                   </div>
                   {/* 요일 — 세리프, 오늘은 italic */}
                   <div

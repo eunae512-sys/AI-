@@ -2,9 +2,21 @@
 
 // 랜딩 sections — "AI 기능 소개" 제거, 운영 시스템 톤으로 단순화.
 // 매거진 결: 큰 여백, hairline 보더, serif 헤드라인, 단어 위주 카피.
+//
+// 색·룰은 모두 lib/landing/tokens 에서 공유 — Hero/Nav/Footer 와 한 결.
 
 import { motion } from "motion/react";
 import Link from "next/link";
+import {
+  INK,
+  INK_SOFT,
+  INK_MUTE,
+  RULE,
+  RULE_SOFT,
+  PAPER_HOVER,
+  SERIF_LATIN,
+  SERIF_HANGUL,
+} from "@/lib/landing/tokens";
 
 const reveal = {
   initial: { opacity: 0, y: 16 },
@@ -31,25 +43,32 @@ const SectionContainer = ({
 );
 
 const Eyebrow = ({ children }: { children: React.ReactNode }) => (
-  <div className="editorial-label">{children}</div>
+  <div
+    className="text-[10.5px] tracking-[0.22em] uppercase"
+    style={{ color: INK_MUTE, fontFamily: SERIF_LATIN, fontStyle: "italic" }}
+  >
+    {children}
+  </div>
 );
 
 const Headline = ({ children, size = "lg" }: { children: React.ReactNode; size?: "lg" | "md" }) => (
   <h2
-    className={`mt-4 leading-[1.05] tracking-[-0.02em] font-medium ${
+    className={`mt-4 leading-[1.04] tracking-[-0.025em] ${
       size === "lg"
         ? "text-[40px] sm:text-[56px] md:text-[64px]"
         : "text-[28px] sm:text-[36px]"
     }`}
-    style={{ fontFamily: "'Cormorant Garamond', 'Nanum Myeongjo', serif", fontWeight: 500 }}
+    style={{ fontFamily: SERIF_LATIN, fontWeight: 400, color: INK }}
   >
     {children}
   </h2>
 );
 
 const Lede = ({ children }: { children: React.ReactNode }) => (
-  <p className="mt-5 max-w-[640px] text-[15px] sm:text-[16px] text-zinc-600 dark:text-zinc-400 leading-[1.7]"
-    style={{ fontFamily: "'Nanum Myeongjo', serif" }}>
+  <p
+    className="mt-5 max-w-[640px] text-[15px] sm:text-[16px] leading-[1.7]"
+    style={{ fontFamily: SERIF_HANGUL, color: INK_SOFT }}
+  >
     {children}
   </p>
 );
@@ -70,21 +89,36 @@ export function ProblemSection() {
         </Lede>
       </motion.div>
 
-      <motion.ol {...reveal} className="mt-14 divide-y divide-zinc-200 dark:divide-zinc-800 border-y border-zinc-200 dark:border-zinc-800">
+      <motion.ol
+        {...reveal}
+        className="mt-14"
+        style={{ borderTop: `0.5px solid ${RULE}`, borderBottom: `0.5px solid ${RULE}` }}
+      >
         {[
           { num: "01", label: "오늘 뭐 올릴지 매일 고민", out: "이번 주 한 번에 자동 큐레이션" },
           { num: "02", label: "사진 찍고 캡션 쓰고 해시태그 정리", out: "사진 한 장이면 카드뉴스·릴스·캡션 자동" },
           { num: "03", label: "댓글·DM 응대 시간", out: "브랜드 톤 학습된 자동 응답" },
           { num: "04", label: "발행 시간·요일 결정", out: "채널별 반응 데이터 기반 자동 픽" },
           { num: "05", label: "효과 분석 시간", out: "한 줄 노트로 매주 정리됨" },
-        ].map((row) => (
-          <li key={row.num} className="grid grid-cols-12 items-baseline gap-3 py-5">
-            <div className="col-span-2 sm:col-span-1 editorial-label tabular-nums">{row.num}</div>
-            <div className="col-span-10 sm:col-span-5 text-[14.5px] text-zinc-500 dark:text-zinc-500 line-through decoration-[0.5px]"
-              style={{ fontFamily: "'Nanum Myeongjo', serif" }}>
+        ].map((row, i) => (
+          <li
+            key={row.num}
+            className="grid grid-cols-12 items-baseline gap-3 py-5"
+            style={{ borderTop: i === 0 ? "none" : `0.5px solid ${RULE_SOFT}` }}
+          >
+            <div
+              className="col-span-2 sm:col-span-1 text-[10.5px] tracking-[0.22em] uppercase tabular-nums italic"
+              style={{ color: INK_MUTE, fontFamily: SERIF_LATIN }}
+            >
+              {row.num}
+            </div>
+            <div
+              className="col-span-10 sm:col-span-5 text-[14.5px] line-through decoration-[0.5px]"
+              style={{ fontFamily: SERIF_HANGUL, color: INK_MUTE }}
+            >
               {row.label}
             </div>
-            <div className="col-span-12 sm:col-span-6 text-[15px]" style={{ fontFamily: "'Nanum Myeongjo', serif" }}>
+            <div className="col-span-12 sm:col-span-6 text-[15px]" style={{ fontFamily: SERIF_HANGUL, color: INK }}>
               {row.out}
             </div>
           </li>
@@ -112,8 +146,17 @@ export function ReelsFeature() {
         <motion.div {...reveal} className="md:col-span-7">
           <div className="grid grid-cols-3 gap-3">
             {["cafe", "restaurant", "beauty", "fitness", "stay", "local"].map((ind) => (
-              <div key={ind} className="aspect-[3/4] border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex items-end p-3">
-                <div className="editorial-label">{ind}</div>
+              <div
+                key={ind}
+                className="aspect-[3/4] flex items-end p-3"
+                style={{ border: `0.5px solid ${RULE}`, background: "rgba(20,19,15,0.025)" }}
+              >
+                <div
+                  className="text-[10.5px] tracking-[0.22em] uppercase italic"
+                  style={{ color: INK_MUTE, fontFamily: SERIF_LATIN }}
+                >
+                  {ind}
+                </div>
               </div>
             ))}
           </div>
@@ -152,10 +195,20 @@ export function ToneFeature() {
             body: "채널별 반응 좋은 시간에 인스타·블로그·카카오로 동시 발행. 댓글·DM 도 자동 응답.",
           },
         ].map((step) => (
-          <li key={step.n} className="border-t border-zinc-200 dark:border-zinc-800 pt-5">
-            <div className="editorial-label tabular-nums">{step.n}</div>
-            <h3 className="mt-3 text-[20px] tracking-tight" style={{ fontFamily: "'Nanum Myeongjo', serif" }}>{step.title}</h3>
-            <p className="mt-3 text-[14px] text-zinc-600 dark:text-zinc-400 leading-[1.75]" style={{ fontFamily: "'Nanum Myeongjo', serif" }}>
+          <li key={step.n} className="pt-5" style={{ borderTop: `0.5px solid ${RULE}` }}>
+            <div
+              className="text-[10.5px] tracking-[0.22em] uppercase tabular-nums italic"
+              style={{ color: INK_MUTE, fontFamily: SERIF_LATIN }}
+            >
+              {step.n}
+            </div>
+            <h3
+              className="mt-3 text-[20px] tracking-tight"
+              style={{ fontFamily: SERIF_HANGUL, color: INK, fontWeight: 500 }}
+            >
+              {step.title}
+            </h3>
+            <p className="mt-3 text-[14px] leading-[1.75]" style={{ fontFamily: SERIF_HANGUL, color: INK_SOFT }}>
               {step.body}
             </p>
           </li>
@@ -192,10 +245,10 @@ export function CalendarFeature() {
         ].map((line) => (
           <li
             key={line}
-            className="text-[14.5px] leading-relaxed text-zinc-700 dark:text-zinc-300 border-b border-zinc-100 dark:border-zinc-900 pb-3"
-            style={{ fontFamily: "'Nanum Myeongjo', serif" }}
+            className="text-[14.5px] leading-relaxed pb-3"
+            style={{ fontFamily: SERIF_HANGUL, color: INK, borderBottom: `0.5px solid ${RULE_SOFT}` }}
           >
-            <span className="editorial-label mr-3">·</span>
+            <span className="mr-3" style={{ color: INK_MUTE }}>·</span>
             {line}
           </li>
         ))}
@@ -221,20 +274,35 @@ export function CasesSection() {
           { name: "로스터리 1985", note: "서촌 스페셜티 카페 · 원두 입고 안내", reach: "+62%" },
           { name: "서촌 한옥스테이", note: "종로 한옥 숙소 · 평일 예약 유도", reach: "+38%" },
         ].map((c) => (
-          <div key={c.name} className="border-t border-zinc-200 dark:border-zinc-800 pt-5">
-            <div className="editorial-label">CASE</div>
-            <h3 className="mt-3 text-[19px] tracking-tight" style={{ fontFamily: "'Nanum Myeongjo', serif" }}>
+          <div key={c.name} className="pt-5" style={{ borderTop: `0.5px solid ${RULE}` }}>
+            <div
+              className="text-[10.5px] tracking-[0.22em] uppercase italic"
+              style={{ color: INK_MUTE, fontFamily: SERIF_LATIN }}
+            >
+              Case
+            </div>
+            <h3
+              className="mt-3 text-[19px] tracking-tight"
+              style={{ fontFamily: SERIF_HANGUL, color: INK, fontWeight: 500 }}
+            >
               {c.name}
             </h3>
-            <div className="mt-2 text-[12.5px] text-zinc-500">{c.note}</div>
-            <div className="mt-6 flex items-baseline gap-1">
+            <div className="mt-2 text-[12.5px]" style={{ color: INK_SOFT, fontFamily: SERIF_HANGUL }}>
+              {c.note}
+            </div>
+            <div className="mt-6 flex items-baseline gap-2">
               <span
-                className="text-[36px] tabular-nums tracking-tight"
-                style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 500 }}
+                className="text-[40px] tabular-nums tracking-tight"
+                style={{ fontFamily: SERIF_LATIN, fontWeight: 400, color: INK }}
               >
                 {c.reach}
               </span>
-              <span className="text-[11px] text-zinc-500 uppercase tracking-[0.15em]">monthly reach</span>
+              <span
+                className="text-[10.5px] uppercase tracking-[0.18em]"
+                style={{ color: INK_MUTE }}
+              >
+                monthly reach
+              </span>
             </div>
           </div>
         ))}
@@ -254,7 +322,11 @@ export function FAQSection() {
         <Eyebrow>FAQ</Eyebrow>
         <Headline size="md">자주 물으시는 것</Headline>
       </motion.div>
-      <motion.dl {...reveal} className="mt-10 divide-y divide-zinc-200 dark:divide-zinc-800 border-y border-zinc-200 dark:border-zinc-800">
+      <motion.dl
+        {...reveal}
+        className="mt-10"
+        style={{ borderTop: `0.5px solid ${RULE}`, borderBottom: `0.5px solid ${RULE}` }}
+      >
         {[
           {
             q: "AI 가 만든 콘텐츠 티가 나지 않나요?",
@@ -273,13 +345,21 @@ export function FAQSection() {
             a: "직접 만드신 콘텐츠는 그대로. BRIQ 는 새 콘텐츠만 발행합니다. 사장님 콘텐츠 학습해서 톤만 맞춥니다.",
           },
         ].map((f, i) => (
-          <div key={i} className="py-6 grid grid-cols-12 gap-x-6">
-            <dt className="col-span-12 sm:col-span-4 text-[14px] text-zinc-700 dark:text-zinc-300"
-              style={{ fontFamily: "'Nanum Myeongjo', serif" }}>
+          <div
+            key={i}
+            className="py-6 grid grid-cols-12 gap-x-6"
+            style={{ borderTop: i === 0 ? "none" : `0.5px solid ${RULE_SOFT}` }}
+          >
+            <dt
+              className="col-span-12 sm:col-span-4 text-[14px]"
+              style={{ fontFamily: SERIF_HANGUL, color: INK, fontWeight: 500 }}
+            >
               {f.q}
             </dt>
-            <dd className="col-span-12 sm:col-span-8 mt-2 sm:mt-0 text-[14px] text-zinc-500 dark:text-zinc-500 leading-relaxed"
-              style={{ fontFamily: "'Nanum Myeongjo', serif" }}>
+            <dd
+              className="col-span-12 sm:col-span-8 mt-2 sm:mt-0 text-[14px] leading-relaxed"
+              style={{ fontFamily: SERIF_HANGUL, color: INK_SOFT }}
+            >
               {f.a}
             </dd>
           </div>
@@ -296,15 +376,19 @@ export function FAQSection() {
 export function FinalCTA() {
   return (
     <SectionContainer pad="wide">
-      <motion.div {...reveal} className="border-y border-zinc-200 dark:border-zinc-800 py-16 sm:py-24 text-center">
+      <motion.div
+        {...reveal}
+        className="py-16 sm:py-24 text-center"
+        style={{ borderTop: `0.5px solid ${RULE}`, borderBottom: `0.5px solid ${RULE}` }}
+      >
         <Eyebrow>가게 등록은 3분</Eyebrow>
         <h2
-          className="mt-5 text-[36px] sm:text-[56px] leading-[1.05] tracking-[-0.02em] font-medium"
-          style={{ fontFamily: "'Cormorant Garamond', 'Nanum Myeongjo', serif", fontWeight: 500 }}
+          className="mt-5 text-[36px] sm:text-[56px] leading-[1.05] tracking-[-0.025em]"
+          style={{ fontFamily: SERIF_LATIN, fontWeight: 400, color: INK }}
         >
           내일 아침,
           <br />
-          첫 발행이 올라가 있습니다.
+          <em style={{ fontStyle: "italic", fontFamily: SERIF_LATIN }}>첫 발행이</em> 올라가 있습니다.
         </h2>
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
           <Link
@@ -333,32 +417,50 @@ export function FinalCTA() {
 // ─────────────────────────────────────────────────────────────
 
 export function LandingFooter() {
+  const eyebrow = "text-[10.5px] tracking-[0.22em] uppercase italic";
+  const eyebrowStyle: React.CSSProperties = { color: INK_MUTE, fontFamily: SERIF_LATIN };
+  const linkBase = "transition-colors hover:opacity-100";
+
   return (
-    <footer className="border-t border-zinc-200 dark:border-zinc-800">
-      <div className="max-w-[1180px] mx-auto px-6 sm:px-12 py-12 grid grid-cols-1 sm:grid-cols-3 gap-8">
+    <footer style={{ background: "#FAF7EE", borderTop: `0.5px solid ${RULE}` }}>
+      <div className="max-w-[1240px] mx-auto px-6 sm:px-14 py-14 grid grid-cols-1 sm:grid-cols-3 gap-10">
         <div>
-          <div className="editorial-label">BRIQ</div>
-          <p className="mt-3 text-[12.5px] text-zinc-500 leading-relaxed">
-            소상공인 대신 SNS 를 운영해주는 AI 마케팅 운영 시스템.
+          <div
+            className="text-[24px] leading-none tracking-[-0.02em]"
+            style={{ fontFamily: SERIF_LATIN, fontWeight: 500, color: INK }}
+          >
+            BRIQ
+          </div>
+          <p
+            className="mt-4 text-[13px] leading-[1.7] max-w-[280px]"
+            style={{ fontFamily: SERIF_HANGUL, color: INK_SOFT }}
+          >
+            소상공인 대신 SNS 를 운영해주는, 가만한 AI 운영자.
           </p>
         </div>
         <div>
-          <div className="editorial-label">Product</div>
-          <ul className="mt-3 space-y-1.5 text-[13px] text-zinc-600 dark:text-zinc-400">
-            <li><Link href="/onboarding" className="hover:text-zinc-900 dark:hover:text-zinc-100">가게 등록</Link></li>
-            <li><Link href="/dashboard" className="hover:text-zinc-900 dark:hover:text-zinc-100">데모</Link></li>
-            <li><Link href="/pricing" className="hover:text-zinc-900 dark:hover:text-zinc-100">요금</Link></li>
+          <div className={eyebrow} style={eyebrowStyle}>Product</div>
+          <ul className="mt-3.5 space-y-2 text-[13px]" style={{ fontFamily: SERIF_HANGUL, color: INK_SOFT }}>
+            <li><Link href="/onboarding" className={linkBase} style={{ color: INK_SOFT }}>가게 등록</Link></li>
+            <li><Link href="/dashboard" className={linkBase} style={{ color: INK_SOFT }}>데모 보기</Link></li>
+            <li><Link href="/pricing" className={linkBase} style={{ color: INK_SOFT }}>요금제</Link></li>
+            <li><Link href="/contact" className={linkBase} style={{ color: INK_SOFT }}>도입 문의</Link></li>
           </ul>
         </div>
         <div>
-          <div className="editorial-label">Legal</div>
-          <ul className="mt-3 space-y-1.5 text-[13px] text-zinc-600 dark:text-zinc-400">
-            <li><Link href="/settings" className="hover:text-zinc-900 dark:hover:text-zinc-100">개인정보·약관</Link></li>
+          <div className={eyebrow} style={eyebrowStyle}>Account</div>
+          <ul className="mt-3.5 space-y-2 text-[13px]" style={{ fontFamily: SERIF_HANGUL, color: INK_SOFT }}>
+            <li><Link href="/login" className={linkBase} style={{ color: INK_SOFT }}>로그인</Link></li>
+            <li><Link href="/settings" className={linkBase} style={{ color: INK_SOFT }}>설정</Link></li>
+            <li><span style={{ color: INK_MUTE }}>개인정보 · 이용약관 (준비 중)</span></li>
           </ul>
         </div>
       </div>
-      <div className="border-t border-zinc-200 dark:border-zinc-800 py-5 text-center text-[10.5px] tracking-[0.18em] uppercase text-zinc-400">
-        © BRIQ 2026
+      <div
+        className="py-5 text-center text-[10px] tracking-[0.22em] uppercase italic"
+        style={{ borderTop: `0.5px solid ${RULE}`, color: INK_MUTE, fontFamily: SERIF_LATIN }}
+      >
+        © BRIQ MMXXVI · Issued from Seoul · Set in Cormorant &amp; Nanum Myeongjo
       </div>
     </footer>
   );

@@ -5,11 +5,7 @@
 
 import Link from "next/link";
 import * as React from "react";
-
-const INK = "#14130F";
-const INK_SOFT = "#4A4742";
-const INK_MUTE = "#8C8881";
-const RULE = "rgba(20,19,15,0.12)";
+import { INK, INK_SOFT, INK_MUTE, RULE, PAPER } from "@/lib/landing/tokens";
 
 export function LandingNav() {
   return (
@@ -64,7 +60,7 @@ export function LandingNav() {
           <Link
             href="/onboarding"
             className="inline-flex items-center gap-2 h-9 px-4 text-[10.5px] tracking-[0.18em] uppercase font-medium transition-colors"
-            style={{ background: INK, color: "#FAF7EE" }}
+            style={{ background: INK, color: PAPER }}
           >
             Begin
             <span aria-hidden className="text-[12px] tracking-normal">→</span>
