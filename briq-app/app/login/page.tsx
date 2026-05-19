@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { loadUserBrand } from "@/lib/brand/user-brand";
+import { getSupabaseBrowser } from "@/lib/supabase/client";
 import { INK, INK_SOFT, INK_MUTE, RULE, RULE_SOFT, PAPER, SERIF_LATIN, SERIF_HANGUL } from "@/lib/landing/tokens";
 
 const fade = {
@@ -25,13 +26,50 @@ type Provider = "google" | "kakao" | "email";
 export default function LoginPage() {
   const router = useRouter();
   const [busy, setBusy] = React.useState<Provider | null>(null);
+  const [authError, setAuthError] = React.useState<string | null>(null);
 
-  // 데모 흐름: 저장된 브랜드가 있으면 대시보드로, 없으면 온보딩으로.
+  // URL 의 ?error= 표시 (OAuth callback 실패 케이스)
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const err = params.get("error");
+    if (err) setAuthError(err);
+  }, []);
+
+  // 1) Supabase 환경변수 있으면 진짜 OAuth (Google · Kakao)
+  // 2) 없으면 데모 흐름 (저장된 브랜드 → /dashboard, 신규 → /onboarding)
   const route = React.useCallback(
     async (provider: Provider) => {
       if (busy) return;
       setBusy(provider);
-      // 사용자가 클릭을 인지할 만한 200ms — 진짜 모달이 떴다 닫히는 결.
+      setAuthError(null);
+
+      // ── 진짜 OAuth ──
+      if (provider === "google" || provider === "kakao") {
+        const supabase = getSupabaseBrowser();
+        if (supabase) {
+          const existing = loadUserBrand();
+          const next = existing ? "/dashboard" : "/onboarding";
+          const redirectTo = `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(next)}`;
+          const { error } = await supabase.auth.signInWithOAuth({
+            provider,
+            options: {
+              redirectTo,
+              // 카카오는 'account_email profile_nickname profile_image' 권한
+              scopes: provider === "kakao" ? "account_email profile_nickname profile_image" : undefined,
+            },
+          });
+          if (error) {
+            setAuthError(`로그인 실패 — ${error.message}`);
+            setBusy(null);
+          }
+          // 정상 케이스: supabase 가 외부 OAuth 화면으로 리다이렉트 → callback 으로 복귀
+          return;
+        }
+        // env 미설정 시 데모 fallback
+      }
+
+      // ── 데모 fallback (email 또는 env 미설정 SSO) ──
       await new Promise((r) => setTimeout(r, 220));
       const existing = loadUserBrand();
       router.push(existing ? "/dashboard" : "/onboarding");
@@ -91,6 +129,27 @@ export default function LoginPage() {
             >
               로그인하면 오늘 BRIQ 가 만든 콘텐츠를 확인하실 수 있어요.
             </p>
+
+            {/* OAuth callback 실패 알림 */}
+            {authError && (
+              <div
+                className="mt-7 px-4 py-3 text-[12px] leading-relaxed"
+                style={{
+                  border: `0.5px solid ${INK}`,
+                  background: "rgba(20,19,15,0.04)",
+                  color: INK,
+                  fontFamily: SERIF_HANGUL,
+                }}
+              >
+                <div
+                  className="text-[10px] tracking-[0.22em] uppercase italic mb-1"
+                  style={{ color: INK_MUTE, fontFamily: SERIF_LATIN }}
+                >
+                  Sign in error
+                </div>
+                {authError}
+              </div>
+            )}
 
             {/* SSO — 헤어라인 outlined */}
             <div className="mt-9 space-y-2.5">
