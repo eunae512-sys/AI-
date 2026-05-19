@@ -16,12 +16,15 @@ const reveal = {
 const SectionContainer = ({
   children,
   pad = "default",
+  id,
 }: {
   children: React.ReactNode;
   pad?: "default" | "wide";
+  id?: string;
 }) => (
   <section
-    className={`max-w-[1180px] mx-auto px-6 sm:px-12 ${pad === "wide" ? "py-24 sm:py-32" : "py-20 sm:py-28"}`}
+    id={id}
+    className={`max-w-[1180px] mx-auto px-6 sm:px-12 ${pad === "wide" ? "py-24 sm:py-32" : "py-20 sm:py-28"} scroll-mt-20`}
   >
     {children}
   </section>
@@ -97,7 +100,7 @@ export function ProblemSection() {
 
 export function ReelsFeature() {
   return (
-    <SectionContainer pad="wide">
+    <SectionContainer pad="wide" id="features">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-x-10 md:gap-x-14 gap-y-8">
         <motion.div {...reveal} className="md:col-span-5">
           <Eyebrow>Brand Persona</Eyebrow>
@@ -207,7 +210,7 @@ export function CalendarFeature() {
 
 export function CasesSection() {
   return (
-    <SectionContainer pad="wide">
+    <SectionContainer pad="wide" id="cases">
       <motion.div {...reveal}>
         <Eyebrow>Currently running</Eyebrow>
         <Headline size="md">이런 가게가 쓰고 있습니다</Headline>
@@ -246,7 +249,7 @@ export function CasesSection() {
 
 export function FAQSection() {
   return (
-    <SectionContainer>
+    <SectionContainer id="faq">
       <motion.div {...reveal}>
         <Eyebrow>FAQ</Eyebrow>
         <Headline size="md">자주 물으시는 것</Headline>
@@ -303,12 +306,21 @@ export function FinalCTA() {
           <br />
           첫 발행이 올라가 있습니다.
         </h2>
-        <div className="mt-10">
+        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
           <Link
             href="/onboarding"
-            className="inline-flex items-center gap-3 h-12 px-7 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[14px] tracking-[0.04em] uppercase font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
+            className="inline-flex items-center gap-3 h-[46px] px-7 text-[12.5px] tracking-[0.18em] uppercase font-medium transition-colors"
+            style={{ background: "#14130F", color: "#FAF7EE" }}
           >
-            가게 등록 시작 →
+            Begin
+            <span aria-hidden className="text-[14px] tracking-normal">→</span>
+          </Link>
+          <Link
+            href="/pricing"
+            className="text-[12px] tracking-[0.04em] underline underline-offset-[6px] decoration-[0.5px]"
+            style={{ color: "#4A4742", textDecorationColor: "rgba(20,19,15,0.20)" }}
+          >
+            가격 — 한 장으로 정리
           </Link>
         </div>
       </motion.div>

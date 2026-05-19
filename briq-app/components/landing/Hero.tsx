@@ -63,10 +63,7 @@ export function Hero() {
   return (
     <section
       className="relative overflow-hidden"
-      style={{
-        // 라이트 모드에 한해 종이톤 워시 — 다크 모드는 var(--bg) 그대로.
-        background: `linear-gradient(180deg, ${PAPER_WASH} 0%, ${PAPER_WASH} 88%, transparent 100%)`,
-      }}
+      // 페이지 main 에 #FAF7EE 워시가 이미 입혀져 있어 Hero 는 투명으로 흘려보냄
     >
       {/* 좌측 editorial spine — 데스크탑에서만, 0.5px 라인 */}
       <div

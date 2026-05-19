@@ -1,42 +1,74 @@
 "use client";
 
+// 매거진 매스트헤드 — Hero 와 톤 일치 (warm ink + paper).
+// 그라데이션 B 로고 제거. 로고타입(Cormorant) + 발행호 표기.
+
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import * as React from "react";
+
+const INK = "#14130F";
+const INK_SOFT = "#4A4742";
+const INK_MUTE = "#8C8881";
+const RULE = "rgba(20,19,15,0.12)";
 
 export function LandingNav() {
   return (
-    <nav className="fixed top-0 inset-x-0 z-50 nav-blur bg-white/70 dark:bg-[#0a0a0b]/70 border-b border-zinc-100/70 dark:border-zinc-900/70">
-      <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-md bg-gradient-to-br from-indigo-500 via-violet-600 to-pink-500 grid place-items-center text-white text-xs font-bold">
-            B
-          </div>
-          <span className="text-sm font-semibold tracking-tight">BRIQ</span>
+    <nav
+      className="fixed top-0 inset-x-0 z-50 backdrop-blur-md"
+      style={{
+        background: "rgba(250, 247, 238, 0.78)", // paper wash 위에 떠 있는 결
+        borderBottom: `0.5px solid ${RULE}`,
+      }}
+    >
+      <div className="max-w-[1240px] mx-auto px-6 sm:px-14 h-14 flex items-center justify-between">
+        {/* 마스트헤드 — 로고타입 + 작은 호 표기 */}
+        <Link href="/" className="flex items-baseline gap-2.5">
+          <span
+            className="text-[20px] leading-none tracking-[-0.02em]"
+            style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 500, color: INK }}
+          >
+            BRIQ
+          </span>
+          <span
+            className="hidden sm:inline-block text-[9.5px] tracking-[0.22em] uppercase tabular-nums"
+            style={{ color: INK_MUTE }}
+          >
+            Vol. I · MMXXVI
+          </span>
         </Link>
-        <div className="hidden md:flex items-center gap-7 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-          <a href="#features" className="hover:text-zinc-900 dark:hover:text-zinc-100">
-            기능
+
+        {/* 섹션 anchor — small caps, 헤어라인 결 */}
+        <div className="hidden md:flex items-center gap-7 text-[10.5px] tracking-[0.18em] uppercase">
+          <a href="#features" style={{ color: INK_SOFT }} className="hover:text-zinc-900 transition-colors">
+            Features
           </a>
-          <a href="#cases" className="hover:text-zinc-900 dark:hover:text-zinc-100">
-            고객사례
+          <a href="#cases" style={{ color: INK_SOFT }} className="hover:text-zinc-900 transition-colors">
+            Cases
           </a>
-          <Link href="/pricing" className="hover:text-zinc-900 dark:hover:text-zinc-100">
-            요금제
+          <Link href="/pricing" style={{ color: INK_SOFT }} className="hover:text-zinc-900 transition-colors">
+            Pricing
           </Link>
-          <a href="#faq" className="hover:text-zinc-900 dark:hover:text-zinc-100">
+          <a href="#faq" style={{ color: INK_SOFT }} className="hover:text-zinc-900 transition-colors">
             FAQ
           </a>
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="flex items-center gap-3">
           <Link
             href="/login"
-            className="text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 px-3 py-1.5"
+            className="hidden sm:inline-block text-[11.5px] tracking-[0.12em] uppercase underline underline-offset-[6px] decoration-[0.5px]"
+            style={{ color: INK_SOFT, textDecorationColor: RULE }}
           >
-            로그인
+            Sign in
           </Link>
-          <Button asChild size="sm" className="text-xs">
-            <Link href="/onboarding">3분 만에 시작</Link>
-          </Button>
+          <Link
+            href="/onboarding"
+            className="inline-flex items-center gap-2 h-9 px-4 text-[10.5px] tracking-[0.18em] uppercase font-medium transition-colors"
+            style={{ background: INK, color: "#FAF7EE" }}
+          >
+            Begin
+            <span aria-hidden className="text-[12px] tracking-normal">→</span>
+          </Link>
         </div>
       </div>
     </nav>
