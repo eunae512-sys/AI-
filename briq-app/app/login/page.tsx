@@ -27,13 +27,16 @@ export default function LoginPage() {
   const router = useRouter();
   const [busy, setBusy] = React.useState<Provider | null>(null);
   const [authError, setAuthError] = React.useState<string | null>(null);
+  const [nextPath, setNextPath] = React.useState<string | null>(null);
 
-  // URL 의 ?error= 표시 (OAuth callback 실패 케이스)
+  // URL 의 ?error= 표시 + ?next= 보존
   React.useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const err = params.get("error");
     if (err) setAuthError(err);
+    const nx = params.get("next");
+    if (nx && nx.startsWith("/")) setNextPath(nx);
   }, []);
 
   // 1) Supabase 환경변수 있으면 진짜 OAuth (Google · Kakao)
@@ -49,7 +52,9 @@ export default function LoginPage() {
         const supabase = getSupabaseBrowser();
         if (supabase) {
           const existing = loadUserBrand();
-          const next = existing ? "/dashboard" : "/onboarding";
+          // ?next= 가 있으면 그 곳으로 (예: /billing/start?plan=pro).
+          // 없으면 기존 브랜드 유무에 따라 dashboard / onboarding.
+          const next = nextPath ?? (existing ? "/dashboard" : "/onboarding");
           const redirectTo = `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(next)}`;
           const { error } = await supabase.auth.signInWithOAuth({
             provider,
@@ -72,9 +77,9 @@ export default function LoginPage() {
       // ── 데모 fallback (email 또는 env 미설정 SSO) ──
       await new Promise((r) => setTimeout(r, 220));
       const existing = loadUserBrand();
-      router.push(existing ? "/dashboard" : "/onboarding");
+      router.push(nextPath ?? (existing ? "/dashboard" : "/onboarding"));
     },
-    [busy, router],
+    [busy, router, nextPath],
   );
 
   const onSubmitEmail = (e: React.FormEvent) => {
@@ -114,6 +119,22 @@ export default function LoginPage() {
             >
               Sign in · 다시 오신 것을 환영합니다
             </div>
+
+            {/* next 가 결제 시작이면 사용자 컨텍스트 안내 */}
+            {nextPath && nextPath.startsWith("/billing/start") && (
+              <div
+                className="mt-3 inline-flex items-center gap-2 text-[11.5px] px-3 py-1.5"
+                style={{
+                  border: `0.5px solid ${INK}`,
+                  background: "rgba(20,19,15,0.04)",
+                  color: INK_SOFT,
+                  fontFamily: SERIF_HANGUL,
+                }}
+              >
+                <span style={{ color: INK_MUTE }}>1단계 / 2</span>
+                <span>가입(또는 로그인) 후 결제수단을 등록합니다.</span>
+              </div>
+            )}
 
             {/* Display */}
             <h1

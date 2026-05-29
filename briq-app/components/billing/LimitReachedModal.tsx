@@ -7,8 +7,9 @@ import * as React from "react";
 import Link from "next/link";
 import { X, Sparkles } from "lucide-react";
 import type { UsageKind } from "@/lib/billing/usage";
-import { upgradePromptForKind, getActivePlanId } from "@/lib/billing/usage";
+import { upgradePromptForKind } from "@/lib/billing/usage";
 import { getPlan } from "@/lib/billing/plans";
+import { useUsage } from "@/lib/billing/use-usage";
 
 type Props = {
   open: boolean;
@@ -17,7 +18,8 @@ type Props = {
 };
 
 export function LimitReachedModal({ open, kind, onClose }: Props) {
-  const planId = getActivePlanId();
+  // 서버 우선, fallback localStorage. 진실의 단일 출처는 profiles.plan_id.
+  const { planId } = useUsage();
   const { headline, body, ctaPlan } = upgradePromptForKind(kind, planId);
   const targetPlan = getPlan(ctaPlan);
 

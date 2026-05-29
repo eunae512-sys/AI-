@@ -323,7 +323,7 @@ export function Onboarding() {
               className="text-[15px] sm:text-[17px]"
               style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontWeight: 500 }}
             >
-              {PLAN_LABEL[selectedPlan]} 플랜으로 시작합니다 — 신용카드 입력 없이 14일 무료.
+              {PLAN_LABEL[selectedPlan]} 플랜으로 시작합니다 — 14일 무료체험 (체험 종료 전 해지 가능).
             </span>
           </motion.div>
         )}
@@ -986,48 +986,61 @@ export function Onboarding() {
                   </div>
                 </div>
               </div>
-              <div className="mt-10 flex items-center justify-end">
+              <div className="mt-10 flex flex-col items-end gap-2">
                 <button
                   onClick={() => {
-                    // 온보딩 결과를 영속화 → BrandProvider 가 자동으로 사용자 브랜드로 활성화
-                    if (!industry) {
-                      router.push("/dashboard");
+                    // 1) 온보딩 결과 영속화
+                    if (industry) {
+                      const brandId = `me-${Date.now().toString(36)}`;
+                      const moodTag2 = (mood && MOODS.find((m) => m.id === mood)?.tag) || "My Brand";
+                      const cleanMenu = signatureMenu.map((m) => m.trim()).filter(Boolean);
+                      saveUserBrand({
+                        id: brandId,
+                        name: shopName.trim() || "내 브랜드",
+                        industry: industry as IndustryType,
+                        industryLabel: INDUSTRY_LABEL[industry] ?? industry,
+                        city: INDUSTRY_DEFAULT_CITY[industry] ?? "서울",
+                        moodId: (mood ?? "warm") as MoodIdType,
+                        moodTag: moodTag2,
+                        palette: extractedPalette,
+                        photos: photos.map((p) => ({ url: p.url, name: p.name })),
+                        hook,
+                        toneText:
+                          (industry && INDUSTRY_TONE[industry]) ??
+                          "사장님의 브랜드 결을 단정한 톤으로 담습니다",
+                        tagline: tagline.trim() || undefined,
+                        signatureMenu: cleanMenu.length ? cleanMenu : undefined,
+                        ownerName: ownerName.trim() || undefined,
+                        ownerEmail: ownerEmail.trim() || undefined,
+                        selectedPlan,
+                        createdAt: Date.now(),
+                      });
+                      if (typeof window !== "undefined") {
+                        window.dispatchEvent(new Event("briq:user-brand-updated"));
+                      }
+                    }
+
+                    // 2) 유료 플랜 선택 시: 결제는 별도 페이지에서 (가입과 결제 분리)
+                    //    /billing/start 가 로그인 체크 후 비로그인 → /login?next=... 로 분기.
+                    if (selectedPlan && selectedPlan !== "free") {
+                      router.push(`/billing/start?plan=${selectedPlan}&cycle=monthly`);
                       return;
                     }
-                    const brandId = `me-${Date.now().toString(36)}`;
-                    const moodTag = (mood && MOODS.find((m) => m.id === mood)?.tag) || "My Brand";
-                    const cleanMenu = signatureMenu.map((m) => m.trim()).filter(Boolean);
-                    saveUserBrand({
-                      id: brandId,
-                      name: shopName.trim() || "내 브랜드",
-                      industry: industry as IndustryType,
-                      industryLabel: INDUSTRY_LABEL[industry] ?? industry,
-                      city: INDUSTRY_DEFAULT_CITY[industry] ?? "서울",
-                      moodId: (mood ?? "warm") as MoodIdType,
-                      moodTag,
-                      palette: extractedPalette,
-                      photos: photos.map((p) => ({ url: p.url, name: p.name })),
-                      hook,
-                      toneText:
-                        (industry && INDUSTRY_TONE[industry]) ??
-                        "사장님의 브랜드 결을 단정한 톤으로 담습니다",
-                      tagline: tagline.trim() || undefined,
-                      signatureMenu: cleanMenu.length ? cleanMenu : undefined,
-                      ownerName: ownerName.trim() || undefined,
-                      ownerEmail: ownerEmail.trim() || undefined,
-                      selectedPlan,
-                      createdAt: Date.now(),
-                    });
-                    // BrandProvider 동기화 알림
-                    if (typeof window !== "undefined") {
-                      window.dispatchEvent(new Event("briq:user-brand-updated"));
-                    }
+
+                    // 3) Free 플랜 또는 미선택 — 바로 대시보드
                     router.push("/dashboard");
                   }}
                   className="text-sm font-medium px-6 py-3 rounded-md bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900 hover:opacity-90"
                 >
-                  대시보드로 들어가기 →
+                  {selectedPlan && selectedPlan !== "free"
+                    ? `${PLAN_LABEL[selectedPlan]} 14일 무료체험 시작하기 →`
+                    : "대시보드로 들어가기 →"}
                 </button>
+                {selectedPlan && selectedPlan !== "free" && (
+                  <p className="text-[11px] text-zinc-500">
+                    다음 화면에서 결제수단만 등록하시면 됩니다. 14일 후 첫 청구 — 그 전에 해지 시 청구 없음.
+                  </p>
+                )}
               </div>
             </motion.section>
             );

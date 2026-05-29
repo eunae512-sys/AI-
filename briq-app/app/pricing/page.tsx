@@ -19,6 +19,17 @@ import { cn } from "@/lib/utils";
 
 type Cycle = "monthly" | "annual";
 
+// 플랜 카드 / 마지막 CTA 가 가야 할 경로를 결정.
+// - Free → 그대로 /onboarding (로그인 없이 데모)
+// - Agency → 그대로 /contact (영업 미팅)
+// - Pro/Studio → /billing/start?plan=...&cycle=...
+//   /billing/start 가 서버에서 로그인 체크 후 비로그인이면 /login?next=... 으로 보냄.
+function ctaHrefFor(plan: Plan, cycle: Cycle): string {
+  if (plan.id === "free") return plan.cta.href;
+  if (plan.id === "agency") return plan.cta.href;
+  return `/billing/start?plan=${plan.id}&cycle=${cycle}`;
+}
+
 const INDUSTRY_OPTIONS: { id: keyof typeof INDUSTRY_RECOMMEND; label: string }[] = [
   { id: "restaurant", label: "식당·한식당" },
   { id: "cafe", label: "카페" },
@@ -50,7 +61,7 @@ export default function PricingPage() {
           </h1>
           <p className="mt-6 max-w-[640px] text-[15px] leading-[1.65] text-zinc-600 dark:text-zinc-400">
             카드뉴스 만들고, 캡션 쓰고, 해시태그 고르고, 네이버 블로그 본문까지 — 매주 6-8시간 걸리던 일이 10분으로.
-            14일 무료 체험 후 결정하세요. 신용카드 입력 없이 시작 가능합니다.
+            14일 무료 체험 후 결정하세요. 체험 종료 전 언제든 해지 가능합니다.
           </p>
 
           {/* 결제 주기 토글 */}
@@ -132,7 +143,7 @@ export default function PricingPage() {
             className="mt-1.5 text-[10.5px] text-center italic"
             style={{ color: "#4A4742", fontFamily: "'Cormorant Garamond', serif" }}
           >
-            ※ 현재 베타 — 결제 연동은 준비 중입니다. 가입 후 14일 무료 체험 동안 모든 기능 사용 가능.
+            14일 무료체험 시작 시 카드 등록이 필요합니다. 체험 종료 전 해지 시 청구되지 않습니다.
           </p>
         </section>
 
@@ -268,13 +279,13 @@ export default function PricingPage() {
             <em style={{ fontStyle: "italic" }}>내일 첫 카드뉴스를 발행하세요.</em>
           </h2>
           <p className="mt-5 text-[14px] text-zinc-600 dark:text-zinc-400">
-            신용카드 입력 없이 14일 무료 체험. 마음에 안 드시면 그냥 탈퇴하시면 됩니다.
+            카드 등록 후 14일 무료 체험. 체험 종료 전 해지하시면 청구되지 않습니다.
           </p>
           <Link
-            href="/onboarding"
+            href={`/billing/start?plan=pro&cycle=${cycle}`}
             className="mt-8 inline-block px-8 h-12 leading-[3rem] bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[13px] tracking-[0.1em] uppercase font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
           >
-            14일 무료로 시작 →
+            14일 무료체험 시작 →
           </Link>
         </section>
       </main>
@@ -345,7 +356,7 @@ function PlanCard({ plan, cycle, isRecommended }: { plan: Plan; cycle: Cycle; is
         )}
 
         <Link
-          href={plan.cta.href}
+          href={ctaHrefFor(plan, cycle)}
           className={cn(
             "mt-6 block text-center h-11 leading-[2.75rem] text-[12px] tracking-[0.1em] uppercase font-medium transition-colors",
             isHighlighted

@@ -17,6 +17,7 @@ import {
   SERIF_LATIN,
   SERIF_HANGUL,
 } from "@/lib/landing/tokens";
+import { BusinessFooter } from "@/components/layout/BusinessFooter";
 
 const reveal = {
   initial: { opacity: 0, y: 16 },
@@ -452,10 +453,13 @@ export function LandingFooter() {
           <ul className="mt-3.5 space-y-2 text-[13px]" style={{ fontFamily: SERIF_HANGUL, color: INK_SOFT }}>
             <li><Link href="/login" className={linkBase} style={{ color: INK_SOFT }}>로그인</Link></li>
             <li><Link href="/settings" className={linkBase} style={{ color: INK_SOFT }}>설정</Link></li>
-            <li><span style={{ color: INK_MUTE }}>개인정보 · 이용약관 (준비 중)</span></li>
+            <li><Link href="/terms" className={linkBase} style={{ color: INK_SOFT }}>이용약관</Link></li>
+            <li><Link href="/privacy" className={linkBase} style={{ color: INK_SOFT }}>개인정보처리방침</Link></li>
+            <li><Link href="/refund-policy" className={linkBase} style={{ color: INK_SOFT }}>환불 정책</Link></li>
           </ul>
         </div>
       </div>
+      <BusinessFooter />
       <div
         className="py-5 text-center text-[10px] tracking-[0.22em] uppercase italic"
         style={{ borderTop: `0.5px solid ${RULE}`, color: INK_MUTE, fontFamily: SERIF_LATIN }}

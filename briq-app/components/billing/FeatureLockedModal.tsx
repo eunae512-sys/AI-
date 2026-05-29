@@ -12,7 +12,7 @@ import Link from "next/link";
 import { X, Lock } from "lucide-react";
 import { gatePrompt, type FeatureKey } from "@/lib/billing/gate";
 import { getPlan } from "@/lib/billing/plans";
-import { getActivePlanId } from "@/lib/billing/usage";
+import { useUsage } from "@/lib/billing/use-usage";
 
 type Props = {
   open: boolean;
@@ -21,7 +21,8 @@ type Props = {
 };
 
 export function FeatureLockedModal({ open, feature, onClose }: Props) {
-  const planId = getActivePlanId();
+  // 서버 우선, fallback localStorage. 진실의 단일 출처는 profiles.plan_id.
+  const { planId } = useUsage();
   const { headline, body, requiredPlan } = gatePrompt(feature, planId);
   const targetPlan = getPlan(requiredPlan);
 

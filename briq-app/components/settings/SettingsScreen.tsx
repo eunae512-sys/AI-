@@ -203,35 +203,33 @@ export function SettingsScreen() {
                   </div>
             <div className="rounded-lg bg-zinc-50 dark:bg-zinc-900/40 p-3">
               <div className="text-[11px] text-zinc-500 font-medium">다음 결제</div>
-              <div className="mt-1 text-base font-semibold tabular-nums">2026-06-08</div>
+              <div className="mt-1 text-[13px] font-medium text-zinc-500">
+                결제 페이지에서 확인
+              </div>
             </div>
             <div className="rounded-lg bg-zinc-50 dark:bg-zinc-900/40 p-3">
               <div className="text-[11px] text-zinc-500 font-medium">결제 수단</div>
-              <div className="mt-1 text-base font-semibold tabular-nums">
-                {payment.brand} ****{payment.last4}
+              <div className="mt-1 text-[13px] font-medium text-zinc-500">
+                결제 페이지에서 확인
               </div>
             </div>
           </div>
           <div className="text-[11px] text-zinc-500">
-            유효기간 {payment.expiry} · 카드 변경은 결제일 1일 전까지 반영됩니다.
+            카드 정보·다음 청구일·결제 내역·해지는 결제 · 구독 페이지에서 관리합니다.
           </div>
           <div className="mt-3 flex gap-2">
-            <Button variant="outline" size="sm" onClick={openPayment}>
-              결제 수단 변경
-            </Button>
+            <Link
+              href="/settings/billing"
+              className="inline-flex items-center px-3 h-8 text-[12px] border border-zinc-200 dark:border-zinc-800 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+            >
+              결제 · 구독 관리
+            </Link>
             <Link
               href="/pricing"
               className="inline-flex items-center px-3 h-8 text-[12px] border border-zinc-200 dark:border-zinc-800 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
             >
               플랜 변경
             </Link>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => toast.warn(`플랜 취소 — 다음 결제일까지 ${plan.name.toUpperCase()} 기능 유지됩니다`)}
-            >
-              취소
-            </Button>
           </div>
               </>
             );
