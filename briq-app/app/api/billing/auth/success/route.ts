@@ -25,6 +25,10 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const authKey = url.searchParams.get("authKey");
   const customerKey = url.searchParams.get("customerKey");
+  // SubscribeButton 이 successUrl 에 실어 보낸 플랜 정보 — /billing/success 로
+  // 그대로 넘겨야 그 페이지가 /api/billing/subscribe 를 호출해 구독을 만든다.
+  const planId = url.searchParams.get("planId");
+  const cycle = url.searchParams.get("cycle");
 
   if (!authKey || !customerKey) {
     return NextResponse.redirect(
@@ -60,7 +64,13 @@ export async function GET(req: NextRequest) {
       ownerType: resp.card?.ownerType ?? null,
     });
 
-    return NextResponse.redirect(`${APP_URL}/billing/success`);
+    const successParams = new URLSearchParams();
+    if (planId) successParams.set("planId", planId);
+    if (cycle) successParams.set("cycle", cycle);
+    const qs = successParams.toString();
+    return NextResponse.redirect(
+      `${APP_URL}/billing/success${qs ? `?${qs}` : ""}`,
+    );
   } catch (err) {
     const code =
       err instanceof TossApiError ? err.code : "issue_billing_key_failed";
