@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 Phase: 1 of 6 (Foundation & Multi-Tenant Data Model)
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-06-04 — Completed quick task 260604-ai1: AI 출연자 생성을 캠페인 주제에 맞게
+Last activity: 2026-06-04 — Completed quick task 260604-ai2: AI 출연자 주제 영문 변환
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -76,6 +76,7 @@ None yet. (Use `/gsd-add-todo` to capture ideas during sessions.)
 | 260604-md2 | 무드를 카드뉴스 카피 톤(후크·캡션)에도 반영 | 2026-06-04 | 1021f50 | [260604-md2-mood-copy-tone](./quick/260604-md2-mood-copy-tone/) |
 | 260604-md3 | 업로드 사진 팔레트로 무드 자동 추천 | 2026-06-04 | 19552c6 | [260604-md3-mood-autodetect](./quick/260604-md3-mood-autodetect/) |
 | 260604-ai1 | AI 출연자 생성을 캠페인 주제에 맞게 (주제 무관 결과 해결) | 2026-06-04 | 264871a | [260604-ai1-aimodel-topic](./quick/260604-ai1-aimodel-topic/) |
+| 260604-ai2 | AI 출연자 주제 영문 변환으로 매칭 정확도 향상 | 2026-06-04 | 0e30baa | [260604-ai2-topic-translate](./quick/260604-ai2-topic-translate/) |
 
 ## Deferred Items
 
