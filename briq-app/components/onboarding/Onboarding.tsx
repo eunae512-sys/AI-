@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Coffee, Cake, Home, UtensilsCrossed, Scissors, Sparkles, ChevronLeft, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { extractPaletteFromPhotos, type ExtractedColor } from "@/lib/colors/extract-palette";
+import { inferMoodFromPalette } from "@/lib/brand/mood-detect";
 import { saveUserBrand } from "@/lib/brand/user-brand";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Industry as IndustryType, Mood as MoodIdType } from "@/types";
@@ -174,6 +175,8 @@ export function Onboarding() {
   const [analysisStep, setAnalysisStep] = React.useState(0);
   const [extractedPalette, setExtractedPalette] = React.useState<ExtractedColor[]>([]);
   const [extractError, setExtractError] = React.useState<string | null>(null);
+  // 사진 팔레트로 자동 추천된 무드 — 사용자가 직접 바꾸기 전까지 적용됨
+  const [moodAutoDetected, setMoodAutoDetected] = React.useState(false);
 
   // === Step 4: 사진 업로드 ===
   type UploadedPhoto = { url: string; name: string; size: number };
@@ -248,7 +251,14 @@ export function Onboarding() {
       try {
         if (photos.length === 0) throw new Error("사진이 없습니다");
         const colors = await extractPaletteFromPhotos(photos.map((p) => p.url));
-        if (!cancelled) setExtractedPalette(colors);
+        if (!cancelled) {
+          setExtractedPalette(colors);
+          // 사진 팔레트로 무드 자동 추천 — "사진의 컨셉"이 무드를 결정.
+          // step 2 에서 고른 무드 위에 팔레트 분석 결과를 덮어쓰고, step 6 에서 변경 가능.
+          const detected = inferMoodFromPalette(colors);
+          setMood(detected);
+          setMoodAutoDetected(true);
+        }
       } catch (e) {
         if (!cancelled) setExtractError(e instanceof Error ? e.message : String(e));
       }
@@ -861,6 +871,39 @@ export function Onboarding() {
                       {MOOD_TONE_MODIFIER[mood]}
                     </div>
                   )}
+                  {/* 사진 팔레트로 자동 추천된 무드 — 다른 칩 누르면 직접 변경 */}
+                  <div className="mt-5 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                    <div className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold mb-2">
+                      {moodAutoDetected ? "사진 분석 추천 무드" : "무드"}
+                      <span className="ml-2 normal-case tracking-normal text-zinc-400">
+                        {moodAutoDetected ? "· 업로드 사진 팔레트 기반 (직접 변경 가능)" : "· 직접 선택됨"}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {MOODS.map((m) => {
+                        const on = mood === m.id;
+                        return (
+                          <button
+                            key={m.id}
+                            type="button"
+                            onClick={() => { setMood(m.id); setMoodAutoDetected(false); }}
+                            className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition ${
+                              on
+                                ? "border-zinc-900 dark:border-zinc-100 bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                                : "border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:border-zinc-400"
+                            }`}
+                          >
+                            <span className="flex -space-x-0.5">
+                              {m.swatches.slice(0, 3).map((sw, i) => (
+                                <span key={i} className="h-2.5 w-2.5 rounded-full ring-1 ring-white/40" style={{ background: sw }} />
+                              ))}
+                            </span>
+                            {m.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className="mt-10 flex items-center justify-between">
