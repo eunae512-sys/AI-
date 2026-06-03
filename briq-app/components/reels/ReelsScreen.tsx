@@ -818,21 +818,13 @@ export function ReelsScreen() {
   );
   const cutCount = uploadedPhotos.length > 0 ? uploadedPhotos.length : 8;
 
-  // 프리뷰 컷 자동 전환 (업로드 사진이 있을 때만)
+  // 프리뷰 컷 — 수동 탐색(좌우 화살표·썸네일). 1.2초 자동 회전은 제거:
+  // 편집 중 컷이 멋대로 넘어가 자막 수정이 끊기고, 화면이 산만하던 원인이었음.
   const [cutIdx, setCutIdx] = React.useState(0);
   React.useEffect(() => {
     // 업로드 수가 줄어들면 인덱스도 안전 범위로
     setCutIdx((i) => (uploadedPhotos.length > 0 ? i % uploadedPhotos.length : 0));
   }, [uploadedPhotos.length]);
-
-  React.useEffect(() => {
-    if (uploadedPhotos.length < 2) return;
-    if (status !== "done") return; // 생성 중에는 멈춤
-    const id = setInterval(() => {
-      setCutIdx((i) => (i + 1) % uploadedPhotos.length);
-    }, 1200);
-    return () => clearInterval(id);
-  }, [uploadedPhotos.length, status]);
 
   const currentCut = uploadedPhotos[cutIdx];
   const currentCaption = currentCut?.caption ?? HOOKS[activeHook] ?? HOOKS[0];
