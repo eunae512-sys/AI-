@@ -1161,31 +1161,8 @@ export function ReelsScreen() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
-        {/* Left - Template + controls (mobile: order-2 so preview is shown first) */}
+        {/* Left - controls (mobile: order-2 so preview is shown first) */}
         <div className="lg:col-span-3 space-y-3 order-2 lg:order-1">
-          <Card className="p-4">
-            <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold mb-3">업종별 템플릿</div>
-            <div className="space-y-2">
-              {TEMPLATES.map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => setActiveTpl(t.id)}
-                  className={`w-full flex items-center gap-3 p-2 rounded-lg border text-left transition ${
-                    activeTpl === t.id
-                      ? "border-zinc-900 dark:border-zinc-100 bg-zinc-50 dark:bg-zinc-900"
-                      : "border-zinc-100 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
-                  }`}
-                >
-                  <div className={`h-10 w-7 rounded bg-gradient-to-br ${t.grad} shrink-0`} />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-semibold truncate">{t.name}</div>
-                    <div className="text-[10px] text-zinc-500 truncate">{t.desc}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </Card>
-
           {/* ★ 첫 3초 viral 훅 추천 — voice-bank reels grammar 기반 */}
           <Card className="p-4 border-violet-200 dark:border-violet-900/40 bg-gradient-to-br from-violet-50/40 to-white dark:from-violet-500/[0.05] dark:to-zinc-950">
             <div className="flex items-center justify-between mb-2 gap-2">
