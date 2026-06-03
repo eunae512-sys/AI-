@@ -31,54 +31,54 @@ const DEMO_COMPOSITION: Slide[] = [
   {
     role: "title",
     layoutId: "cover",
-    label: "오늘의 시작",
-    title: "오늘\n새로 시작합니다",
-    sub: "동네에서 만나는 오늘의 한 상",
+    label: "01 · 표지",
+    title: "올해는\n좀 다릅니다",
+    sub: "이번 시즌, 새로 준비한 것",
   },
   {
     role: "hook",
     layoutId: "quote",
     label: "02 · 한 마디",
-    title: "단골이 먼저",
-    sub: "이 한 입에 다 있어요",
-    body: "오랜만에 진짜 한 끼라는 말",
-    footer: "— 단골 한 분의 한 마디",
+    title: "단골이 먼저 알아요",
+    sub: "",
+    body: "오랜만에 제대로 먹었다는 말",
+    footer: "— 지난주 손님 한마디",
   },
   {
     role: "detail",
     layoutId: "hero",
     label: "03 · 분위기",
-    title: "조용한 오후, 같은 자리",
-    sub: "한자리에서 오래 이어 온 결",
+    title: "평일 오후가 제일 한적해요",
+    sub: "",
   },
   {
     role: "menu",
     layoutId: "list",
-    label: "04 · 메뉴 구성",
-    title: "오늘의 한 상",
-    sub: "정갈하게 4종",
+    label: "04 · 구성",
+    title: "이번 구성",
+    sub: "네 가지",
     items: [
-      "계절 나물 한 접시",
-      "솥에서 막 떠낸 한 그릇",
-      "오늘의 메인 메뉴",
-      "단정한 디저트 한 입",
+      "그날 들어온 재료로",
+      "주문 들어오면 그때 바로",
+      "오늘의 메인",
+      "마무리 한 입까지",
     ],
   },
   {
     role: "story",
     layoutId: "process",
     label: "05 · 흐름",
-    title: "한 상이 차려지는 순서",
-    sub: "천천히, 차례로",
-    items: ["재료 손질", "정성스레 조리", "마지막 가니쉬"],
+    title: "나오는 순서",
+    sub: "",
+    items: ["재료 손질", "바로 조리", "마지막 손질"],
   },
   {
     role: "cta",
     layoutId: "cta",
     label: "06 · 방문",
-    title: "이번 주말,\n잠깐 들러보세요",
-    sub: "운영 시간은 매장에 안내",
-    footer: "사전 예약 권장 · 매장 인스타 참고",
+    title: "이번 주말,\n자리부터 잡으세요",
+    sub: "운영 시간은 매장 인스타에",
+    footer: "예약은 DM — 빠르면 그날 답해요",
   },
 ];
 
@@ -137,7 +137,9 @@ export async function POST(req: NextRequest) {
   const taglineLine = tagline ? `- 한 줄 소개: "${tagline}"` : "";
   const menuLine = signatureMenu ? `- 대표 메뉴: ${signatureMenu}` : "";
 
-  const systemPrompt = `당신은 한국 인스타 카드뉴스를 만드는 광고대행사 카피라이터·아트디렉터입니다.
+  const systemPrompt = `당신은 소상공인 인스타 카드뉴스를 10년 넘게 써 온 마케터입니다.
+'AI가 쓴 카드뉴스'가 아니라, 현장을 아는 사람이 직접 쓴 것처럼 카피를 만듭니다.
+추상어(정성·여유·감동·결)와 시(詩) 흉내 대신, 구체적 장면·숫자·손님의 실제 말로 씁니다.
 오늘 의뢰받은 작업은 다음 가게의 카드뉴스 ${slideCount}장 전체 구성 (카피 + 페이지별 레이아웃) 결정입니다.
 
 ==== 가게 정보 ====
