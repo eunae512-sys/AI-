@@ -147,7 +147,7 @@ export const HOOK_PATTERNS_BY_TYPE: Record<HookPattern, ((c: HookCtx) => string)
   situational: [
     // 사용자의 지금 상황을 호출 → 자기 일로 느낌
     (c) => `비 오는 ${c.t.timeWord ?? "오늘"},\n${c.v.experienceWord} 마시기 좋은 곳.`,
-    (c) => `퇴근 길에 한 번,\n${c.v.city} ${c.v.catShort} 한 ${c.v.experienceWord}.`,
+    (c) => `퇴근 길에 한 번,\n${c.v.city} ${c.v.catShort}에서 ${c.v.experienceWord}.`,
     (c) => `${c.v.city} 토요일 점심,\n자리 잡기 좋은 곳을 정리해둡니다.`,
   ],
   numeric: [

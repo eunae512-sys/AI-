@@ -270,7 +270,7 @@ const HOOK_SEASON: ((c: Ctx) => string)[] = [
   (c) => `${c.t.timeWord ?? "어버이날"} 직전 주\n예약 평소 대비 +2.4배. 미리 잡으세요.`,
   (c) => `작년 ${c.t.timeWord ?? "어버이날"} 다녀가신 분,\n올해도 같은 자리 비워둡니다.`,
   // 가족·관계 후킹
-  (c) => `${c.t.timeWord ?? "어버이날"},\n${c.v.city}에서 부모님 모시고 가기 좋은 곳.`,
+  (c) => `${c.t.timeWord ?? "어버이날"},\n${c.v.city}에서 부모님 챙겨드리기 좋은 곳.`,
   // 가장 먼저
   (c) => `${c.v.city} ${c.v.catShort} 중,\n${c.t.timeWord ?? "시즌"} 가장 먼저 ${c.v.purchaseAction} 받습니다.`,
 ];
@@ -656,6 +656,30 @@ const CAPTION_OPENERS: ((c: Ctx) => string)[] = [
   (c) => `찾는 사람 많은 ${c.v.city} ${c.v.catShort},\n그 이유 ${c.t.subject || c.v.unit} 한 가지에 다 있습니다.`,
 ];
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 무드 → 카피 톤 (가입 시 정한 결을 글의 목소리에도 반영)
+//   · MOOD_HOOK_OFFSET: 같은 캠페인 후크 풀에서 무드별로 다른 후크를 고름
+//   · MOOD_CAPTION_OPENER: 인스타 캡션 첫 줄을 무드 톤으로 (문법 안전 — 변수는 자리만)
+// ─────────────────────────────────────────────────────────────────────────────
+const MOOD_HOOK_OFFSET: Record<string, number> = {
+  warm: 0, modern: 1, moody: 2, playful: 3, natural: 4, luxury: 5,
+};
+
+const MOOD_CAPTION_OPENER: Record<string, (c: Ctx) => string> = {
+  // 따뜻 — 다정하고 편안한 목소리
+  warm: (c) => `${c.v.city} ${c.v.catShort} 다니다 괜히 또 생각나는 곳이에요.\n${c.t.subject || c.v.signature}, 가면 마음이 놓여요.`,
+  // 모던 — 군더더기 없이 핵심만
+  modern: (c) => `${c.v.city} ${c.v.catShort}, 군더더기 없이 깔끔해요.\n${c.t.subject || c.v.signature}, 핵심만 보여드릴게요.`,
+  // 무디 — 차분하고 절제된, 아는 사람만
+  moody: (c) => `${c.v.city} ${c.v.catShort}, 아는 사람만 조용히 가요.\n${c.t.subject || c.v.signature}, 오늘 살짝 보여드려요.`,
+  // 플레이풀 — 가볍고 신나는, 저장 유도
+  playful: (c) => `${c.v.city} ${c.v.catShort} 중에 이건 진짜예요!\n${c.t.subject || c.v.signature}, 저장 안 하면 손해예요.`,
+  // 내추럴 — 꾸밈없이 솔직한
+  natural: (c) => `${c.v.city} ${c.v.catShort}, 꾸밈없이 그대로 좋아요.\n${c.t.subject || c.v.signature}, 보시면 압니다.`,
+  // 럭셔리 — 격조 있고 절제된
+  luxury: (c) => `${c.v.city}에서 격이 다른 ${c.v.catShort} 한 곳.\n${c.t.subject || c.v.signature}, 아는 분은 이미 알아요.`,
+};
+
 // 캡션 본문 라인 — 권위 + 행동 트리거.
 // 정책: 출처 없는 단정 숫자 (새벽 4시, 별점 4.9, 재방문율 62%) 금지. 브랜드 자체 값만 인용.
 const CAPTION_BODY_LINES: ((c: Ctx) => string)[] = [
@@ -673,7 +697,9 @@ const CAPTION_BODY_LINES: ((c: Ctx) => string)[] = [
 ];
 
 function buildCaption(hook: string, ctaText: string, ctx: Ctx, seed: number): string {
-  const opener = pick(CAPTION_OPENERS, seed, 7)(ctx);
+  // 무드가 있으면 그 톤의 오프너, 없으면 기존 풀에서 시드 픽
+  const moodOpener = ctx.brand.mood ? MOOD_CAPTION_OPENER[ctx.brand.mood] : undefined;
+  const opener = moodOpener ? moodOpener(ctx) : pick(CAPTION_OPENERS, seed, 7)(ctx);
   // body 3줄 — 중복 없이
   const used = new Set<number>();
   const body: string[] = [];
@@ -790,7 +816,9 @@ export function generateCardnewsCampaign(
   const ctx: Ctx = { brand, v, t, kind, topic: realTopic };
 
   const hookPool = hookPoolFor(kind);
-  const hook = pick(hookPool, seed, 0)(ctx);
+  // 같은 캠페인 후크 풀에서 무드별로 다른 후크를 골라 카드 헤드라인도 무드를 탄다
+  const moodOffset = MOOD_HOOK_OFFSET[brand.mood ?? "warm"] ?? 0;
+  const hook = pick(hookPool, seed, moodOffset)(ctx);
 
   const problem = pick(PROBLEM_POOL, seed, 3)(ctx);
 
