@@ -93,6 +93,11 @@ export function AiModelGenerator({ industry, signatureMenu, onGenerated, onClose
           size: "1024x1536", // 9:16 vertical
           quality: "medium",
           slideId: scene.id,
+          // 폴백(Pexels 인물 검색) 정확도용 — 업종·성별·씬 컨텍스트 전달.
+          // 미전달 시 generic woman 으로 떨어져 씬과 무관한 인물이 나왔음.
+          industry,
+          gender: gender === "female" || gender === "male" ? gender : undefined,
+          personaSeed: scene.id,
         }),
       });
       const data = await res.json();

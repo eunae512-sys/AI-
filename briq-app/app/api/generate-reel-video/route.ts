@@ -21,6 +21,7 @@ import {
   pollVeo,
   VEO_COST_MILLI,
 } from "@/lib/ai/video/gemini-veo";
+import { pickDemoReelVideo } from "@/lib/ai/video/demo";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -35,13 +36,7 @@ export async function POST(req: NextRequest) {
     usage: { kind: "aiVideo" },
   });
   if (!gate.ok) return NextResponse.json(gate, { status: gate.status });
-
-  if (!geminiVideoConfigured()) {
-    return NextResponse.json(
-      { ok: false, error: "AI 영상 생성이 아직 설정되지 않았습니다 (GOOGLE_GENAI_API_KEY 미설정).", status: 503 },
-      { status: 503 },
-    );
-  }
+  const userId = gate.userId;
 
   let body: Record<string, unknown> = {};
   try {
@@ -51,6 +46,7 @@ export async function POST(req: NextRequest) {
   }
 
   const prompt = typeof body.prompt === "string" ? body.prompt.trim() : "";
+  const industry = typeof body.industry === "string" ? body.industry : undefined;
   if (!prompt || prompt.length < 5) {
     return NextResponse.json(
       { ok: false, error: "영상 프롬프트가 비어 있거나 너무 짧습니다." },
@@ -58,9 +54,30 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // 데모 폴백 — Veo 실패(빌링/쿼터/권한/키없음) 시 테스트용 영상으로 플로우 유지.
+  // (이미지→Pexels, 문구→데모 와 동일 정책. 한도 차감 안 함.)
+  async function demoFallback(reason: string) {
+    const demo = pickDemoReelVideo(industry, prompt);
+    const demoReqId = `demo-${globalThis.crypto.randomUUID()}`;
+    await adminDb.insert(videoJobs).values({
+      userId,
+      requestId: demoReqId,
+      provider: "demo",
+      status: "completed",
+      resultUrl: demo.url,
+      costUsd: 0,
+      counted: true, // 데모는 한도 차감 안 함
+      errorMessage: reason.slice(0, 200),
+    });
+    return NextResponse.json({ ok: true, requestId: demoReqId, status: "queued" });
+  }
+
+  if (!geminiVideoConfigured()) {
+    return demoFallback("GOOGLE_GENAI_API_KEY 미설정 — 데모 영상");
+  }
+
   try {
     const { operationName, model } = await submitVeo({ prompt });
-
     await adminDb.insert(videoJobs).values({
       userId: gate.userId,
       requestId: operationName,
@@ -68,20 +85,12 @@ export async function POST(req: NextRequest) {
       status: "queued",
       costUsd: VEO_COST_MILLI,
     });
-
     return NextResponse.json({ ok: true, requestId: operationName, status: "queued" });
   } catch (e: unknown) {
     const err = e as { status?: number; message?: string };
-    const status = err?.status ?? 0;
     const raw = err?.message || String(e);
-    const friendly =
-      status === 401 || status === 403 || /permission|api key|paid|billing/i.test(raw)
-        ? "Gemini 영상 생성 권한/빌링 오류 — 키 프로젝트 결제 연결을 확인해 주세요 (Veo 는 유료 티어)."
-        : status === 429 || /quota|resource_exhausted/i.test(raw)
-        ? "Gemini 영상 한도 초과 — 잠시 후 다시 시도하거나 결제 한도를 확인해 주세요."
-        : `AI 영상 생성 실패: ${raw.slice(0, 140)}`;
-    console.error("[reel-video] submit 실패:", status, raw.slice(0, 800));
-    return NextResponse.json({ ok: false, error: friendly, status: status || 502 }, { status: 502 });
+    console.error("[reel-video] Veo submit 실패 → 데모 폴백:", err?.status ?? 0, raw.slice(0, 800));
+    return demoFallback(raw);
   }
 }
 
@@ -98,10 +107,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "requestId 누락" }, { status: 400 });
   }
 
-  if (!geminiVideoConfigured()) {
-    return NextResponse.json({ ok: false, error: "GOOGLE_GENAI_API_KEY 미설정", status: 503 }, { status: 503 });
-  }
-
   const [job] = await adminDb
     .select()
     .from(videoJobs)
@@ -111,11 +116,21 @@ export async function GET(req: NextRequest) {
   if (!job) {
     return NextResponse.json({ ok: false, error: "작업을 찾을 수 없습니다." }, { status: 404 });
   }
+  // 완료(데모 포함) / 실패는 즉시 반환 — Gemini 설정 불필요.
   if (job.status === "completed" && job.resultUrl) {
-    return NextResponse.json({ ok: true, status: "completed", videoUrl: job.resultUrl });
+    return NextResponse.json({
+      ok: true,
+      status: "completed",
+      videoUrl: job.resultUrl,
+      demo: job.provider === "demo",
+    });
   }
   if (job.status === "failed") {
     return NextResponse.json({ ok: false, status: "failed", error: job.errorMessage ?? "생성 실패" });
+  }
+
+  if (!geminiVideoConfigured()) {
+    return NextResponse.json({ ok: false, error: "GOOGLE_GENAI_API_KEY 미설정", status: 503 }, { status: 503 });
   }
 
   try {

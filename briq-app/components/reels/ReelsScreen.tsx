@@ -699,8 +699,12 @@ export function ReelsScreen() {
         if (pd.status === "completed" && pd.videoUrl) {
           setAiVideoUrl(pd.videoUrl);
           setAiVideoStatus("done");
-          setAiVideoNotice("AI 영상 완성 ✓");
-          toast.success("AI 릴스 영상 생성 완료");
+          setAiVideoNotice(
+            pd.demo
+              ? "테스트 데모 영상 — 실제 Veo는 Gemini 빌링 연결 시 생성됩니다"
+              : "AI 영상 완성 ✓",
+          );
+          toast.success(pd.demo ? "데모 영상 적용 (테스트 모드)" : "AI 릴스 영상 생성 완료");
           return;
         }
         if (pd.status === "failed" || (pd.ok === false && pd.status !== "processing")) {
@@ -919,8 +923,22 @@ export function ReelsScreen() {
                 ) : null}
               </div>
               <div className="mt-2 text-[10.5px] text-violet-700/70 dark:text-violet-300/60">
-                위 파라미터가 <b>"영상 합성"</b> 클릭 시 실제 .mp4 렌더링에 반영됩니다. 폰 프리뷰는 자막만 미리 적용됨.
+                폰 미리보기엔 <b>자막만</b> 바뀌어 보이고, 컷 속도·줌·전환은 아래 <b>"영상으로 변환"</b>을 눌러야 실제 .mp4에 입혀집니다.
               </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const el = document.getElementById("reels-compile");
+                  if (!el) return;
+                  el.scrollIntoView({ behavior: "smooth", block: "center" });
+                  // 어디로 갔는지 보이도록 잠깐 강조
+                  el.classList.add("ring-2", "ring-offset-2");
+                  window.setTimeout(() => el.classList.remove("ring-2", "ring-offset-2"), 1600);
+                }}
+                className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold px-3 py-2 transition-colors"
+              >
+                이 스타일로 영상 만들기 <span aria-hidden>→</span>
+              </button>
 
               {/* ★ AI 자동 매칭 추천 — 스타일에 어울리는 BGM 무드 + 출연자 씬 */}
               {(appliedTrend.suggestedMusicMoodLabel || appliedTrend.suggestedSceneRoleLabel) && (
@@ -1477,7 +1495,7 @@ export function ReelsScreen() {
         {/* Right - Output assets */}
         <div className="lg:col-span-4 space-y-3 order-3">
           {/* 사진 → 영상 변환 카드 */}
-          <Card className="p-4">
+          <Card id="reels-compile" className="p-4 scroll-mt-4 ring-violet-400 transition-shadow">
             <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
               <div>
                 <div className="text-[11px] uppercase tracking-[0.15em] text-violet-600 dark:text-violet-400 font-semibold flex items-center gap-1.5">

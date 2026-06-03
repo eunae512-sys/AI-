@@ -178,7 +178,11 @@ export function ReelsPreview({ clip: initial, title, handle, industry, campaignH
           setT(0);
           setPhotographer(null);
           setAiStatus("done");
-          setAiNotice("AI 영상 완성 ✓");
+          setAiNotice(
+            pd.demo
+              ? "테스트 데모 영상 — 실제 Veo는 Gemini 빌링 연결 시 생성됩니다"
+              : "AI 영상 완성 ✓",
+          );
           return;
         }
         if (pd.status === "failed" || (pd.ok === false && pd.status !== "processing")) {

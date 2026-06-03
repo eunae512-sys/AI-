@@ -5,6 +5,10 @@ import {
   Compass,
   Settings,
   Layers,
+  Megaphone,
+  Film,
+  FileImage,
+  FileText,
   type LucideIcon,
 } from "lucide-react";
 
@@ -31,7 +35,8 @@ export type NavGroup = {
   items: NavItem[];
 };
 
-// 한 그룹, 다섯 줄. 부제목도 없음. — 화면 자체가 답이 되도록.
+// 운영 그룹(상태·승인) + 만들기 그룹(콘텐츠 제작 도구).
+// "만들기" 는 사장님이 가장 자주 찾는 릴스·카드뉴스·블로그를 데스크톱에서도 바로 진입.
 export const navGroups: NavGroup[] = [
   {
     items: [
@@ -39,6 +44,15 @@ export const navGroups: NavGroup[] = [
       { label: "Campaigns", href: "/campaigns", icon: Target, badge: { count: 2, tone: "amber" } },
       { label: "Scheduler", href: "/scheduler", icon: Clock, badge: { count: 12, tone: "sky" } },
       { label: "Insights", href: "/insights", icon: Compass },
+    ],
+  },
+  {
+    title: "만들기",
+    items: [
+      { label: "자동 홍보 (쇼츠)", href: "/shorts", icon: Megaphone },
+      { label: "릴스 영상", href: "/reels", icon: Film },
+      { label: "카드뉴스", href: "/cardnews", icon: FileImage },
+      { label: "블로그", href: "/blog", icon: FileText },
     ],
   },
 ];
@@ -61,10 +75,6 @@ export const HIDDEN_ROUTES: NavItem[] = [
   { label: "Analytics", href: "/analytics", icon: Layers, hidden: true },
   { label: "Brand Assets", href: "/brand-kit", icon: Layers, hidden: true },
   { label: "Social Channels", href: "/channels", icon: Layers, hidden: true },
-  { label: "Shorts editor", href: "/shorts", icon: Layers, hidden: true },
-  { label: "Reels editor", href: "/reels", icon: Layers, hidden: true },
-  { label: "Cardnews editor", href: "/cardnews", icon: Layers, hidden: true },
-  { label: "Blog editor", href: "/blog", icon: Layers, hidden: true },
   { label: "Threads editor", href: "/threads", icon: Layers, hidden: true },
   { label: "Brand tone", href: "/brand-tone", icon: Layers, hidden: true },
   { label: "Calendar", href: "/calendar", icon: Layers, hidden: true },
