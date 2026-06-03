@@ -27,10 +27,12 @@ commits: [6eeee24, 6597e5e]
 - `tsc --noEmit` 통과 / `next build` 통과
 - 재설계 후 스크린샷 확인 — 참고 그리드 제거로 레이아웃이 1화면으로 압축됨
 
+5. **데드코드 정리** (`ede9a75`) — 그리드 제거로 미사용이 된 weeklyVideos 머신 125줄 삭제(WeeklyVideo 타입·state·Pexels fetch effect·applyWeekly + 관련 import 3종). 마운트마다 낭비되던 Pexels 영상 fetch 제거.
+
 ## Notes
-- `appliedTrend` 배너는 캘린더 딥링크 경로로 여전히 동작(그리드 제거와 무관).
-- **잔여 정리 후보:** 그리드 제거로 `weeklyVideos` fetch effect·`applyWeekly`·`suggestForWeeklyStyle`가 미사용(데드코드, tsc는 noUnusedLocals off라 통과). 마운트 시 Pexels 영상 fetch가 낭비되므로 추후 effect 제거 권장.
+- `appliedTrend` 배너·`startAiMusic/SceneForSuggested`는 캘린더 딥링크 경로로 여전히 동작(그리드/weekly 제거와 무관)하므로 보존.
 
 ## Commits
 - `6eeee24` fix(reels): 자막 자동 회전 제거
 - `6597e5e` refactor(reels): 참고 그리드 제거 + 컷 썸네일 편집
+- `ede9a75` chore(reels): weeklyVideos 데드코드 125줄 정리
