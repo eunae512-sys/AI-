@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 Phase: 1 of 6 (Foundation & Multi-Tenant Data Model)
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-06-04 — Completed quick task 260604-md2: 무드를 카드뉴스 카피 톤에 반영
+Last activity: 2026-06-04 — Completed quick task 260604-md3: 사진 팔레트로 무드 자동 추천
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -74,6 +74,7 @@ None yet. (Use `/gsd-add-todo` to capture ideas during sessions.)
 | 260604-cn3 | AI 생성 프롬프트 전문가 마케터 톤 통일 (few-shot + 클리셰 차단) | 2026-06-04 | 5f591ee | [260604-cn3-ai-prompt-voice](./quick/260604-cn3-ai-prompt-voice/) |
 | 260604-md1 | 가입 무드를 릴스·카드뉴스 이미지·영상 생성에 반영 | 2026-06-04 | d830b3b | [260604-md1-mood-propagation](./quick/260604-md1-mood-propagation/) |
 | 260604-md2 | 무드를 카드뉴스 카피 톤(후크·캡션)에도 반영 | 2026-06-04 | 1021f50 | [260604-md2-mood-copy-tone](./quick/260604-md2-mood-copy-tone/) |
+| 260604-md3 | 업로드 사진 팔레트로 무드 자동 추천 | 2026-06-04 | 19552c6 | [260604-md3-mood-autodetect](./quick/260604-md3-mood-autodetect/) |
 
 ## Deferred Items
 
