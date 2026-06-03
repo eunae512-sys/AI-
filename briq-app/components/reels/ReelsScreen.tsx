@@ -19,6 +19,7 @@ import { AiMusicGenerator } from "@/components/ai-gen/AiMusicGenerator";
 import type { Industry, SceneRole } from "@/lib/ai-gen/model-scenes";
 import { getRecommendedScenes, getScenesForIndustry } from "@/lib/ai-gen/model-scenes";
 import type { MusicMood } from "@/lib/ai-gen/music-presets";
+import { synthesizeDemoMusic } from "@/lib/ai-gen/music-demo";
 import { suggestForWeeklyStyle } from "@/lib/trends/style-mapping";
 import { HOOK_BANK, fillSlots, isClean } from "@/lib/viral/voice-bank";
 import { pickFreshHookSeeded } from "@/lib/viral/recent-hooks";
@@ -41,11 +42,11 @@ const INDUSTRY_DEFAULT_TPL: Record<string, string> = {
   local: "info",
 };
 
-const BGM = [
-  { name: "Lo-Fi Calm Morning", mood: "차분 · 새벽" },
-  { name: "Acoustic Sunshine", mood: "밝음 · 오전" },
-  { name: "Soft Piano Heart", mood: "감성 · 저녁" },
-  { name: "Indie Vlog", mood: "여행 · 일상" },
+const BGM: { name: string; mood: string; synthMood: MusicMood; bpm: number }[] = [
+  { name: "Lo-Fi Calm Morning", mood: "차분 · 새벽", synthMood: "lofi-chill", bpm: 75 },
+  { name: "Acoustic Sunshine", mood: "밝음 · 오전", synthMood: "warm-acoustic", bpm: 95 },
+  { name: "Soft Piano Heart", mood: "감성 · 저녁", synthMood: "ballad-emo", bpm: 70 },
+  { name: "Indie Vlog", mood: "여행 · 일상", synthMood: "indie-bright", bpm: 110 },
 ];
 
 type Status = "idle" | "uploading" | "analyzing" | "generating" | "done";
@@ -232,6 +233,41 @@ export function ReelsScreen() {
     costKrw: number;
   };
   const [customBgm, setCustomBgm] = React.useState<CustomBgm | null>(null);
+  // 프리셋 BGM 적용 — 무드별 데모 음악을 합성해 customBgm 으로(영상에 실제 임베드)
+  const [bgmLoadingIdx, setBgmLoadingIdx] = React.useState<number | null>(null);
+  const applyPresetBgm = async (i: number) => {
+    setActiveBgm(i);
+    const preset = BGM[i];
+    setBgmLoadingIdx(i);
+    try {
+      const durationSec = Math.max(8, (photos.filter((p) => p.kind === "upload").length || 6) * 1.7);
+      const { blob, durationSec: actual } = await synthesizeDemoMusic({
+        mood: preset.synthMood,
+        durationSec,
+        bpm: preset.bpm,
+      });
+      if (customBgm?.audioUrl.startsWith("blob:")) URL.revokeObjectURL(customBgm.audioUrl);
+      const url = URL.createObjectURL(blob);
+      setCustomBgm({
+        audioUrl: url,
+        durationSec: actual,
+        mood: preset.synthMood,
+        moodLabel: preset.name,
+        lyrics: "", // 프리셋(가사 없음) — 가사 음악과 구분
+        isDemo: true,
+        costKrw: 0,
+      });
+      if (compiled?.url) {
+        URL.revokeObjectURL(compiled.url);
+        setCompiled(null);
+      }
+      toast.success(`${preset.name} BGM 적용됨 — "영상으로 변환" 시 영상에 들어갑니다`);
+    } catch (e) {
+      toast.warn("BGM 생성 실패: " + (e as Error).message);
+    } finally {
+      setBgmLoadingIdx(null);
+    }
+  };
   const addAiPhoto = (url: string, sceneTitle: string) => {
     const existingUploadCount = photos.filter((p) => p.kind === "upload").length;
     const caption = HOOKS[existingUploadCount % Math.max(1, HOOKS.length)] ?? brand.campaign;
@@ -1227,7 +1263,7 @@ export function ReelsScreen() {
             </div>
 
             {/* 적용된 커스텀 BGM 표시 */}
-            {customBgm && (
+            {customBgm && customBgm.lyrics !== "" && (
               <div className="mb-3 rounded-lg border border-violet-300 dark:border-violet-700 bg-violet-50/60 dark:bg-violet-500/10 p-2.5">
                 <div className="flex items-center justify-between gap-2 mb-1">
                   <div className="flex items-center gap-1.5 min-w-0">
@@ -1291,25 +1327,40 @@ export function ReelsScreen() {
 
             <div className="text-[10px] text-zinc-500 mb-1.5">추천 트랙 ({BGM.length})</div>
             <div className="space-y-1.5">
-              {BGM.map((b, i) => (
+              {BGM.map((b, i) => {
+                const lyricMusic = !!customBgm && customBgm.lyrics !== ""; // AI 가사 음악 사용 중
+                const presetActive = !lyricMusic && activeBgm === i && !!customBgm;
+                return (
                 <button
                   key={b.name}
-                  onClick={() => setActiveBgm(i)}
+                  onClick={() => applyPresetBgm(i)}
                   className={`w-full flex items-center gap-2 px-3 py-2 rounded-md border text-left transition ${
-                    activeBgm === i && !customBgm
+                    presetActive
+                      ? "border-emerald-500 bg-emerald-50/60 dark:bg-emerald-500/10"
+                      : activeBgm === i && !lyricMusic
                       ? "border-zinc-900 dark:border-zinc-100 bg-zinc-50 dark:bg-zinc-900"
                       : "border-zinc-100 dark:border-zinc-800"
-                  } ${customBgm ? "opacity-60" : ""}`}
-                  disabled={!!customBgm}
-                  title={customBgm ? "내 가사 BGM 사용 중 — 위에서 제거하면 추천 트랙 선택 가능" : undefined}
+                  } ${lyricMusic ? "opacity-60" : ""}`}
+                  disabled={lyricMusic || bgmLoadingIdx !== null}
+                  title={lyricMusic ? "내 가사 BGM 사용 중 — 위에서 제거하면 추천 트랙 선택 가능" : "클릭하면 음악을 만들어 영상에 넣습니다"}
                 >
-                  <Play className="h-3 w-3 shrink-0" />
+                  {bgmLoadingIdx === i ? (
+                    <Loader2 className="h-3 w-3 shrink-0 animate-spin" />
+                  ) : (
+                    <Play className="h-3 w-3 shrink-0" />
+                  )}
                   <div className="flex-1 min-w-0">
                     <div className="text-xs font-medium truncate">{b.name}</div>
-                    <div className="text-[10px] text-zinc-500 truncate">{b.mood}</div>
+                    <div className="text-[10px] text-zinc-500 truncate">
+                      {bgmLoadingIdx === i ? "음악 생성 중…" : b.mood}
+                    </div>
                   </div>
+                  {presetActive && (
+                    <span className="text-[9px] font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">✓ 영상에 적용</span>
+                  )}
                 </button>
-              ))}
+                );
+              })}
             </div>
           </Card>
         </div>
@@ -1449,7 +1500,7 @@ export function ReelsScreen() {
                     <Bookmark className="h-5 w-5 mx-auto" />
                   </div>
                   <div className="absolute bottom-4 left-4 right-4 text-white text-[10px] flex items-center gap-1.5 z-10">
-                    <span className="h-3 w-3 rounded bg-white/20" />♪ {customBgm ? `내 가사 · ${customBgm.moodLabel}` : BGM[activeBgm].name}
+                    <span className="h-3 w-3 rounded bg-white/20" />♪ {customBgm ? `${customBgm.lyrics ? "내 가사 · " : ""}${customBgm.moodLabel}` : BGM[activeBgm].name}
                     {uploadedPhotos.length > 0 && (
                       <span className="ml-auto opacity-80">
                         컷 {cutIdx + 1}/{uploadedPhotos.length}
