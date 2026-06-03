@@ -34,21 +34,26 @@ function currentMonthKST(): string {
   return `${y}-${m}`;
 }
 
-type UsageKind = "cardnews" | "blog" | "aiImage";
+type UsageKind = "cardnews" | "blog" | "aiImage" | "aiVideo";
 
-const KIND_COLUMN: Record<UsageKind, "cardnewsCount" | "blogCount" | "aiImageCount"> = {
+const KIND_COLUMN: Record<
+  UsageKind,
+  "cardnewsCount" | "blogCount" | "aiImageCount" | "aiVideoCount"
+> = {
   cardnews: "cardnewsCount",
   blog: "blogCount",
   aiImage: "aiImageCount",
+  aiVideo: "aiVideoCount",
 };
 
 const KIND_LIMIT_KEY: Record<
   UsageKind,
-  "cardnewsPerMonth" | "blogPerMonth" | "aiImagesPerMonth"
+  "cardnewsPerMonth" | "blogPerMonth" | "aiImagesPerMonth" | "aiVideoPerMonth"
 > = {
   cardnews: "cardnewsPerMonth",
   blog: "blogPerMonth",
   aiImage: "aiImagesPerMonth",
+  aiVideo: "aiVideoPerMonth",
 };
 
 // ───────────────────────────────────────────────
@@ -81,10 +86,12 @@ export async function GET() {
     cardnews: usage?.cardnewsCount ?? 0,
     blog: usage?.blogCount ?? 0,
     aiImage: usage?.aiImageCount ?? 0,
+    aiVideo: usage?.aiVideoCount ?? 0,
     limits: {
       cardnewsPerMonth: plan.limits.cardnewsPerMonth,
       blogPerMonth: plan.limits.blogPerMonth,
       aiImagesPerMonth: plan.limits.aiImagesPerMonth,
+      aiVideoPerMonth: plan.limits.aiVideoPerMonth,
     },
   });
 }
@@ -94,7 +101,7 @@ export async function GET() {
 // ───────────────────────────────────────────────
 
 const PostBody = z.object({
-  kind: z.enum(["cardnews", "blog", "aiImage"]),
+  kind: z.enum(["cardnews", "blog", "aiImage", "aiVideo"]),
   by: z.number().int().positive().max(50).default(1),
 });
 
@@ -150,6 +157,7 @@ export async function POST(req: NextRequest) {
         cardnewsCount: body.kind === "cardnews" ? body.by : 0,
         blogCount: body.kind === "blog" ? body.by : 0,
         aiImageCount: body.kind === "aiImage" ? body.by : 0,
+        aiVideoCount: body.kind === "aiVideo" ? body.by : 0,
       });
     }
     return { ok: true as const, value: nextValue };

@@ -42,6 +42,7 @@ export function useUsage(): UseUsageResult {
     cardnews: 0,
     blog: 0,
     aiImage: 0,
+    aiVideo: 0,
   }));
   const [planId, setPlanId] = React.useState<PlanId>("free");
   const [isMounted, setIsMounted] = React.useState(false);
@@ -59,6 +60,7 @@ export function useUsage(): UseUsageResult {
           cardnews: server.cardnews,
           blog: server.blog,
           aiImage: server.aiImage,
+          aiVideo: server.aiVideo,
         });
         setPlanId(server.planId);
         setActivePlan(server.planId); // localStorage 캐시 갱신

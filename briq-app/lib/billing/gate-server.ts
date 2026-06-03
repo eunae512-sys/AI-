@@ -24,7 +24,7 @@ type GateInput = {
   /** 기능 키 — 플랜 잠금 체크. 없으면 한도 체크만. */
   feature?: FeatureKey;
   /** 사용량 종류 — 지정 시 현재 월 한도 체크. */
-  usage?: { kind: "cardnews" | "blog" | "aiImage" };
+  usage?: { kind: "cardnews" | "blog" | "aiImage" | "aiVideo" };
 };
 
 export type GateResult =
@@ -35,7 +35,7 @@ export type GateResult =
       ok: false;
       status: 403;
       reason: "limit_exceeded";
-      kind: "cardnews" | "blog" | "aiImage";
+      kind: "cardnews" | "blog" | "aiImage" | "aiVideo";
       used: number;
       limit: number;
       planId: PlanId;
@@ -89,6 +89,7 @@ export async function ensurePlanAndQuota(input: GateInput): Promise<GateResult> 
       cardnews: getPlan(planId).limits.cardnewsPerMonth,
       blog: getPlan(planId).limits.blogPerMonth,
       aiImage: getPlan(planId).limits.aiImagesPerMonth,
+      aiVideo: getPlan(planId).limits.aiVideoPerMonth,
     } as const;
     const limit = limitMap[input.usage.kind];
     if (limit !== null) {
@@ -108,6 +109,8 @@ export async function ensurePlanAndQuota(input: GateInput): Promise<GateResult> 
           ? row?.cardnewsCount ?? 0
           : input.usage.kind === "blog"
           ? row?.blogCount ?? 0
+          : input.usage.kind === "aiVideo"
+          ? row?.aiVideoCount ?? 0
           : row?.aiImageCount ?? 0;
       if (used >= limit) {
         return {
@@ -132,7 +135,7 @@ export async function ensurePlanAndQuota(input: GateInput): Promise<GateResult> 
  */
 export async function bumpUsage(
   userId: string,
-  kind: "cardnews" | "blog" | "aiImage",
+  kind: "cardnews" | "blog" | "aiImage" | "aiVideo",
   by = 1,
 ): Promise<void> {
   const yearMonth = currentMonthKST();
@@ -141,6 +144,8 @@ export async function bumpUsage(
       ? "cardnewsCount"
       : kind === "blog"
       ? "blogCount"
+      : kind === "aiVideo"
+      ? "aiVideoCount"
       : "aiImageCount";
 
   await adminDb.transaction(async (tx) => {
@@ -157,6 +162,8 @@ export async function bumpUsage(
           ? existing.cardnewsCount
           : column === "blogCount"
           ? existing.blogCount
+          : column === "aiVideoCount"
+          ? existing.aiVideoCount
           : existing.aiImageCount;
       await tx
         .update(usageMonthly)
@@ -169,6 +176,7 @@ export async function bumpUsage(
         cardnewsCount: kind === "cardnews" ? by : 0,
         blogCount: kind === "blog" ? by : 0,
         aiImageCount: kind === "aiImage" ? by : 0,
+        aiVideoCount: kind === "aiVideo" ? by : 0,
       });
     }
   });

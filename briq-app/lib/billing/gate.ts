@@ -10,7 +10,8 @@ import type { PlanId } from "./plans";
 
 export type FeatureKey =
   | "blog:create"             // 네이버 블로그 본문 생성
-  | "ai-image:generate"       // ChatGPT 이미지 생성
+  | "ai-image:generate"       // AI 이미지 생성 (Gemini/OpenAI)
+  | "ai-video:generate"       // AI 릴스 영상 생성 (Veo/Kling)
   | "distribution:webhook"    // Make/Zapier Webhook 분배
   | "distribution:api-publish" // Instagram Graph API 등 직결 발행
   | "multi-brand"             // 2번째 이상 브랜드 추가
@@ -22,6 +23,7 @@ export type FeatureKey =
 const FEATURE_MIN_PLAN: Record<FeatureKey, PlanId> = {
   "blog:create": "pro",
   "ai-image:generate": "pro",
+  "ai-video:generate": "pro",
   "distribution:webhook": "pro",
   "distribution:api-publish": "studio",
   "multi-brand": "studio",
@@ -33,7 +35,8 @@ const FEATURE_MIN_PLAN: Record<FeatureKey, PlanId> = {
 // 사람이 읽을 수 있는 기능 라벨 — 잠금 모달에 노출
 const FEATURE_LABEL: Record<FeatureKey, string> = {
   "blog:create": "네이버 블로그 본문",
-  "ai-image:generate": "ChatGPT 이미지 생성",
+  "ai-image:generate": "AI 이미지 생성 (Gemini)",
+  "ai-video:generate": "AI 릴스 영상 생성 (Veo)",
   "distribution:webhook": "Webhook 자동 분배 (Make/Zapier)",
   "distribution:api-publish": "Instagram·페이스북 API 직결 발행",
   "multi-brand": "여러 브랜드 동시 관리",

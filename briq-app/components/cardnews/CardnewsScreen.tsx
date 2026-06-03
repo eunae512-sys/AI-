@@ -46,12 +46,13 @@ import { getContext } from "@/lib/viral/context";
 import { cn } from "@/lib/utils";
 import { useUsage } from "@/lib/billing/use-usage";
 import { incrementUsage } from "@/lib/billing/usage";
+import { buildVideoQueryDetailed } from "@/lib/cardnews/video-query";
 import { isFeatureAllowed as isFeatureAllowedFor } from "@/lib/billing/gate";
 import { LimitReachedModal } from "@/components/billing/LimitReachedModal";
 import { Watermark } from "@/components/billing/Watermark";
 import type { UsageKind } from "@/lib/billing/usage";
 
-type Source = "pexels" | "codex" | "ai";
+type Source = "pexels" | "gemini" | "codex" | "ai";
 
 type SlideCopy = {
   label: string;
@@ -204,6 +205,7 @@ const SLIDE_COMPOSITION = [
 
 const SOURCE_LABEL: Record<Source, { label: string; sub: string; icon: typeof Cloud }> = {
   pexels: { label: "무료 (Pexels)", sub: "0원 · 사실적 사진", icon: Cloud },
+  gemini: { label: "Gemini", sub: "Imagen 4 · Nano Banana", icon: Sparkles },
   codex: { label: "Codex 구독", sub: "ChatGPT Plus · gpt-image-2", icon: Sparkles },
   ai: { label: "AI 결제 (OpenAI)", sub: "gpt-image-1 · ~₩60/장", icon: CreditCard },
 };
@@ -520,14 +522,72 @@ export function CardnewsScreen() {
         };
       }
 
-      // ai (OpenAI gpt-image-1)
+      // gemini / ai — 프로바이더 추상화 라우트. engine 으로 1순위 강제.
+      //   gemini → Imagen 4 우선 (실패 시 서버 체인이 OpenAI·Nano Banana 로 failover)
+      //   ai     → OpenAI 우선
+      // 사용량 차감은 서버 라우트가 수행.
+      const engine = src === "gemini" ? "imagen" : "openai";
       const res = await fetch("/api/generate-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, size: "1024x1536", quality: "medium", slideId }),
+        body: JSON.stringify({ prompt, size: "1024x1536", quality: "medium", slideId, engine }),
       });
       const data = await res.json();
-      if (!data.ok) return { status: "error", error: data.error || "OpenAI 이미지 생성 실패" };
+      if (!data.ok) return { status: "error", error: data.error || "AI 이미지 생성 실패" };
+
+      // 서버가 실제 AI 생성에 실패해 폴백(인물/데모)으로 떨어졌으면 — 그건 주제와 무관한
+      // 사람 사진이라 카드뉴스에 안 맞는다. 대신 "문구/주제 기반 Pexels 장면 검색"
+      // (인물 차단·에디토리얼 스코어링)으로 주제 맞춤 고퀄 사진을 가져온다.
+      // Gemini/OpenAI 가 실제로 성공하면 source 가 gemini-*/openai 라 이 경로는 안 탄다.
+      const srcTag = String(data.meta?.source ?? "");
+      const fellBack =
+        data.meta?.demoMode === true || /fallback|pexels|demo/i.test(srcTag);
+      if (fellBack) {
+        try {
+          const sceneQuery = buildVideoQueryDetailed({
+            industry: brand.industry,
+            topic: topicInput || slide.title?.replace(/\n/g, " "),
+            campaignHeadline: topicInput,
+          });
+          const sres = await fetch("/api/search-pexels", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              query: sceneQuery,
+              orientation: "portrait",
+              size: "large",
+              perPage: 24,
+              color: hexToPexelsColor(colors[0]?.hex),
+              slideId,
+              returnCandidates: true,
+              candidateCount: 9, // 6장 슬라이드보다 큰 풀 → 슬라이드별 distinct pick
+              // allowPeople 미지정 = 인물 차단(기본). 음식·플레이팅·매장 장면 우선.
+            }),
+          });
+          const sdata = await sres.json();
+          // 중복 방지: 6장이 같은 쿼리로 병렬 호출되므로(같은 정렬 풀), 슬라이드 index 로
+          // candidates[idx] 를 결정적으로 골라 서로 다른 사진을 보장한다(서버 랜덤 pick 회피).
+          const cands = Array.isArray(sdata.candidates) ? sdata.candidates : [];
+          const chosen = cands.length ? cands[idx % cands.length] : null;
+          const sceneUrl = chosen?.url ?? sdata.image;
+          if (sdata.ok && sceneUrl) {
+            return {
+              status: "ready",
+              url: sceneUrl,
+              source: "pexels-scene-fallback",
+              notice: "AI 이미지 생성 불가(빌링/한도) — 주제 맞춤 사진으로 대체",
+              candidates: cands.length ? cands : undefined,
+              meta: { photographer: chosen?.photographer ?? sdata.meta?.photographer },
+            };
+          }
+        } catch {
+          /* 장면 검색 실패 시 아래 원본(폴백) 반환 */
+        }
+      } else if (typeof window !== "undefined") {
+        // 실제 AI 생성 성공 — 서버가 bumpUsage 로 +1 했으므로 카운터 새로고침만.
+        window.dispatchEvent(new CustomEvent("briq:usage-updated"));
+      }
+
       return {
         status: "ready",
         url: data.image,
@@ -536,7 +596,7 @@ export function CardnewsScreen() {
         meta: { latencyMs: data.meta?.latencyMs, costKrw: data.meta?.costKrw },
       };
     },
-    [brand.id, brand.industryLabel, brand.campaign, slides, queries, colors, check],
+    [brand.id, brand.industry, brand.industryLabel, brand.campaign, topicInput, slides, queries, colors, check],
   );
 
   // 임의의 slides 배열에 대해 6장 이미지 일괄 생성 — compose 직후처럼 state 가 아직 반영 안 됐을 때 슬라이드 인라인 전달
@@ -1259,8 +1319,8 @@ export function CardnewsScreen() {
             {(Object.keys(SOURCE_LABEL) as Source[]).map((s) => {
               const Icon = SOURCE_LABEL[s].icon;
               const active = source === s;
-              // Pexels 는 Free 도 가능, codex/ai 는 Pro 부터
-              const locked = (s === "codex" || s === "ai") && usageMounted && !isFeatureAllowedFor("ai-image:generate", planId);
+              // Pexels 는 Free 도 가능, gemini/codex/ai 는 Pro 부터
+              const locked = (s === "gemini" || s === "codex" || s === "ai") && usageMounted && !isFeatureAllowedFor("ai-image:generate", planId);
               return (
                 <button
                   key={s}

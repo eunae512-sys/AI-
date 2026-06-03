@@ -4,6 +4,7 @@ import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Upload, Play, Heart, MessageCircle, Bookmark, Share2, Sparkles, RefreshCw, Music, Type, Pencil, X, Film, Download, Loader2, UserCircle2 } from "lucide-react";
 import { compileReelsVideo, isCompileSupported, parseTrendStyle, describeTrendStyle } from "@/lib/reels/compile-video";
+import { buildVideoQueryDetailed } from "@/lib/cardnews/video-query";
 import { WEEKLY_REEL_STYLES_BY_INDUSTRY, type WeeklyStyle } from "@/lib/trends/weekly-styles";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -87,7 +88,14 @@ export function ReelsScreen() {
 
   // ─── 첫 3초 viral 훅 추천 — HOOK_BANK[reels][industry] 에서 3개 (변형 시 다음 3개) ───
   const [viralSeed, setViralSeed] = React.useState(0);
+  // 마운트 가드 — pickFreshHookSeeded 가 localStorage(getRecentHooks/recordHook)에 의존해
+  // SSR(빈 값) ↔ client(저장값) 결과가 달라 hydration mismatch 가 났음. 마운트 전엔 빈 배열.
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
   const viralHooks = React.useMemo(() => {
+    if (!mounted) return []; // SSR ↔ 첫 client 렌더 동일 보장 (localStorage 미접근)
     const parts = (brand.city ?? "").split(/\s+/).filter(Boolean);
     const district = parts[parts.length - 1] ?? brand.city;
     const slots = {
@@ -113,7 +121,7 @@ export function ReelsScreen() {
       s += 7;
     }
     return picks;
-  }, [brand.id, brand.industry, brand.city, brand.name, isUserBrand, userBrand?.signatureMenu, viralSeed]);
+  }, [mounted, brand.id, brand.industry, brand.city, brand.name, isUserBrand, userBrand?.signatureMenu, viralSeed]);
   const rerollViralHooks = () => setViralSeed((s) => s + 1);
 
   const DEFAULT_PHOTOS = [
@@ -623,6 +631,114 @@ export function ReelsScreen() {
     toast.info("합성 영상 제거됨 — 사진 슬라이드 모드로 돌아갑니다");
   };
 
+  // === AI 영상 생성 (fal.ai Veo — 프리미엄 메터링) ===
+  const [aiVideoStatus, setAiVideoStatus] = React.useState<"idle" | "working" | "done" | "error">("idle");
+  const [aiVideoUrl, setAiVideoUrl] = React.useState<string | null>(null);
+  const [aiVideoNotice, setAiVideoNotice] = React.useState<string | null>(null);
+  const aiVideoAbortRef = React.useRef(false);
+
+  React.useEffect(() => {
+    return () => {
+      aiVideoAbortRef.current = true;
+    };
+  }, []);
+
+  const generateAiVideo = async () => {
+    if (aiVideoStatus === "working") return;
+    aiVideoAbortRef.current = false;
+    setAiVideoStatus("working");
+    setAiVideoUrl(null);
+    setAiVideoNotice("AI 영상 생성 중… (최대 2-3분 소요)");
+    try {
+      // 주제·후크 기반 영문 키워드 + 시네마틱 디렉티브로 프롬프트 구성
+      const sceneKw = buildVideoQueryDetailed({
+        industry: brand.industry,
+        topic: HOOKS[activeHook] ?? brand.campaign,
+        campaignHeadline: brand.campaign,
+        signatureMenu: isUserBrand ? userBrand?.signatureMenu : undefined,
+      });
+      const prompt = `Cinematic vertical 9:16 short-form reel b-roll. ${sceneKw}. Smooth slow camera motion, shallow depth of field, soft natural light, editorial food/lifestyle mood. No on-screen text, no captions, no logos.`;
+      // 업로드 사진이 원격(http) 이면 image-to-video 시드로 — 브랜드 일관성
+      const firstHttp = uploadedPhotos.find((p) => /^https?:/.test(p.url));
+
+      const r = await fetch("/api/generate-reel-video", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, posterImageUrl: firstHttp?.url, industry: brand.industry }),
+      });
+      const data = await r.json();
+
+      if (r.status === 402 || r.status === 403) {
+        setAiVideoStatus("error");
+        setAiVideoNotice(
+          r.status === 403
+            ? "이번 달 AI 영상 한도를 모두 사용했어요. 상위 플랜에서 더 생성할 수 있어요."
+            : "AI 릴스 영상은 Pro 플랜부터 사용할 수 있어요.",
+        );
+        return;
+      }
+      if (r.status === 503) {
+        setAiVideoStatus("error");
+        setAiVideoNotice("AI 영상 생성이 아직 설정되지 않았어요 (fal.ai 키/크레딧 확인).");
+        return;
+      }
+      if (!data.ok || !data.requestId) {
+        setAiVideoStatus("error");
+        setAiVideoNotice(data.error ?? "AI 영상 생성을 시작하지 못했어요.");
+        return;
+      }
+
+      const requestId = data.requestId as string;
+      for (let i = 0; i < 36 && !aiVideoAbortRef.current; i++) {
+        await new Promise((res) => setTimeout(res, 5000));
+        if (aiVideoAbortRef.current) return;
+        const pr = await fetch(
+          `/api/generate-reel-video?requestId=${encodeURIComponent(requestId)}`,
+          { cache: "no-store" },
+        );
+        const pd = await pr.json();
+        if (pd.status === "completed" && pd.videoUrl) {
+          setAiVideoUrl(pd.videoUrl);
+          setAiVideoStatus("done");
+          setAiVideoNotice("AI 영상 완성 ✓");
+          toast.success("AI 릴스 영상 생성 완료");
+          return;
+        }
+        if (pd.status === "failed" || (pd.ok === false && pd.status !== "processing")) {
+          setAiVideoStatus("error");
+          setAiVideoNotice(pd.error ?? "AI 영상 생성에 실패했어요.");
+          return;
+        }
+      }
+      if (!aiVideoAbortRef.current) {
+        setAiVideoStatus("error");
+        setAiVideoNotice("생성이 예상보다 오래 걸려요. 잠시 후 다시 시도해 주세요.");
+      }
+    } catch {
+      setAiVideoStatus("error");
+      setAiVideoNotice("AI 영상 생성 중 오류가 발생했어요.");
+    }
+  };
+
+  const downloadAiVideo = async () => {
+    if (!aiVideoUrl) return;
+    try {
+      const res = await fetch(aiVideoUrl);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${brand.id}-ai-reel-${Date.now()}.mp4`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast.success("AI 영상 다운로드 시작");
+    } catch {
+      window.open(aiVideoUrl, "_blank");
+    }
+  };
+
   const generate = () => {
     if (status !== "done") return; // 중복 클릭 방어
     // 자막을 새 후크로 재시드 — 같은 사진이라도 새 카피로 다시 생성되는 느낌
@@ -1034,6 +1150,13 @@ export function ReelsScreen() {
               인스타 릴스 첫 1초에 손가락이 멈춰야 합니다. 아래 중 마음에 드는 거 클릭 → 컷 1의 자막으로
             </p>
             <div className="space-y-1.5">
+              {!mounted &&
+                [0, 1, 2].map((i) => (
+                  <div
+                    key={`hook-skel-${i}`}
+                    className="w-full h-[42px] rounded-md border border-violet-200/40 dark:border-violet-900/30 bg-violet-50/30 dark:bg-violet-500/5 animate-pulse"
+                  />
+                ))}
               {viralHooks.map((h, i) => (
                 <button
                   key={`${viralSeed}-${i}`}
@@ -1492,6 +1615,78 @@ export function ReelsScreen() {
                 </div>
               </div>
             )}
+
+            {/* AI 영상 (Veo) 생성 — 프리미엄. 사진 합성과 별개로 실제 AI 영상 클립 생성 */}
+            <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+              <div className="text-[11px] uppercase tracking-widest text-amber-500 font-semibold inline-flex items-center gap-1 mb-1">
+                <Sparkles className="h-3 w-3" /> AI 영상 (Veo · 프리미엄)
+              </div>
+              <p className="text-[11px] text-zinc-500 mb-2">
+                사진 없이 주제·후크로 실제 AI 영상 클립 생성 · 월 한도 차감 (Pro+)
+              </p>
+              {!aiVideoUrl ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={generateAiVideo}
+                  disabled={aiVideoStatus === "working"}
+                >
+                  {aiVideoStatus === "working" ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      생성 중…
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-3.5 w-3.5" />
+                      AI 영상 생성
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <div className="space-y-2">
+                  <video
+                    src={aiVideoUrl}
+                    controls
+                    playsInline
+                    className="w-full rounded-md bg-black aspect-[9/16] max-h-[360px] object-contain"
+                  />
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={generateAiVideo}
+                      disabled={aiVideoStatus === "working"}
+                      className="flex-1"
+                    >
+                      <RefreshCw className="h-3.5 w-3.5" />
+                      다시 생성
+                    </Button>
+                    <Button size="sm" onClick={downloadAiVideo} className="flex-1">
+                      <Download className="h-3.5 w-3.5" />
+                      .mp4 저장
+                    </Button>
+                  </div>
+                </div>
+              )}
+              {aiVideoNotice && (
+                <div
+                  className={`mt-2 text-[10.5px] leading-snug ${
+                    aiVideoStatus === "error"
+                      ? "text-rose-500"
+                      : aiVideoStatus === "done"
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-amber-600 dark:text-amber-400"
+                  }`}
+                >
+                  {aiVideoStatus === "working" && (
+                    <Loader2 className="inline h-3 w-3 mr-1 animate-spin align-[-1px]" />
+                  )}
+                  {aiVideoNotice}
+                </div>
+              )}
+            </div>
           </Card>
 
           <Card className="p-4">

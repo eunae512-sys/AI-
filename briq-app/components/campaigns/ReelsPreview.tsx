@@ -9,7 +9,7 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import type { ReelsClip } from "./types";
-import { Play, Pause, Heart, MessageCircle, Send, Bookmark, RefreshCw, Volume2, VolumeX, Plus, Trash2, Pencil } from "lucide-react";
+import { Play, Pause, Heart, MessageCircle, Send, Bookmark, RefreshCw, Volume2, VolumeX, Plus, Trash2, Pencil, Sparkles } from "lucide-react";
 import { buildVideoQueryDetailed } from "@/lib/cardnews/video-query";
 
 type Props = {
@@ -35,6 +35,11 @@ export function ReelsPreview({ clip: initial, title, handle, industry, campaignH
   const seenIdsRef = React.useRef<number[]>([]);
   const [photographer, setPhotographer] = React.useState<string | null>(null);
   const videoRef = React.useRef<HTMLVideoElement>(null);
+
+  // ── AI 영상(프리미엄) 생성 상태 ──
+  const [aiStatus, setAiStatus] = React.useState<"idle" | "working" | "done" | "error">("idle");
+  const [aiNotice, setAiNotice] = React.useState<string | null>(null);
+  const aiAbortRef = React.useRef(false);
 
   // 인라인 편집 — 영상 위 자막 클릭 또는 트랙 리스트에서 직접 수정
   const [editingIdx, setEditingIdx] = React.useState<number | null>(null);
@@ -125,11 +130,89 @@ export function ReelsPreview({ clip: initial, title, handle, industry, campaignH
     [industry, title, campaignHeadline, signatureMenu, initial.videoQuery],
   );
 
+  // ── AI 영상 생성 (프리미엄) — submit 후 5초 간격 폴링 ──
+  const generateAiVideo = React.useCallback(async () => {
+    aiAbortRef.current = false;
+    setAiStatus("working");
+    setAiNotice("AI 영상 생성 중… (최대 2-3분 소요)");
+    try {
+      const prompt = buildVideoQuery({ industry, title, campaignHeadline, signatureMenu });
+      // 커버 사진이 http 면 image-to-video 시드로 — 브랜드 일관성
+      const posterImageUrl =
+        clip.poster && clip.poster.startsWith("http") ? clip.poster : undefined;
+
+      const r = await fetch("/api/generate-reel-video", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, posterImageUrl, industry }),
+      });
+      const data = await r.json();
+
+      if (r.status === 402 || r.status === 403) {
+        setAiStatus("error");
+        setAiNotice(
+          r.status === 403
+            ? "이번 달 AI 영상 한도를 모두 사용했어요. 상위 플랜에서 더 생성할 수 있어요."
+            : "AI 릴스 영상은 Pro 플랜부터 사용할 수 있어요.",
+        );
+        return;
+      }
+      if (!data.ok || !data.requestId) {
+        setAiStatus("error");
+        setAiNotice(data.error ?? "AI 영상 생성을 시작하지 못했어요.");
+        return;
+      }
+
+      // 폴링 — 최대 ~3분 (36회 × 5초)
+      const requestId = data.requestId as string;
+      for (let i = 0; i < 36 && !aiAbortRef.current; i++) {
+        await new Promise((res) => setTimeout(res, 5000));
+        if (aiAbortRef.current) return;
+        const pr = await fetch(`/api/generate-reel-video?requestId=${encodeURIComponent(requestId)}`, {
+          cache: "no-store",
+        });
+        const pd = await pr.json();
+        if (pd.status === "completed" && pd.videoUrl) {
+          setClip((c) => ({ ...c, videoUrl: pd.videoUrl }));
+          setVideoError(false);
+          setT(0);
+          setPhotographer(null);
+          setAiStatus("done");
+          setAiNotice("AI 영상 완성 ✓");
+          return;
+        }
+        if (pd.status === "failed" || (pd.ok === false && pd.status !== "processing")) {
+          setAiStatus("error");
+          setAiNotice(pd.error ?? "AI 영상 생성에 실패했어요.");
+          return;
+        }
+      }
+      if (!aiAbortRef.current) {
+        setAiStatus("error");
+        setAiNotice("생성이 예상보다 오래 걸려요. 잠시 후 다시 시도해 주세요.");
+      }
+    } catch {
+      setAiStatus("error");
+      setAiNotice("AI 영상 생성 중 오류가 발생했어요.");
+    }
+  }, [industry, title, campaignHeadline, signatureMenu, clip.poster]);
+
+  // 언마운트 / clip 교체 시 진행 중 폴링 중단
+  React.useEffect(() => {
+    return () => {
+      aiAbortRef.current = true;
+    };
+  }, []);
+
   // 브랜드/토픽이 바뀌어 새 clip 이 들어오면 내부 state 동기 + seenIds 리셋 + 새 비디오 페치
   React.useEffect(() => {
     setClip(initial);
     setT(0);
     seenIdsRef.current = [];
+    // 진행 중인 AI 영상 폴링 중단 + 상태 리셋 (브랜드/토픽 전환)
+    aiAbortRef.current = true;
+    setAiStatus("idle");
+    setAiNotice(null);
     if (!initial.videoUrl) {
       fetchVideo();
     }
@@ -178,17 +261,45 @@ export function ReelsPreview({ clip: initial, title, handle, industry, campaignH
     <div className="w-full">
       <div className="flex items-baseline justify-between mb-2">
         <div className="editorial-label">자동 릴스 · {clip.durationSec}초 · {clip.cuts} 컷</div>
-        <button
-          type="button"
-          onClick={() => fetchVideo()}
-          disabled={fetching}
-          className="inline-flex items-center gap-1 text-[10.5px] tracking-[0.12em] uppercase text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed"
-          title={fetching ? "비디오 가져오는 중…" : "다른 비디오 찾기 (이미 본 영상 제외)"}
-        >
-          <RefreshCw className={`h-3 w-3 ${fetching ? "animate-spin" : ""}`} />
-          {fetching ? "찾는 중" : "다른 컷"}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={generateAiVideo}
+            disabled={aiStatus === "working"}
+            className="inline-flex items-center gap-1 text-[10.5px] tracking-[0.12em] uppercase text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 disabled:opacity-40 disabled:cursor-not-allowed"
+            title="AI 로 실제 영상을 생성합니다 (프리미엄 · 월 한도 차감)"
+          >
+            <Sparkles className={`h-3 w-3 ${aiStatus === "working" ? "animate-pulse" : ""}`} />
+            {aiStatus === "working" ? "생성 중" : "AI 영상"}
+          </button>
+          <button
+            type="button"
+            onClick={() => fetchVideo()}
+            disabled={fetching}
+            className="inline-flex items-center gap-1 text-[10.5px] tracking-[0.12em] uppercase text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed"
+            title={fetching ? "비디오 가져오는 중…" : "Pexels 무료 영상 (이미 본 영상 제외)"}
+          >
+            <RefreshCw className={`h-3 w-3 ${fetching ? "animate-spin" : ""}`} />
+            {fetching ? "찾는 중" : "다른 컷"}
+          </button>
+        </div>
       </div>
+      {aiNotice && (
+        <div
+          className={`mb-2 text-[10.5px] leading-snug ${
+            aiStatus === "error"
+              ? "text-rose-500"
+              : aiStatus === "done"
+              ? "text-emerald-600 dark:text-emerald-400"
+              : "text-amber-600 dark:text-amber-400"
+          }`}
+        >
+          {aiStatus === "working" && (
+            <RefreshCw className="inline h-3 w-3 mr-1 animate-spin align-[-1px]" />
+          )}
+          {aiNotice}
+        </div>
+      )}
 
       <div className="relative w-full max-w-[280px] mx-auto sm:mx-0 aspect-[9/16] bg-zinc-900 border border-zinc-200 dark:border-zinc-800 overflow-hidden">
         {/* 비디오 또는 poster 폴백 */}

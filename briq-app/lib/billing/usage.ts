@@ -12,13 +12,14 @@
 import type { PlanId } from "./plans";
 import { getPlan } from "./plans";
 
-export type UsageKind = "cardnews" | "blog" | "aiImage";
+export type UsageKind = "cardnews" | "blog" | "aiImage" | "aiVideo";
 
 export type Usage = {
   month: string; // "2026-05"
   cardnews: number;
   blog: number;
   aiImage: number;
+  aiVideo: number;
 };
 
 const PLAN_KEY = "briq:active-plan";
@@ -42,20 +43,21 @@ function storageKey(month: string): string {
 
 export function loadUsageLocal(month: string = currentMonth()): Usage {
   if (typeof window === "undefined") {
-    return { month, cardnews: 0, blog: 0, aiImage: 0 };
+    return { month, cardnews: 0, blog: 0, aiImage: 0, aiVideo: 0 };
   }
   try {
     const raw = localStorage.getItem(storageKey(month));
-    if (!raw) return { month, cardnews: 0, blog: 0, aiImage: 0 };
+    if (!raw) return { month, cardnews: 0, blog: 0, aiImage: 0, aiVideo: 0 };
     const parsed = JSON.parse(raw) as Partial<Usage>;
     return {
       month,
       cardnews: parsed.cardnews ?? 0,
       blog: parsed.blog ?? 0,
       aiImage: parsed.aiImage ?? 0,
+      aiVideo: parsed.aiVideo ?? 0,
     };
   } catch {
-    return { month, cardnews: 0, blog: 0, aiImage: 0 };
+    return { month, cardnews: 0, blog: 0, aiImage: 0, aiVideo: 0 };
   }
 }
 
@@ -111,6 +113,7 @@ export type ServerUsage = Usage & {
     cardnewsPerMonth: number | null;
     blogPerMonth: number | null;
     aiImagesPerMonth: number | null;
+    aiVideoPerMonth: number | null;
   };
 };
 
@@ -173,10 +176,16 @@ export function getActivePlanId(): PlanId {
   return "free";
 }
 
-/** localStorage 캐시 갱신 — 서버 fetch 후 호출하면 다음 SSR/CSR 빠른 표시. */
+/** localStorage 캐시 갱신 — 서버 fetch 후 호출하면 다음 SSR/CSR 빠른 표시.
+ *
+ * 중요: 값이 "실제로 바뀔 때만" 이벤트를 쏜다. 안 그러면 useUsage 의
+ * refresh() → setActivePlan() → "briq:plan-updated" → onPlan → refresh() …
+ * 무한 루프가 돌아 /api/usage 가 폭주(ERR_INSUFFICIENT_RESOURCES)한다. */
 export function setActivePlan(planId: PlanId): void {
   if (typeof window === "undefined") return;
   try {
+    const prev = localStorage.getItem(PLAN_KEY);
+    if (prev === planId) return; // 변화 없음 — 이벤트 생략(순환 차단)
     localStorage.setItem(PLAN_KEY, planId);
     window.dispatchEvent(new CustomEvent("briq:plan-updated"));
   } catch {
@@ -206,16 +215,19 @@ export function checkLimit(
     cardnews: usage.cardnews,
     blog: usage.blog,
     aiImage: usage.aiImage,
+    aiVideo: usage.aiVideo,
   };
   const limitMap: Record<UsageKind, number | null> = {
     cardnews: plan.limits.cardnewsPerMonth,
     blog: plan.limits.blogPerMonth,
     aiImage: plan.limits.aiImagesPerMonth,
+    aiVideo: plan.limits.aiVideoPerMonth,
   };
   const unitMap: Record<UsageKind, string> = {
     cardnews: "편",
     blog: "편",
     aiImage: "장",
+    aiVideo: "편",
   };
 
   const used = usedMap[kind];
@@ -227,7 +239,13 @@ export function checkLimit(
   }
   if (used >= limit) {
     const kindLabel =
-      kind === "cardnews" ? "카드뉴스" : kind === "blog" ? "네이버 블로그 본문" : "ChatGPT 이미지";
+      kind === "cardnews"
+        ? "카드뉴스"
+        : kind === "blog"
+        ? "네이버 블로그 본문"
+        : kind === "aiVideo"
+        ? "AI 릴스 영상"
+        : "AI 이미지";
     return {
       allowed: false,
       used,

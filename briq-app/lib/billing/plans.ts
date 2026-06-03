@@ -10,8 +10,10 @@ export type PlanLimit = {
   cardnewsPerMonth: number | null;
   /** 월 네이버 블로그 본문 한도. null = 무제한 */
   blogPerMonth: number | null;
-  /** 월 ChatGPT 이미지 한도. null = 무제한 */
+  /** 월 AI 이미지(Gemini/OpenAI) 한도. null = 무제한 */
   aiImagesPerMonth: number | null;
+  /** 월 AI 영상(Veo/Kling) 한도. null = 무제한(권장 안 함 — COGS상 상한 둘 것) */
+  aiVideoPerMonth: number | null;
   /** 브랜드 수 한도 */
   brandCount: number;
   /** 사용자 수 한도 */
@@ -50,19 +52,21 @@ export const PLANS: Plan[] = [
       cardnewsPerMonth: 2,
       blogPerMonth: 0,
       aiImagesPerMonth: 0,
+      aiVideoPerMonth: 0,
       brandCount: 1,
       userCount: 1,
     },
     features: [
       { label: "카드뉴스 월 2편", included: true },
       { label: "인스타 캡션 + 해시태그", included: true, detail: "월 2회" },
-      { label: "Pexels 사진 검색", included: true },
+      { label: "Pexels 사진·영상 검색", included: true },
       { label: "사진 직접 업로드", included: true },
       { label: "수동 발행 (클립보드 + 새 탭)", included: true },
       { label: "워터마크 \"Powered by BRIQ\"", included: true, detail: "카드 좌하단 옅게" },
       { label: "릴스 스크립트 + Pexels 비디오", included: false },
       { label: "네이버 블로그 본문", included: false },
-      { label: "ChatGPT 이미지 생성", included: false },
+      { label: "AI 이미지 생성 (Gemini)", included: false },
+      { label: "AI 릴스 영상 생성 (Veo)", included: false },
       { label: "Make/Zapier Webhook 분배", included: false },
       { label: "Instagram Graph API 직결", included: false },
     ],
@@ -71,15 +75,16 @@ export const PLANS: Plan[] = [
     id: "pro",
     name: "Pro",
     tagline: "사장님 한 명이 매일 운영",
-    priceMonthly: 49000,
-    priceAnnualMonthly: 41160, // ₩49,000 × 0.84
+    priceMonthly: 59000,
+    priceAnnualMonthly: 49560, // ₩59,000 × 0.84
     badge: "가장 많이 선택",
     cta: { label: "14일 무료 체험", href: "/onboarding?plan=pro" },
     showWatermark: false,
     limits: {
       cardnewsPerMonth: null,
       blogPerMonth: 8,
-      aiImagesPerMonth: 50,
+      aiImagesPerMonth: 80,
+      aiVideoPerMonth: 5,
       brandCount: 1,
       userCount: 1,
     },
@@ -90,7 +95,8 @@ export const PLANS: Plan[] = [
       { label: "네이버 블로그 본문 (1500+자)", included: true, detail: "월 8편" },
       { label: "네이버 클립 15·30·45초", included: true },
       { label: "페이스북·스레드·틱톡·쇼츠·카카오", included: true },
-      { label: "ChatGPT 이미지 생성", included: true, detail: "월 50장" },
+      { label: "AI 이미지 생성 (Gemini)", included: true, detail: "월 80장" },
+      { label: "AI 릴스 영상 생성 (Veo)", included: true, detail: "월 5편" },
       { label: "Make/Zapier Webhook 분배", included: true },
       { label: "일괄 예약 (10 플랫폼 stagger)", included: true },
       { label: "워터마크 제거", included: true },
@@ -104,21 +110,23 @@ export const PLANS: Plan[] = [
     id: "studio",
     name: "Studio",
     tagline: "대행사 1명이 15곳 운영",
-    priceMonthly: 149000,
-    priceAnnualMonthly: 125160,
+    priceMonthly: 179000,
+    priceAnnualMonthly: 150360, // ₩179,000 × 0.84
     cta: { label: "14일 무료 체험", href: "/onboarding?plan=studio" },
     showWatermark: false,
     limits: {
       cardnewsPerMonth: null,
       blogPerMonth: null,
-      aiImagesPerMonth: 300,
+      aiImagesPerMonth: 400,
+      aiVideoPerMonth: 30,
       brandCount: 10,
       userCount: 1,
     },
     features: [
       { label: "Pro 의 모든 기능", included: true },
       { label: "네이버 블로그 본문 무제한", included: true },
-      { label: "ChatGPT 이미지", included: true, detail: "월 300장" },
+      { label: "AI 이미지 생성 (Gemini)", included: true, detail: "월 400장" },
+      { label: "AI 릴스 영상 생성 (Veo)", included: true, detail: "월 30편" },
       { label: "멀티 브랜드", included: true, detail: "10개까지" },
       { label: "Instagram Graph API 직결 발행", included: true },
       { label: "카카오 알림톡 자동 응답", included: true },
@@ -139,6 +147,7 @@ export const PLANS: Plan[] = [
       cardnewsPerMonth: null,
       blogPerMonth: null,
       aiImagesPerMonth: null,
+      aiVideoPerMonth: 150, // COGS 가드 — 무제한(null) 금지, 상한
       brandCount: 999,
       userCount: 5,
     },
@@ -146,7 +155,8 @@ export const PLANS: Plan[] = [
       { label: "Studio 의 모든 기능", included: true },
       { label: "사용자 수", included: true, detail: "5명 이상" },
       { label: "무제한 브랜드", included: true },
-      { label: "무제한 ChatGPT 이미지", included: true },
+      { label: "무제한 AI 이미지 (Gemini)", included: true },
+      { label: "AI 릴스 영상 생성 (Veo)", included: true, detail: "월 150편" },
       { label: "자체 도메인", included: true, detail: "briq.your-agency.com" },
       { label: "전담 매니저", included: true },
       { label: "Supabase 자체 호스팅 옵션", included: true },

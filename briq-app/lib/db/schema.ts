@@ -213,6 +213,7 @@ export const usageMonthly = pgTable(
     cardnewsCount: integer("cardnews_count").notNull().default(0),
     blogCount: integer("blog_count").notNull().default(0),
     aiImageCount: integer("ai_image_count").notNull().default(0),
+    aiVideoCount: integer("ai_video_count").notNull().default(0),
 
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -220,6 +221,45 @@ export const usageMonthly = pgTable(
     pk: primaryKey({ columns: [t.userId, t.yearMonth] }),
   }),
 );
+
+// ───────────────────────────────────────────────
+// video_jobs — AI 릴스 영상 비동기 생성 추적
+// ───────────────────────────────────────────────
+//
+// fal.ai 큐는 비동기(submit → poll) — 요청 내 완료 대기 불가(Vercel timeout).
+// requestId 로 상태를 폴링하고, 완료 시 Supabase Storage 에 재호스팅한 URL 을 저장.
+// costUsd 로깅으로 COGS ↔ 재설계 가격 검증. 한도 차감은 COMPLETED 시점에만.
+
+export const videoJobStatusEnum = pgEnum("video_job_status", [
+  "queued",
+  "processing",
+  "completed",
+  "failed",
+]);
+
+export const videoJobs = pgTable(
+  "video_jobs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull(),
+    requestId: text("request_id").notNull(), // fal.ai 큐 request id
+    provider: text("provider").notNull(), // "fal-veo3-fast" 등
+    status: videoJobStatusEnum("status").notNull().default("queued"),
+    resultUrl: text("result_url"), // Storage 재호스팅 public URL
+    costUsd: integer("cost_usd_milli").notNull().default(0), // USD × 1000 (정수 보관)
+    counted: boolean("counted").notNull().default(false), // 한도 차감 완료 여부 (멱등)
+    errorMessage: text("error_message"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    requestIdUq: unique("video_jobs_request_id_uq").on(t.requestId),
+    userIdx: index("video_jobs_user_idx").on(t.userId),
+  }),
+);
+
+export type VideoJob = typeof videoJobs.$inferSelect;
+export type NewVideoJob = typeof videoJobs.$inferInsert;
 
 // ───────────────────────────────────────────────
 // webhook_events — Toss 웹훅 멱등 처리
