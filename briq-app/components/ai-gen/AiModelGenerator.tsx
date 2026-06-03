@@ -37,6 +37,8 @@ import { applyAiWatermark, buildAiMeta } from "@/lib/ai-gen/watermark";
 type Props = {
   industry: Industry;
   signatureMenu?: string[];
+  /** 캠페인 주제/테마 (예: "여름 수박 케이크") — 출연자 씬을 주제에 맞게 연출 */
+  topic?: string;
   /** 생성 완료 시 호출 — workflow 로 결과 전달 */
   onGenerated: (result: { url: string; scene: ModelScene; meta: ReturnType<typeof buildAiMeta>; costKrw: number }) => void;
   /** 외부에서 닫기 (탭 전환 등) */
@@ -48,7 +50,7 @@ type Props = {
 const COST_USD_PER_IMAGE = 0.04; // gpt-image-1 medium
 const COST_KRW = Math.round(COST_USD_PER_IMAGE * 1400);
 
-export function AiModelGenerator({ industry, signatureMenu, onGenerated, onClose, compact = false }: Props) {
+export function AiModelGenerator({ industry, signatureMenu, topic, onGenerated, onClose, compact = false }: Props) {
   const toast = useToast();
   const recommended = React.useMemo(() => getRecommendedScenes(industry), [industry]);
   const allScenes = React.useMemo(() => getScenesForIndustry(industry), [industry]);
@@ -72,12 +74,15 @@ export function AiModelGenerator({ industry, signatureMenu, onGenerated, onClose
     setAge(s.defaultAge ?? "any");
   };
 
+  // 주제 반영: 실제 시그니처 메뉴가 있으면 그걸, 없으면 캠페인 주제를 씬의 소재로.
+  const themeSubject = signatureMenu?.[0] || topic?.trim() || undefined;
   const promptEN = scene
-    ? scene.promptEN({
-        gender,
-        age,
-        signatureMenu: signatureMenu?.[0],
-      })
+    ? (() => {
+        const base = scene.promptEN({ gender, age, signatureMenu: themeSubject });
+        const t = topic?.trim();
+        // 사장님/손님 씬처럼 소재를 직접 안 쓰는 경우에도 주제가 화면에 드러나도록 컨텍스트 추가
+        return t && !base.includes(t) ? `${base} The scene is visually themed around "${t}".` : base;
+      })()
     : "";
 
   const generate = async () => {

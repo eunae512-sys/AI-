@@ -386,6 +386,7 @@ export function ShortsScreen() {
           <AiModelGenerator
             industry={brand.industry as Industry}
             signatureMenu={isActiveUserBrand ? userBrand?.signatureMenu : undefined}
+            topic={preset?.themeTitle ?? brand.campaign}
             onGenerated={({ url, scene }) => {
               setFile({
                 url,

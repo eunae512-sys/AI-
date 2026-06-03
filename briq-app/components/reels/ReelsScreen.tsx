@@ -1829,6 +1829,7 @@ export function ReelsScreen() {
                       compact
                       industry={brand.industry as Industry}
                       signatureMenu={isUserBrand ? userBrand?.signatureMenu : undefined}
+                      topic={brand.campaign}
                       onGenerated={({ url, scene }) => {
                         addAiPhoto(url, scene.title);
                       }}
