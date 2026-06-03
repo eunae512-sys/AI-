@@ -520,6 +520,8 @@ export function ReelsScreen() {
   // === 사진 → 영상 컴파일 (Canvas + MediaRecorder) ===
   type CompiledVideo = { url: string; mimeType: string; durationMs: number; size: number };
   const [compiled, setCompiled] = React.useState<CompiledVideo | null>(null);
+  // 영상 만들기 모드 — "photo"(사진 합성·무료) / "ai"(Veo·프리미엄). 두 카드를 하나로 합침.
+  const [videoMode, setVideoMode] = React.useState<"photo" | "ai">("photo");
   const [compiling, setCompiling] = React.useState(false);
   const [compileProgress, setCompileProgress] = React.useState(0);
   // SSR 안전 — 마운트 전엔 true 가정 (경고 배너 미렌더)
@@ -1513,18 +1515,20 @@ export function ReelsScreen() {
         <div className="lg:col-span-4 space-y-3 order-3">
           {/* 사진 → 영상 변환 카드 */}
           <Card id="reels-compile" className="p-4 scroll-mt-4 ring-violet-400 transition-shadow">
-            <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
+            <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
               <div>
                 <div className="text-[11px] uppercase tracking-[0.15em] text-violet-600 dark:text-violet-400 font-semibold flex items-center gap-1.5">
-                  <Film className="h-3 w-3" />사진 → 영상 변환
+                  <Film className="h-3 w-3" />영상 만들기
                 </div>
                 <p className="text-[11px] text-zinc-500 mt-0.5">
-                  {uploadedPhotos.length > 0
-                    ? `${uploadedPhotos.length}장 · 약 ${(uploadedPhotos.length * 1.2).toFixed(1)}초 · 720×1280`
-                    : "사진 업로드 후 사용 가능"}
+                  {videoMode === "photo"
+                    ? uploadedPhotos.length > 0
+                      ? `내 사진 ${uploadedPhotos.length}장 합성 · 무료 · 720×1280`
+                      : "사진 업로드 후 사용 가능 · 무료"
+                    : "사진 없이 AI가 영상 생성 · 프리미엄 (Pro+)"}
                 </p>
               </div>
-              {compiled && (
+              {compiled && videoMode === "photo" && (
                 <button
                   onClick={clearCompiled}
                   className="text-[10px] text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 inline-flex items-center gap-1"
@@ -1535,7 +1539,31 @@ export function ReelsScreen() {
               )}
             </div>
 
-            {!compiled ? (
+            {/* 모드 토글 — 사진 합성 / AI 영상 하나로 */}
+            <div className="inline-flex w-full rounded-lg border border-zinc-200 dark:border-zinc-800 p-1 bg-zinc-50 dark:bg-zinc-900/40 mb-3">
+              {([
+                ["photo", "내 사진으로", Film] as const,
+                ["ai", "AI 영상", Sparkles] as const,
+              ]).map(([m, label, Icon]) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setVideoMode(m)}
+                  className={`flex-1 inline-flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                    videoMode === m
+                      ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm"
+                      : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {label}
+                  {m === "ai" && <span className="text-[9px] text-amber-500 font-semibold">PRO</span>}
+                </button>
+              ))}
+            </div>
+
+            {videoMode === "photo" ? (
+              !compiled ? (
               <>
                 <Button
                   className="w-full"
@@ -1616,16 +1644,9 @@ export function ReelsScreen() {
                   </ol>
                 </div>
               </div>
-            )}
-
-            {/* AI 영상 (Veo) 생성 — 프리미엄. 사진 합성과 별개로 실제 AI 영상 클립 생성 */}
-            <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
-              <div className="text-[11px] uppercase tracking-widest text-amber-500 font-semibold inline-flex items-center gap-1 mb-1">
-                <Sparkles className="h-3 w-3" /> AI 영상 (Veo · 프리미엄)
-              </div>
-              <p className="text-[11px] text-zinc-500 mb-2">
-                사진 없이 주제·후크로 실제 AI 영상 클립 생성 · 월 한도 차감 (Pro+)
-              </p>
+              )
+            ) : (
+              <div className="pt-1">
               {!aiVideoUrl ? (
                 <Button
                   variant="outline"
@@ -1688,7 +1709,8 @@ export function ReelsScreen() {
                   {aiVideoNotice}
                 </div>
               )}
-            </div>
+              </div>
+            )}
           </Card>
 
           <Card className="p-4">
