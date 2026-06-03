@@ -584,64 +584,56 @@ function drawFrame(
   const caption = photo.caption || "";
   if (caption) {
     const captionEnter = Math.min(1, cutProgress / Math.max(0.001, style.fadeInRatio));
-    const slideY = (1 - captionEnter) * 18 * sizeScale;
+    const slideY = (1 - captionEnter) * 16 * sizeScale;
     const captionAlpha = captionEnter;
 
-    const isShortHook = caption.length <= 18 && !caption.includes("\n");
-    const useSerif = isShortHook;
-
-    // 더 크고 굵게 — 프리미엄 무비 자막 결
-    const baseCaptionPx = useSerif
-      ? 68 * style.captionFontScale  // serif 큰 후크
-      : 46 * style.captionFontScale; // sans 본문
-    const weight = useSerif ? 600 : 800;
-
-    const fontDecl = useSerif
-      ? `italic ${weight} ${Math.round(baseCaptionPx * sizeScale)}px ${serifFontFamily}`
-      : `${weight} ${Math.round(baseCaptionPx * sizeScale)}px ${fontFamily}`;
-
-    ctx.font = fontDecl;
+    // ── 프로페셔널 자막 (영상 디자인 결) ──
+    //  · 강한 산세리프 통일(Pretendard 800), 박스 없음 — CapCut 기본 박스 느낌 제거
+    //  · 2패스 렌더: 다크 아웃라인 + 타이트한 드롭섀도 → 화이트 클린 필 (busy 위에서도 또렷)
+    //  · 브랜드 컬러 액센트 바를 카피 위에 — 디자인 의도/리듬
+    //  · 일관된 로어서드(80%) 앵커
+    const isShortHook = caption.length <= 16 && !caption.includes("\n");
+    const baseCaptionPx = (isShortHook ? 60 : 44) * style.captionFontScale;
+    ctx.font = `800 ${Math.round(baseCaptionPx * sizeScale)}px ${fontFamily}`;
     ctx.textAlign = "center";
     ctx.textBaseline = "alphabetic";
 
-    const maxWidth = width * 0.84;
-    const lineHeight = (baseCaptionPx + (useSerif ? 6 : 12)) * sizeScale;
+    const maxWidth = width * 0.82;
+    const lineHeight = baseCaptionPx * 1.16 * sizeScale;
     const lines = wrapKoreanText(ctx, caption, maxWidth);
     const totalTextHeight = lines.length * lineHeight;
-    const baseY = height * 0.82 - totalTextHeight / 2 + lineHeight + slideY;
+    const baseY = height * 0.8 - totalTextHeight / 2 + lineHeight + slideY;
 
-    // ── 가독성 백드롭 — 가장 넓은 줄 기준 둥근 패널(아주 옅게, 고급 자막 카드 느낌) ──
-    let widest = 0;
-    for (const line of lines) widest = Math.max(widest, ctx.measureText(line).width);
-    const padX = 30 * sizeScale;
-    const padTop = 20 * sizeScale;
-    const panelW = Math.min(width * 0.94, widest + padX * 2);
-    const panelX = width / 2 - panelW / 2;
-    const panelTop = baseY - lineHeight + (useSerif ? 16 : 10) * sizeScale - padTop;
-    const panelH = totalTextHeight + padTop * 1.7;
+    // 브랜드 컬러 액센트 바 — 카피 위 짧은 바
+    const accent = (brand.palette && brand.palette[0]) || "rgba(255,255,255,0.92)";
+    const barW = 46 * sizeScale;
+    const barH = Math.max(3, 3.5 * sizeScale);
     ctx.save();
     ctx.globalAlpha = captionAlpha;
-    ctx.fillStyle = "rgba(8,8,10,0.32)";
-    roundRectPath(ctx, panelX, panelTop, panelW, panelH, 22 * sizeScale);
+    ctx.fillStyle = accent;
+    roundRectPath(ctx, width / 2 - barW / 2, baseY - lineHeight - 24 * sizeScale, barW, barH, barH / 2);
     ctx.fill();
     ctx.restore();
 
-    // ── 카피 — 굵게 + 다크 아웃라인 + 부드러운 그림자 (busy 사진 위에서도 또렷) ──
+    // 카피 — 2패스 (아웃라인+그림자 → 클린 화이트 필)
     ctx.save();
     ctx.globalAlpha = captionAlpha;
     ctx.lineJoin = "round";
-    ctx.shadowColor = "rgba(0,0,0,0.5)";
-    ctx.shadowBlur = 12 * sizeScale;
-    ctx.strokeStyle = "rgba(0,0,0,0.5)";
-    ctx.lineWidth = Math.max(2, baseCaptionPx * 0.07 * sizeScale);
-    ctx.fillStyle = "#ffffff";
-    lines.forEach((line, i) => {
-      const y = baseY + i * lineHeight;
-      ctx.strokeText(line, width / 2, y);
-      ctx.fillText(line, width / 2, y);
-    });
-    ctx.restore();
+    ctx.miterLimit = 2;
+    // (1) 다크 아웃라인 + 타이트 드롭섀도
+    ctx.shadowColor = "rgba(0,0,0,0.55)";
+    ctx.shadowBlur = 7 * sizeScale;
+    ctx.shadowOffsetY = 2 * sizeScale;
+    ctx.strokeStyle = "rgba(0,0,0,0.62)";
+    ctx.lineWidth = Math.max(2.5, baseCaptionPx * 0.085 * sizeScale);
+    lines.forEach((line, i) => ctx.strokeText(line, width / 2, baseY + i * lineHeight));
+    // (2) 클린 화이트 필 (그림자 제거)
+    ctx.shadowColor = "transparent";
     ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.fillStyle = "#ffffff";
+    lines.forEach((line, i) => ctx.fillText(line, width / 2, baseY + i * lineHeight));
+    ctx.restore();
   }
 
   // ── ④ 최하단 palette tonal strip — 브랜드 추출 컬러 (≥1개) 노출 ──

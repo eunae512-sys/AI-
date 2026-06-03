@@ -1410,19 +1410,22 @@ export function ReelsScreen() {
                       <button
                         type="button"
                         onClick={() => currentCut && setEditingCaption(true)}
-                        className="block w-full text-center"
+                        className="block w-full text-center group/cap"
                         title={currentCut ? "자막 편집 (Esc 종료)" : ""}
                       >
-                        {/* 컴파일 .mp4 자막과 동일한 결 — 굵게 + 다크 아웃라인 + 둥근 백드롭 카드 */}
+                        {/* 컴파일 .mp4 와 동일한 프로 디자인 — 박스 없음 · 브랜드 컬러 액센트 바 · 아웃라인 */}
                         <span
-                          className="inline-block max-w-full rounded-2xl bg-black/30 px-4 py-2.5 leading-snug hover:bg-black/40 transition-colors"
+                          className="mx-auto mb-2.5 block h-[3px] w-11 rounded-full"
+                          style={{ background: brand.brandColors?.primary ?? "rgba(255,255,255,0.92)" }}
+                        />
+                        <span
+                          className="inline-block max-w-full px-1 leading-[1.16] group-hover/cap:opacity-90 transition-opacity"
                           style={{
                             fontWeight: 800,
-                            fontSize: "26px",
-                            letterSpacing: "-0.02em",
-                            textShadow:
-                              "0 1px 0 rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.55), 0 0 1px rgba(0,0,0,0.85)",
-                            WebkitTextStroke: "0.5px rgba(0,0,0,0.5)",
+                            fontSize: "27px",
+                            letterSpacing: "-0.025em",
+                            textShadow: "0 2px 5px rgba(0,0,0,0.55), 0 0 1px rgba(0,0,0,0.9)",
+                            WebkitTextStroke: "0.6px rgba(0,0,0,0.55)",
                           }}
                         >
                           {currentCaption}
