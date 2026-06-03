@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { isPlaceholderKey } from "@/lib/api/demo-images";
 import { buildViralMandate, detectCliches, type Voice } from "@/lib/viral/system-prompt";
+import { geminiGenerateJson, geminiTextConfigured } from "@/lib/ai/text/gemini";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -86,7 +87,8 @@ export async function POST(req: NextRequest) {
   const voiceParam = (typeof body["voice"] === "string" ? body["voice"] : "viral") as Voice;
   const voice: Voice = voiceParam === "formal" ? "formal" : "viral";
 
-  if (placeholder) {
+  // OpenAI 키 없고 Gemini 도 없으면 데모. 하나라도 있으면 실제 생성 시도.
+  if (placeholder && !geminiTextConfigured()) {
     return NextResponse.json({
       ok: true,
       slides: DEMO_SLIDES,
@@ -98,13 +100,12 @@ export async function POST(req: NextRequest) {
         latencyMs: 0,
         costUsd: 0,
         costKrw: 0,
-        notice: "OPENAI_API_KEY 미설정 — 큐레이션된 데모 텍스트로 대체",
+        notice: "텍스트 생성 키 미설정 (OPENAI/GEMINI) — 큐레이션된 데모 텍스트로 대체",
       },
     });
   }
 
   const startedAt = Date.now();
-  const openai = new OpenAI({ apiKey });
 
   // 슬라이드 역할 — slide_count 에 맞춰 자동 구성
   // 6장: title / hook / story / menu / menu / cta
@@ -183,77 +184,102 @@ ${buildViralMandate({ voice, platform: "general" })}`;
 
   const userPrompt = `위 규격에 따라 "${campaign}" 카드뉴스 ${slide_count}장의 JSON 을 생성해 주세요. 각 슬라이드는 위 역할 순서대로 role 을 정확히 채우고, 슬라이드 간 내용 반복이 없도록 해 주세요. ${brand}(${industry}) 의 실제 상황에 맞는 카피를 써 주세요.`;
 
-  try {
-    const result = await openai.chat.completions.create({
-      model,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-      response_format: { type: "json_object" },
-      temperature: 0.7,
-    });
+  // 프로바이더 체인 — Gemini 우선(OpenAI 쿼터/결제 막혀도 자동 대체).
+  // TEXT_PROVIDER=openai 면 OpenAI 우선.
+  const preferOpenAI = (process.env.TEXT_PROVIDER || "").toLowerCase() === "openai";
+  const order: ("gemini" | "openai")[] = preferOpenAI
+    ? ["openai", "gemini"]
+    : ["gemini", "openai"];
 
-    const raw = result.choices?.[0]?.message?.content || "{}";
-    let parsed: { slides?: Slide[] };
+  let slides: Slide[] = [];
+  let source = "";
+  let usedModel = model;
+  let costUsd = 0;
+  let usage: unknown = undefined;
+  let lastMsg = "";
+  let lastStatus = 500;
+
+  for (const provider of order) {
     try {
-      parsed = JSON.parse(raw);
-    } catch {
-      return NextResponse.json(
-        { ok: false, error: "GPT 응답 JSON 파싱 실패", raw: raw.slice(0, 500) },
-        { status: 502 },
-      );
-    }
-
-    const slides = Array.isArray(parsed.slides) ? parsed.slides : [];
-    if (slides.length === 0) {
-      return NextResponse.json(
-        { ok: false, error: "slides 배열이 비었습니다", raw: raw.slice(0, 500) },
-        { status: 502 },
-      );
-    }
-
-    const forbiddenList = forbidden
-      .split(/[,，]/)
-      .map((x) => x.trim())
-      .filter(Boolean);
-    const flagged: { slide: number; word: string; kind?: "forbidden" | "cliche" }[] = [];
-    slides.forEach((sl, idx) => {
-      const text = `${sl.label || ""} ${sl.title || ""} ${sl.sub || ""}`;
-      forbiddenList.forEach((f) => {
-        if (text.includes(f)) flagged.push({ slide: idx + 1, word: f, kind: "forbidden" });
-      });
-      if (voice === "viral") {
-        detectCliches(text).forEach((c) =>
-          flagged.push({ slide: idx + 1, word: c, kind: "cliche" }),
-        );
+      if (provider === "gemini") {
+        if (!geminiTextConfigured()) continue;
+        const g = await geminiGenerateJson({ system: systemPrompt, user: userPrompt });
+        const arr = (g.json as { slides?: Slide[] })?.slides;
+        const got = Array.isArray(arr) ? arr : [];
+        if (got.length === 0) throw new Error("Gemini slides 비었음");
+        slides = got;
+        source = "gemini";
+        usedModel = g.model;
+        costUsd = g.costUsd;
+        break;
+      } else {
+        if (placeholder) continue; // OpenAI 키 없음
+        const openai = new OpenAI({ apiKey });
+        const result = await openai.chat.completions.create({
+          model,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          response_format: { type: "json_object" },
+          temperature: 0.7,
+        });
+        const raw = result.choices?.[0]?.message?.content || "{}";
+        const parsed = JSON.parse(raw) as { slides?: Slide[] };
+        const got = Array.isArray(parsed.slides) ? parsed.slides : [];
+        if (got.length === 0) throw new Error("slides 배열이 비었습니다");
+        slides = got;
+        source = "openai";
+        usedModel = model;
+        const u = result.usage || ({} as { prompt_tokens?: number; completion_tokens?: number });
+        const r = RATES[model] || RATES["gpt-4o"];
+        costUsd = ((u.prompt_tokens || 0) * r.in + (u.completion_tokens || 0) * r.out) / 1_000_000;
+        usage = u;
+        break;
       }
-    });
-
-    const latencyMs = Date.now() - startedAt;
-    const usage = result.usage || ({} as { prompt_tokens?: number; completion_tokens?: number });
-    const r = RATES[model] || RATES["gpt-4o"];
-    const costUsd =
-      ((usage.prompt_tokens || 0) * r.in + (usage.completion_tokens || 0) * r.out) / 1_000_000;
-
-    return NextResponse.json({
-      ok: true,
-      slides,
-      flagged,
-      meta: {
-        source: "openai",
-        model,
-        latencyMs,
-        costUsd: Number(costUsd.toFixed(6)),
-        costKrw: Math.round(costUsd * 1400),
-        usage,
-      },
-    });
-  } catch (e: unknown) {
-    const err = e as { error?: { message?: string }; message?: string; status?: number };
-    const message = err?.error?.message || err?.message || String(e);
-    const status = err?.status || 500;
-    console.error("[text-gen]", status, message);
-    return NextResponse.json({ ok: false, error: message }, { status });
+    } catch (e) {
+      const err = e as { error?: { message?: string }; message?: string; status?: number; code?: number };
+      lastMsg = err?.error?.message || err?.message || String(e);
+      lastStatus = err?.status || err?.code || 500;
+      console.error("[text-gen]", provider, lastStatus, lastMsg.slice(0, 120));
+    }
   }
+
+  if (slides.length === 0) {
+    return NextResponse.json(
+      { ok: false, error: lastMsg || "텍스트 생성 실패", status: lastStatus },
+      { status: lastStatus },
+    );
+  }
+
+  const forbiddenList = forbidden
+    .split(/[,，]/)
+    .map((x) => x.trim())
+    .filter(Boolean);
+  const flagged: { slide: number; word: string; kind?: "forbidden" | "cliche" }[] = [];
+  slides.forEach((sl, idx) => {
+    const text = `${sl.label || ""} ${sl.title || ""} ${sl.sub || ""}`;
+    forbiddenList.forEach((f) => {
+      if (text.includes(f)) flagged.push({ slide: idx + 1, word: f, kind: "forbidden" });
+    });
+    if (voice === "viral") {
+      detectCliches(text).forEach((c) =>
+        flagged.push({ slide: idx + 1, word: c, kind: "cliche" }),
+      );
+    }
+  });
+
+  return NextResponse.json({
+    ok: true,
+    slides,
+    flagged,
+    meta: {
+      source,
+      model: usedModel,
+      latencyMs: Date.now() - startedAt,
+      costUsd: Number(costUsd.toFixed(6)),
+      costKrw: Math.round(costUsd * 1400),
+      usage,
+    },
+  });
 }

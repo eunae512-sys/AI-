@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { isPlaceholderKey } from "@/lib/api/demo-images";
 import { buildViralMandate, detectCliches, type Voice } from "@/lib/viral/system-prompt";
+import { geminiGenerateJson, geminiTextConfigured } from "@/lib/ai/text/gemini";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -116,7 +117,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  if (placeholder) {
+  if (placeholder && !geminiTextConfigured()) {
     const demo = DEMO_BODY[perspective] ?? DEMO_BODY.visitor;
     return NextResponse.json({
       ok: true,
@@ -426,36 +427,55 @@ ${buildViralMandate({ voice, platform: "naver" })}`;
   };
   const userPrompt = userInstruction[perspective];
 
+  // 본문 생성 — Gemini 우선(OpenAI 쿼터/결제 막혀도 자동 대체). TEXT_PROVIDER=openai 면 OpenAI 우선.
+  let bodyText = "";
+  let blogSource = "";
+  let blogModel = model;
+  let geminiCost = 0;
+  let usedGemini = false;
+  let firstUsage: { prompt_tokens?: number; completion_tokens?: number } = {};
   try {
-    const result = await openai.chat.completions.create({
-      model,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-      response_format: { type: "json_object" },
-      temperature: 0.7,
-      // 한글 1자 ≈ 1.8–2.3 tokens (GPT-4o). targetChars 2배 정도 + JSON 오버헤드 여유분.
-      max_tokens: Math.min(4096, Math.round(targetChars * 2.5) + 200),
-    });
-
-    const raw = result.choices?.[0]?.message?.content || "{}";
-    let parsed: { body?: string };
-    try {
-      parsed = JSON.parse(raw);
-    } catch {
-      return NextResponse.json(
-        { ok: false, error: "GPT 응답 JSON 파싱 실패", raw: raw.slice(0, 500) },
-        { status: 502 },
-      );
+    const preferOpenAI = (process.env.TEXT_PROVIDER || "").toLowerCase() === "openai";
+    const blogOrder: ("gemini" | "openai")[] = preferOpenAI ? ["openai", "gemini"] : ["gemini", "openai"];
+    let lastMsg = "";
+    let lastStatus = 500;
+    for (const provider of blogOrder) {
+      try {
+        if (provider === "gemini") {
+          if (!geminiTextConfigured()) continue;
+          const g = await geminiGenerateJson({ system: systemPrompt, user: userPrompt });
+          const b = (((g.json as { body?: string })?.body) ?? "").trim();
+          if (!b) throw new Error("Gemini body 비었음");
+          bodyText = b; blogSource = "gemini"; blogModel = g.model; geminiCost = g.costUsd; usedGemini = true;
+          break;
+        } else {
+          if (placeholder) continue; // OpenAI 키 없음
+          const result = await openai.chat.completions.create({
+            model,
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt },
+            ],
+            response_format: { type: "json_object" },
+            temperature: 0.7,
+            max_tokens: Math.min(4096, Math.round(targetChars * 2.5) + 200),
+          });
+          const raw = result.choices?.[0]?.message?.content || "{}";
+          const parsed = JSON.parse(raw) as { body?: string };
+          const b = (parsed.body ?? "").trim();
+          if (!b) throw new Error("본문(body)이 비었습니다");
+          bodyText = b; blogSource = "openai"; blogModel = model; firstUsage = result.usage || {};
+          break;
+        }
+      } catch (e) {
+        const err = e as { error?: { message?: string }; message?: string; status?: number; code?: number };
+        lastMsg = err?.error?.message || err?.message || String(e);
+        lastStatus = err?.status || err?.code || 500;
+        console.error("[blog-gen]", provider, lastStatus, lastMsg.slice(0, 120));
+      }
     }
-
-    let bodyText = (parsed.body ?? "").trim();
     if (!bodyText) {
-      return NextResponse.json(
-        { ok: false, error: "본문(body)이 비었습니다", raw: raw.slice(0, 500) },
-        { status: 502 },
-      );
+      return NextResponse.json({ ok: false, error: lastMsg || "본문 생성 실패" }, { status: lastStatus });
     }
 
     // 자동 확장 — 첫 응답이 목표의 70% 미만이면 한 번만 retry 로 늘림
@@ -463,7 +483,8 @@ ${buildViralMandate({ voice, platform: "naver" })}`;
     let initialCharCount = bodyText.replace(/\s+/g, "").length;
     let expandedOnce = false;
     let secondUsage: { prompt_tokens?: number; completion_tokens?: number } = {};
-    if (initialCharCount < minChars) {
+    // Gemini 로 생성된 경우 OpenAI 확장(쿼터 소진 위험) 건너뜀 — Gemini 본문은 그대로 사용
+    if (!usedGemini && initialCharCount < minChars) {
       try {
         const expandRes = await openai.chat.completions.create({
           model,
@@ -567,20 +588,20 @@ ${buildViralMandate({ voice, platform: "naver" })}`;
     }
 
     const latencyMs = Date.now() - startedAt;
-    const usage = result.usage || ({} as { prompt_tokens?: number; completion_tokens?: number });
-    const totalPromptTokens = (usage.prompt_tokens || 0) + (secondUsage.prompt_tokens || 0);
-    const totalCompletionTokens = (usage.completion_tokens || 0) + (secondUsage.completion_tokens || 0);
+    const totalPromptTokens = (firstUsage.prompt_tokens || 0) + (secondUsage.prompt_tokens || 0);
+    const totalCompletionTokens = (firstUsage.completion_tokens || 0) + (secondUsage.completion_tokens || 0);
     const r = RATES[model] || RATES["gpt-4o"];
-    const costUsd =
-      (totalPromptTokens * r.in + totalCompletionTokens * r.out) / 1_000_000;
+    const costUsd = usedGemini
+      ? geminiCost
+      : (totalPromptTokens * r.in + totalCompletionTokens * r.out) / 1_000_000;
 
     return NextResponse.json({
       ok: true,
       body: bodyText,
       flagged,
       meta: {
-        source: "openai",
-        model,
+        source: blogSource,
+        model: blogModel,
         perspective,
         charCount: bodyText.replace(/\s+/g, "").length,
         initialCharCount,
