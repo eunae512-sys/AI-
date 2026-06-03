@@ -1403,22 +1403,36 @@ export function ReelsScreen() {
                         onKeyDown={(e) => {
                           if (e.key === "Escape") setEditingCaption(false);
                         }}
-                        className="w-full text-2xl font-bold leading-tight bg-black/55 backdrop-blur text-white p-1.5 rounded outline-none ring-1 ring-white/60 resize-none"
+                        className="w-full text-center leading-snug bg-black/55 backdrop-blur text-white p-2 rounded-2xl outline-none ring-1 ring-white/60 resize-none"
+                        style={{ fontWeight: 800, fontSize: "26px", letterSpacing: "-0.02em" }}
                       />
                     ) : (
                       <button
                         type="button"
                         onClick={() => currentCut && setEditingCaption(true)}
-                        className="block w-full text-left text-2xl font-bold leading-tight drop-shadow-lg hover:bg-black/20 rounded transition-colors px-0.5 py-0.5"
+                        className="block w-full text-center"
                         title={currentCut ? "자막 편집 (Esc 종료)" : ""}
                       >
-                        {currentCaption}
-                        {currentCut && (
-                          <Pencil className="inline-block ml-1.5 h-3 w-3 opacity-50 align-baseline" />
-                        )}
+                        {/* 컴파일 .mp4 자막과 동일한 결 — 굵게 + 다크 아웃라인 + 둥근 백드롭 카드 */}
+                        <span
+                          className="inline-block max-w-full rounded-2xl bg-black/30 px-4 py-2.5 leading-snug hover:bg-black/40 transition-colors"
+                          style={{
+                            fontWeight: 800,
+                            fontSize: "26px",
+                            letterSpacing: "-0.02em",
+                            textShadow:
+                              "0 1px 0 rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.55), 0 0 1px rgba(0,0,0,0.85)",
+                            WebkitTextStroke: "0.5px rgba(0,0,0,0.5)",
+                          }}
+                        >
+                          {currentCaption}
+                          {currentCut && (
+                            <Pencil className="inline-block ml-1.5 h-3 w-3 opacity-50 align-baseline" />
+                          )}
+                        </span>
                       </button>
                     )}
-                    <div className="mt-2 text-xs opacity-90 drop-shadow">{detail?.hero.tagline ?? brand.campaign}</div>
+                    <div className="mt-2 text-center text-xs opacity-90 drop-shadow">{detail?.hero.tagline ?? brand.campaign}</div>
                   </motion.div>
                   )}
 

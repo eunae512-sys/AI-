@@ -106,7 +106,7 @@ export function parseTrendStyle(format?: string): TrendStyle | null {
 }
 
 const DEFAULT_STYLE: TrendStyle = {
-  cutDurationMs: 1200,
+  cutDurationMs: 1700, // 기본 컷 속도 — 차분하고 고급스러운 페이스
   zoomIntensity: 0.06,
   panIntensity: 0.015,
   fadeInRatio: 0.18,
@@ -281,7 +281,8 @@ export async function compileReelsVideo(opts: CompileOptions): Promise<CompileRe
     ...DEFAULT_STYLE,
     cutDurationMs: opts.cutDurationMs ?? DEFAULT_STYLE.cutDurationMs,
   };
-  const cutDurationMs = activeStyle.cutDurationMs;
+  // 컷이 너무 빨리 넘어가 보인다는 피드백 → 최소 1.5초 floor (어떤 스타일이든 적용).
+  const cutDurationMs = Math.max(1500, activeStyle.cutDurationMs);
 
   if (photos.length === 0) throw new Error("사진이 없습니다");
 
@@ -583,42 +584,63 @@ function drawFrame(
   const caption = photo.caption || "";
   if (caption) {
     const captionEnter = Math.min(1, cutProgress / Math.max(0.001, style.fadeInRatio));
-    const slideY = (1 - captionEnter) * 22 * sizeScale;
+    const slideY = (1 - captionEnter) * 18 * sizeScale;
     const captionAlpha = captionEnter;
 
     const isShortHook = caption.length <= 18 && !caption.includes("\n");
     const useSerif = isShortHook;
 
+    // 더 크고 굵게 — 프리미엄 무비 자막 결
     const baseCaptionPx = useSerif
-      ? 64 * style.captionFontScale  // serif 큰 후크
-      : 40 * style.captionFontScale; // sans 중간 본문
+      ? 68 * style.captionFontScale  // serif 큰 후크
+      : 46 * style.captionFontScale; // sans 본문
+    const weight = useSerif ? 600 : 800;
 
     const fontDecl = useSerif
-      ? `italic 500 ${Math.round(baseCaptionPx * sizeScale)}px ${serifFontFamily}`
-      : `500 ${Math.round(baseCaptionPx * sizeScale)}px ${fontFamily}`;
+      ? `italic ${weight} ${Math.round(baseCaptionPx * sizeScale)}px ${serifFontFamily}`
+      : `${weight} ${Math.round(baseCaptionPx * sizeScale)}px ${fontFamily}`;
 
     ctx.font = fontDecl;
     ctx.textAlign = "center";
     ctx.textBaseline = "alphabetic";
 
-    const maxWidth = width * 0.82;
-    const lineHeight = (baseCaptionPx + (useSerif ? 8 : 10)) * sizeScale;
+    const maxWidth = width * 0.84;
+    const lineHeight = (baseCaptionPx + (useSerif ? 6 : 12)) * sizeScale;
     const lines = wrapKoreanText(ctx, caption, maxWidth);
     const totalTextHeight = lines.length * lineHeight;
-    // 자막 위치: 하단 18% 라인 위 (palette strip 와 안 겹치게)
-    const baseY = height * 0.83 - totalTextHeight / 2 + lineHeight + slideY;
+    const baseY = height * 0.82 - totalTextHeight / 2 + lineHeight + slideY;
 
-    // hairline strip — 카피 위에 작은 가로선 (매거진 디바이더)
-    ctx.fillStyle = `rgba(255, 255, 255, ${captionAlpha * 0.55})`;
-    ctx.fillRect(width / 2 - 18 * sizeScale, baseY - lineHeight - 16 * sizeScale, 36 * sizeScale, Math.max(1, sizeScale));
+    // ── 가독성 백드롭 — 가장 넓은 줄 기준 둥근 패널(아주 옅게, 고급 자막 카드 느낌) ──
+    let widest = 0;
+    for (const line of lines) widest = Math.max(widest, ctx.measureText(line).width);
+    const padX = 30 * sizeScale;
+    const padTop = 20 * sizeScale;
+    const panelW = Math.min(width * 0.94, widest + padX * 2);
+    const panelX = width / 2 - panelW / 2;
+    const panelTop = baseY - lineHeight + (useSerif ? 16 : 10) * sizeScale - padTop;
+    const panelH = totalTextHeight + padTop * 1.7;
+    ctx.save();
+    ctx.globalAlpha = captionAlpha;
+    ctx.fillStyle = "rgba(8,8,10,0.32)";
+    roundRectPath(ctx, panelX, panelTop, panelW, panelH, 22 * sizeScale);
+    ctx.fill();
+    ctx.restore();
 
-    // 카피 자체 — 옅은 그림자 (drop-shadow 보다 부드럽게)
-    ctx.shadowColor = "rgba(0,0,0,0.55)";
-    ctx.shadowBlur = 14 * sizeScale;
-    ctx.fillStyle = `rgba(255, 255, 255, ${captionAlpha})`;
+    // ── 카피 — 굵게 + 다크 아웃라인 + 부드러운 그림자 (busy 사진 위에서도 또렷) ──
+    ctx.save();
+    ctx.globalAlpha = captionAlpha;
+    ctx.lineJoin = "round";
+    ctx.shadowColor = "rgba(0,0,0,0.5)";
+    ctx.shadowBlur = 12 * sizeScale;
+    ctx.strokeStyle = "rgba(0,0,0,0.5)";
+    ctx.lineWidth = Math.max(2, baseCaptionPx * 0.07 * sizeScale);
+    ctx.fillStyle = "#ffffff";
     lines.forEach((line, i) => {
-      ctx.fillText(line, width / 2, baseY + i * lineHeight);
+      const y = baseY + i * lineHeight;
+      ctx.strokeText(line, width / 2, y);
+      ctx.fillText(line, width / 2, y);
     });
+    ctx.restore();
     ctx.shadowBlur = 0;
   }
 
@@ -633,6 +655,25 @@ function drawFrame(
       ctx.fillRect(i * swatchW, stripY, swatchW + 1, stripH);
     }
   }
+}
+
+// 둥근 사각형 path — 자막 백드롭 (ctx.roundRect 미지원 환경 대비 수동 구현)
+function roundRectPath(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+): void {
+  const rad = Math.max(0, Math.min(r, w / 2, h / 2));
+  ctx.beginPath();
+  ctx.moveTo(x + rad, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rad);
+  ctx.arcTo(x + w, y + h, x, y + h, rad);
+  ctx.arcTo(x, y + h, x, y, rad);
+  ctx.arcTo(x, y, x + w, y, rad);
+  ctx.closePath();
 }
 
 // easing 함수 — Ken Burns 줌에 적용
