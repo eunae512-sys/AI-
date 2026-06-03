@@ -693,8 +693,9 @@ export function ReelsScreen() {
         topic: HOOKS[activeHook] ?? brand.campaign,
         campaignHeadline: brand.campaign,
         signatureMenu: isUserBrand ? userBrand?.signatureMenu : undefined,
+        mood: brand.mood, // 가입 시 정한 무드 → 영상 톤 반영
       });
-      const prompt = `Cinematic vertical 9:16 short-form reel b-roll. ${sceneKw}. Smooth slow camera motion, shallow depth of field, soft natural light, editorial food/lifestyle mood. No on-screen text, no captions, no logos.`;
+      const prompt = `Cinematic vertical 9:16 short-form reel b-roll. ${sceneKw}. Smooth slow camera motion, shallow depth of field, lighting and color grade matching the brand's visual mood above. No on-screen text, no captions, no logos.`;
       // 업로드 사진이 원격(http) 이면 image-to-video 시드로 — 브랜드 일관성
       const firstHttp = uploadedPhotos.find((p) => /^https?:/.test(p.url));
 

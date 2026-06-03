@@ -126,6 +126,7 @@ export function CampaignDraftCard({ index, draft, brand, onApprove, onSkip }: Pr
                   industry={brand.industry}
                   campaignHeadline={draft.headline}
                   signatureMenu={signatureMenu}
+                  mood={brand.mood}
                 />
                 <p className="mt-3 text-[11.5px] text-zinc-500 leading-relaxed">
                   <span className="text-[10px] tracking-[0.15em] uppercase text-zinc-400 mr-2">릴스 캡션</span>

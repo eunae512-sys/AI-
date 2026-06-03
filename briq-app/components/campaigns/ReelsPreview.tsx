@@ -22,9 +22,11 @@ type Props = {
   campaignHeadline?: string;
   /** 사장님 시그니처 메뉴/상품 — 사전 매칭 (갈비찜·콜드브루·딸기 케이크 등) */
   signatureMenu?: string[];
+  /** 가입 시 정한 브랜드 무드 — 영상 톤(라이팅·채도)에 반영 */
+  mood?: string;
 };
 
-export function ReelsPreview({ clip: initial, title, handle, industry, campaignHeadline, signatureMenu }: Props) {
+export function ReelsPreview({ clip: initial, title, handle, industry, campaignHeadline, signatureMenu, mood }: Props) {
   const [clip, setClip] = React.useState<ReelsClip>(initial);
   const [playing, setPlaying] = React.useState(true);
   const [muted, setMuted] = React.useState(true);
@@ -89,7 +91,7 @@ export function ReelsPreview({ clip: initial, title, handle, industry, campaignH
     async (opts?: { queryOverride?: string }) => {
       setFetching(true);
       try {
-        const query = opts?.queryOverride ?? initial.videoQuery ?? buildVideoQuery({ industry, title, campaignHeadline, signatureMenu });
+        const query = opts?.queryOverride ?? initial.videoQuery ?? buildVideoQuery({ industry, title, campaignHeadline, signatureMenu, mood });
         const r = await fetch("/api/search-pexels-video", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -127,7 +129,7 @@ export function ReelsPreview({ clip: initial, title, handle, industry, campaignH
         setFetching(false);
       }
     },
-    [industry, title, campaignHeadline, signatureMenu, initial.videoQuery],
+    [industry, title, campaignHeadline, signatureMenu, mood, initial.videoQuery],
   );
 
   // ── AI 영상 생성 (프리미엄) — submit 후 5초 간격 폴링 ──
@@ -136,7 +138,7 @@ export function ReelsPreview({ clip: initial, title, handle, industry, campaignH
     setAiStatus("working");
     setAiNotice("AI 영상 생성 중… (최대 2-3분 소요)");
     try {
-      const prompt = buildVideoQuery({ industry, title, campaignHeadline, signatureMenu });
+      const prompt = buildVideoQuery({ industry, title, campaignHeadline, signatureMenu, mood });
       // 커버 사진이 http 면 image-to-video 시드로 — 브랜드 일관성
       const posterImageUrl =
         clip.poster && clip.poster.startsWith("http") ? clip.poster : undefined;
@@ -199,7 +201,7 @@ export function ReelsPreview({ clip: initial, title, handle, industry, campaignH
       setAiStatus("error");
       setAiNotice("AI 영상 생성 중 오류가 발생했어요.");
     }
-  }, [industry, title, campaignHeadline, signatureMenu, clip.poster]);
+  }, [industry, title, campaignHeadline, signatureMenu, mood, clip.poster]);
 
   // 언마운트 / clip 교체 시 진행 중 폴링 중단
   React.useEffect(() => {
@@ -664,11 +666,13 @@ function buildVideoQuery(opts: {
   title?: string;
   campaignHeadline?: string;
   signatureMenu?: string[];
+  mood?: string;
 }): string {
   return buildVideoQueryDetailed({
     industry: opts.industry as Parameters<typeof buildVideoQueryDetailed>[0]["industry"],
     topic: opts.title,
     campaignHeadline: opts.campaignHeadline,
     signatureMenu: opts.signatureMenu,
+    mood: opts.mood as Parameters<typeof buildVideoQueryDetailed>[0]["mood"],
   });
 }

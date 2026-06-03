@@ -12,6 +12,8 @@ export type Brand = {
   brandColors: { primary: string; secondary: string };
   gradient: string;
   campaign: string;
+  /** 가입 시 정한 비주얼 무드 — 이미지·영상 생성 톤에 반영 */
+  mood?: Mood;
   followers: number;
   saveRate: number;
   reachThisMonth: number;

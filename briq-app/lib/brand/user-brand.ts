@@ -85,6 +85,8 @@ export function toBrand(u: UserBrandData): Brand {
     brandColors: { primary, secondary },
     gradient: gradientFromPalette(u.palette),
     campaign: `${u.moodTag} · 첫 캠페인`,
+    // 가입 시 정한 무드 → 생성기(이미지/영상 톤)가 읽도록 Brand 에 실어 보냄
+    mood: (u.moodId as Brand["mood"]) ?? "warm",
     followers: 0,
     saveRate: 0,
     reachThisMonth: 0,

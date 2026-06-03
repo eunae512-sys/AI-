@@ -609,25 +609,38 @@ function imageQueryFor(role: SlideRole, ctx: Ctx): string {
     stay: "warm hanok stay interior",
     local: "neighborhood boutique interior",
   };
-  const tail = "editorial magazine, natural window light, soft warm tone, shallow depth of field, candid, film aesthetic, no people";
+  // 가입 시 정한 무드 → 비주얼 스타일(이미지 톤). mood 누락 시 warm 폴백.
+  const moodStyle = MOOD_IMAGE_STYLE[ctx.brand.mood ?? "warm"] ?? MOOD_IMAGE_STYLE.warm;
+  const tail = `${moodStyle}, editorial magazine, shallow depth of field, film aesthetic, no people`;
   const industrySubject = industryScene[ctx.brand.industry as Industry] ?? industryScene.restaurant;
   const topicSubject = translateSubject(ctx.t.subject);
   // 토픽이 industry 와 같은 결이면 industry scene 만 사용, 다르면 토픽 우선
   const subject = topicSubject !== ctx.t.subject ? `${topicSubject}, ${industrySubject}` : industrySubject;
 
+  // 역할별 구도만 지정 — 톤/분위기는 mood(tail)가 결정하도록 고정 톤 단어 제거
   switch (role) {
     case "hook":
-      return `${subject} hero overhead composition, dramatic editorial mood, ${tail}`;
+      return `${subject} hero overhead composition, ${tail}`;
     case "problem":
-      return `empty ${subject} corner, soft afternoon shadow, contemplative quiet mood, ${tail}`;
+      return `${subject} quiet corner, ${tail}`;
     case "value":
-      return `${subject} detail close up, hands texture moment, ${tail}`;
+      return `${subject} detail close up, hands texture, ${tail}`;
     case "proof":
-      return `warm intimate ${subject} scene, candid atmosphere, ${tail}`;
+      return `${subject} intimate scene, candid, ${tail}`;
     case "cta":
-      return `welcoming entrance ${subject}, golden hour glow, editorial closing shot, ${tail}`;
+      return `${subject} welcoming entrance, ${tail}`;
   }
 }
+
+// 무드 → 이미지 비주얼 스타일 (가입 시 선택한 결을 Pexels/AI 이미지 톤에 반영)
+const MOOD_IMAGE_STYLE: Record<string, string> = {
+  warm: "warm golden hour light, cozy inviting, soft natural light",
+  modern: "clean minimal, bright airy, crisp high-key, modern editorial",
+  moody: "moody cinematic, low-key lighting, deep shadows, dramatic dark tone",
+  playful: "bright vivid colors, playful energetic, high saturation",
+  natural: "organic natural textures, earthy muted tone, raw daylight, candid",
+  luxury: "elegant refined, sophisticated, premium rich contrast, luxurious",
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 캡션 / 해시태그 / 예상 지표 — 변형 풀

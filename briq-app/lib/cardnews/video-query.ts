@@ -158,6 +158,17 @@ const MOOD_KO_EN: Record<string, string> = {
   활기: "lively bright",
 };
 
+// 가입 시 정한 브랜드 무드(Brand["mood"]) → 영상 비주얼 키워드.
+// 토픽에서 추출한 mood 와 별개로, 브랜드가 가진 결을 강제 반영.
+const MOOD_VIDEO_EN: Record<string, string> = {
+  warm: "warm golden cozy light",
+  modern: "minimal bright clean modern",
+  moody: "moody cinematic low light dramatic",
+  playful: "vivid colorful playful lively",
+  natural: "natural organic daylight earthy",
+  luxury: "elegant luxurious refined",
+};
+
 // 산업 → 기본 영문 컨텍스트 (시중 카드뉴스 톤 학습 기반)
 const INDUSTRY_VIDEO_CONTEXT: Record<string, string> = {
   restaurant: "korean fine dining traditional table plating chef hands",
@@ -242,6 +253,8 @@ export function buildVideoQueryDetailed(opts: {
   campaignHeadline?: string;
   /** 사장님 시그니처 메뉴/상품 — 사전 매칭 시 영상에 정밀 반영 */
   signatureMenu?: string[];
+  /** 가입 시 정한 브랜드 무드 — 영상 톤(라이팅·채도)에 반영 */
+  mood?: Brand["mood"];
   /** 명시적 영문 keyword 가 있으면 그것 우선 (caller 가 결정한 시드) */
   seedQuery?: string;
 }): string {
@@ -296,6 +309,9 @@ export function buildVideoQueryDetailed(opts: {
   // 3. 시즌/시간 — 매칭 있으면 짧게 추가
   if (tokens.season.length > 0) parts.push(tokens.season[0]);
   if (tokens.time.length > 0 && tokens.season.length === 0) parts.push(tokens.time[0]);
+
+  // 3.5 브랜드 무드 — 가입 시 정한 결을 라이팅/채도로 반영 (10단어 한도 전에 우선 배치)
+  if (opts.mood && MOOD_VIDEO_EN[opts.mood]) parts.push(MOOD_VIDEO_EN[opts.mood]);
 
   // 4. 톤 (vertical 포함, editorial minimal aesthetic 자동)
   parts.push(INDUSTRY_VIDEO_TONE[industry] ?? "editorial vertical");
