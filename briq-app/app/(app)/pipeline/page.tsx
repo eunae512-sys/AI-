@@ -14,7 +14,7 @@ const DIRECT_EDIT = [
   { href: "/cardnews", label: "카드뉴스 직접 편집" },
   { href: "/reels", label: "릴스 직접 편집" },
   { href: "/blog", label: "블로그 직접 작성" },
-  { href: "/shorts", label: "쇼츠 직접 편집" },
+  { href: "/shorts", label: "플랫폼별 홍보 카피 생성" },
   { href: "/threads", label: "쓰레드 직접 작성" },
 ];
 
