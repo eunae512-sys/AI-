@@ -861,7 +861,7 @@ export function ReelsScreen() {
             disabled={status !== "done" || compiling}
             className="flex-1 sm:flex-initial"
           >
-            <RefreshCw className="h-3.5 w-3.5" />변형 생성
+            <RefreshCw className="h-3.5 w-3.5" />자막 새로 추천
           </Button>
           <Button
             size="sm"
@@ -1024,134 +1024,7 @@ export function ReelsScreen() {
         );
       })()}
 
-      {/* 이번주 인기 릴스 스타일 — 실제 Pexels Video 자동 재생 + 클릭 1회 적용 */}
-      {weeklyVideos.length > 0 && (
-        <Card className="p-4 sm:p-5 mb-4">
-          <div className="flex items-end justify-between gap-3 mb-3 flex-wrap">
-            <div className="min-w-0">
-              <div className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] text-violet-600 dark:text-violet-400 font-semibold">
-                REFERENCE · POPULAR REEL FORMATS
-              </div>
-              <h3 className="text-sm font-semibold mt-1">참고 — 잘 되는 릴스 포맷</h3>
-              <p className="text-[11px] text-zinc-500 mt-0.5">
-                {brand.industryLabel} · 카드 탭하면 <span className="text-violet-700 dark:text-violet-300 font-semibold">컷 속도·줌·자막 + AI BGM·출연자까지 한 번에 매칭</span>됩니다
-              </p>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <a
-                href="https://www.pexels.com/license/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[10px] px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-semibold hover:bg-emerald-500/15 transition-colors"
-                title="Pexels License — 상업 사용 가능 · 출처 표기 의무 없음"
-              >
-                Pexels License · 상업 OK
-              </a>
-              <span className="text-[10px] text-zinc-500">⇆ 좌우</span>
-            </div>
-          </div>
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scrollbar-thin">
-            {weeklyVideos.map((w, i) => {
-              const isApplied =
-                appliedTrend &&
-                w.videoUrl &&
-                appliedTrend.videoUrl === w.videoUrl;
-              return (
-                <button
-                  key={w.id}
-                  type="button"
-                  onClick={() => applyWeekly(i)}
-                  disabled={w.status !== "ready"}
-                  className="shrink-0 w-32 sm:w-36 snap-start text-left disabled:opacity-60 group"
-                >
-                  <div
-                    className={`relative aspect-[9/16] rounded-xl overflow-hidden bg-zinc-200 dark:bg-zinc-800 transition-all ${
-                      isApplied
-                        ? "ring-2 ring-violet-500"
-                        : "ring-1 ring-zinc-200 dark:ring-zinc-800 group-hover:ring-zinc-400 dark:group-hover:ring-zinc-600"
-                    }`}
-                  >
-                    {w.status === "ready" && w.videoUrl && (
-                      <video
-                        src={w.videoUrl}
-                        poster={w.posterUrl}
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                        preload="metadata"
-                        className="absolute inset-0 h-full w-full object-cover"
-                      />
-                    )}
-                    {w.status === "loading" && (
-                      <div className="absolute inset-0 grid place-items-center bg-black/15">
-                        <Loader2 className="h-4 w-4 animate-spin text-white" />
-                      </div>
-                    )}
-                    {w.status === "error" && (
-                      <div className="absolute inset-0 grid place-items-center text-[9px] text-zinc-500 text-center px-2">
-                        영상 불러오기 실패
-                      </div>
-                    )}
-
-                    {/* legibility gradient */}
-                    <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/75 to-transparent pointer-events-none" />
-                    <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-black/40 to-transparent pointer-events-none" />
-
-                    {/* badges — 카테고리 (디테일/공간/포트레이트 등) — 가짜 '저장 증가율' 대체 */}
-                    <div className="absolute top-1.5 left-1.5 text-[9px] font-bold bg-zinc-900/80 text-white px-1.5 py-0.5 rounded shadow-sm backdrop-blur">
-                      {w.format.split("·")[0]?.trim() || "포맷"}
-                    </div>
-                    {w.duration && (
-                      <div className="absolute top-1.5 right-1.5 text-[9px] bg-black/55 text-white px-1.5 py-0.5 rounded backdrop-blur tabular-nums">
-                        {Math.round(w.duration)}s
-                      </div>
-                    )}
-                    {isApplied && (
-                      <div className="absolute inset-0 grid place-items-center bg-violet-900/45">
-                        <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-white bg-violet-600 px-2 py-1 rounded">
-                          적용됨
-                        </span>
-                      </div>
-                    )}
-
-                    {/* title bottom */}
-                    <div className="absolute inset-x-0 bottom-0 p-2">
-                      <div className="text-white text-[11px] font-semibold leading-tight drop-shadow line-clamp-2">
-                        {w.title}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-1.5 px-0.5">
-                    <div className="text-[10px] text-zinc-500 truncate">{w.format}</div>
-                    {(() => {
-                      const sg = suggestForWeeklyStyle({ title: w.title, format: w.format });
-                      return (
-                        <div className="mt-1 flex items-center gap-1 flex-wrap">
-                          <span className="inline-flex items-center gap-0.5 text-[9px] text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-500/10 px-1 py-0.5 rounded">
-                            <Music className="h-2 w-2" />
-                            {sg.musicMoodLabel}
-                          </span>
-                          <span className="inline-flex items-center gap-0.5 text-[9px] text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/10 px-1 py-0.5 rounded">
-                            <UserCircle2 className="h-2 w-2" />
-                            {sg.sceneRoleLabel}
-                          </span>
-                        </div>
-                      );
-                    })()}
-                    {w.photographer && (
-                      <div className="text-[9px] text-zinc-400 truncate mt-0.5">Pexels · {w.photographer}</div>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-          <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800 text-[10.5px] text-zinc-500 leading-relaxed">
-            카드 1회 탭 → 영상 합성에 <b>컷 속도·줌·자막</b> 자동 반영 + <b>AI BGM 무드·출연자 씬</b>이 위 배너에 추천으로 떠요.
-          </div>
-        </Card>
-      )}
+      {/* 참고 릴스 포맷 그리드 제거 — 핵심 흐름(업로드→자막→BGM→영상) 집중 */}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
         {/* Left - controls (mobile: order-2 so preview is shown first) */}
@@ -1483,24 +1356,43 @@ export function ReelsScreen() {
             <div className="absolute -inset-8 -z-10 rounded-full bg-gradient-to-br from-rose-300/20 via-violet-400/20 to-indigo-400/20 blur-3xl" />
           </div>
 
-          {/* Cut nav */}
-          {uploadedPhotos.length > 0 && (
-            <div className="mt-4 flex items-center gap-2 text-xs">
-              <button
-                onClick={() => stepCut(-1)}
-                className="px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900"
-              >
-                ◀ 이전 컷
-              </button>
-              <span className="tabular-nums text-zinc-500">
-                {cutIdx + 1} / {uploadedPhotos.length}
-              </span>
-              <button
-                onClick={() => stepCut(1)}
-                className="px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900"
-              >
-                다음 컷 ▶
-              </button>
+          {/* Cut 썸네일 스트립 — 모든 컷을 한눈에, 탭하면 그 컷으로 이동 + 자막 바로 편집 */}
+          {uploadedPhotos.length > 0 && !compiled && (
+            <div className="mt-4 w-full max-w-[420px]">
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+                  컷 {cutIdx + 1} / {uploadedPhotos.length}
+                  <span className="ml-1.5 text-[10px] font-normal text-zinc-400">썸네일을 눌러 자막 편집</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button onClick={() => stepCut(-1)} aria-label="이전 컷" className="h-6 w-6 grid place-items-center rounded-md border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 text-zinc-500">◀</button>
+                  <button onClick={() => stepCut(1)} aria-label="다음 컷" className="h-6 w-6 grid place-items-center rounded-md border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 text-zinc-500">▶</button>
+                </div>
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-thin">
+                {uploadedPhotos.map((p, i) => {
+                  const on = i === cutIdx;
+                  return (
+                    <button
+                      key={`${p.url.slice(-12)}-${i}`}
+                      type="button"
+                      onClick={() => { setCutIdx(i); setEditingCaption(true); }}
+                      title={p.caption || `컷 ${i + 1}`}
+                      className={`group relative shrink-0 w-12 aspect-[9/16] rounded-lg overflow-hidden transition-all ${
+                        on ? "ring-2 ring-violet-500" : "ring-1 ring-zinc-200 dark:ring-zinc-800 hover:ring-zinc-400"
+                      }`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={p.url} alt={`컷 ${i + 1}`} className="absolute inset-0 h-full w-full object-cover" />
+                      <span className="absolute inset-x-0 bottom-0 h-7 bg-gradient-to-t from-black/80 to-transparent" />
+                      <span className="absolute bottom-0.5 left-0 right-0 text-center text-[8px] leading-tight text-white/95 px-0.5 line-clamp-2 drop-shadow">
+                        {(p.caption || "").split("\n")[0] || "자막 없음"}
+                      </span>
+                      <span className="absolute top-0.5 left-0.5 text-[8px] font-bold text-white bg-black/55 rounded px-1 tabular-nums">{i + 1}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
 
