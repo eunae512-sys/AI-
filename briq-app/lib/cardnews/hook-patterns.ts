@@ -154,7 +154,7 @@ export const HOOK_PATTERNS_BY_TYPE: Record<HookPattern, ((c: HookCtx) => string)
     // 구체 숫자 → 권위·희소성
     (c) => `1년에 ${c.t.number ?? "60"}일,\n그 ${c.t.number ?? "60"}일이 시작됐습니다.`,
     (c) => `${c.v.city} ${c.v.catShort} 100곳 중,\n이 결을 갖춘 곳은 한 곳.`,
-    (c) => `${c.t.number ?? "3"}년 만에 다시 나오는\n${c.t.subject || c.v.signature}.`,
+    (c) => `1년에 딱 한 시즌,\n다시 돌아온 ${c.t.subject || c.v.signature}.`,
   ],
   question: [
     // 답을 찾아 슬라이드 넘김
@@ -176,7 +176,7 @@ export const HOOK_PATTERNS_BY_TYPE: Record<HookPattern, ((c: HookCtx) => string)
   ],
   twist: [
     // 의외성 → 호기심
-    (c) => `비싸 보였지만\n다음 주에 또 갔습니다. ${c.t.subject || c.v.signature}.`,
+    (c) => `비싸 보여 망설였다는 분도\n결국 다시 찾는 ${c.t.subject || c.v.signature}.`,
     (c) => `이 가격에 이게 된다고요?\n${c.v.city} ${c.v.catShort} 한 곳.`,
     (c) => `한 번 가본 분이\n조용히 또 다녀가시는 곳.`,
   ],
