@@ -158,7 +158,7 @@ function vocabFor(brand: Brand): Vocab {
     case "cafe":
       return { ...base,
         cat: brand.industryLabel, catShort: "카페", unit: "원두", unitPlural: "원두",
-        experienceWord: "한 잔", outcomePhrase: "잔에 담기는 풍미가 깊어집니다",
+        experienceWord: "한 잔", outcomePhrase: "잔에 향이 더 오래 남습니다",
         containerNoun: "잔", slot: "자리", slotBusyPhrase: "자리가 가장 빠르게 차는 시간",
         signature: "시즌 원두", process: "내리는",
         ingredientWord: "원두", customerWord: "손님", visitWord: "들르시는",
@@ -166,7 +166,7 @@ function vocabFor(brand: Brand): Vocab {
     case "dessert":
       return { ...base,
         cat: brand.industryLabel, catShort: "디저트", unit: "케이크", unitPlural: "디저트",
-        experienceWord: "한 접시", outcomePhrase: "단맛의 균형이 잡힙니다",
+        experienceWord: "한 접시", outcomePhrase: "단맛이 과하지 않게 떨어집니다",
         containerNoun: "접시", slot: "재고", slotBusyPhrase: "재고가 가장 빠르게 마감되는 시간",
         signature: "시즌 케이크", process: "굽는",
         ingredientWord: "재료", customerWord: "손님", visitWord: "찾으시는",
@@ -174,7 +174,7 @@ function vocabFor(brand: Brand): Vocab {
     case "beauty":
       return { ...base,
         cat: brand.industryLabel, catShort: "헤어", unit: "시술", unitPlural: "시술",
-        experienceWord: "한 시술", outcomePhrase: "결의 마무리가 또렷해집니다",
+        experienceWord: "한 시술", outcomePhrase: "결이 한결 자연스러워집니다",
         containerNoun: "세션", slot: "예약", slotBusyPhrase: "예약이 가장 빠르게 차는 시간",
         signature: "시즌 컬러", process: "잡는",
         ingredientWord: "결", customerWord: "고객", visitWord: "예약하시는",
@@ -182,7 +182,7 @@ function vocabFor(brand: Brand): Vocab {
     case "stay":
       return { ...base,
         cat: brand.industryLabel, catShort: "한옥스테이", unit: "1박", unitPlural: "1박",
-        experienceWord: "하루", outcomePhrase: "공간의 결이 살아납니다",
+        experienceWord: "하루", outcomePhrase: "방 안 공기가 달라집니다",
         containerNoun: "객실", slot: "객실", slotBusyPhrase: "객실이 가장 빠르게 차는 시즌",
         signature: "1박 패키지", process: "맞이하는",
         ingredientWord: "공간", customerWord: "손님", visitWord: "머무시는",
@@ -190,7 +190,7 @@ function vocabFor(brand: Brand): Vocab {
     case "local":
       return { ...base,
         cat: brand.industryLabel, catShort: "패션", unit: "룩", unitPlural: "룩",
-        experienceWord: "한 컷", outcomePhrase: "한 컷의 균형이 완성됩니다",
+        experienceWord: "한 컷", outcomePhrase: "핏이 몸에 자연스럽게 붙습니다",
         containerNoun: "착장", slot: "재고", slotBusyPhrase: "신상이 가장 빠르게 빠지는 시간",
         signature: "시즌 룩", process: "고르는",
         ingredientWord: "원단", customerWord: "고객", visitWord: "둘러보시는",
@@ -199,7 +199,7 @@ function vocabFor(brand: Brand): Vocab {
     default:
       return { ...base,
         cat: brand.industryLabel, catShort: "한정식", unit: "코스", unitPlural: "코스",
-        experienceWord: "한 끼", outcomePhrase: "한 상의 정성이 차려집니다",
+        experienceWord: "한 끼", outcomePhrase: "국물 맛이 한층 깊어집니다",
         containerNoun: "그릇", slot: "자리", slotBusyPhrase: "자리가 가장 빠르게 차는 시간",
         signature: "점심 코스", process: "다듬는",
         ingredientWord: "재료", customerWord: "단골", visitWord: "다녀가시는",
@@ -298,7 +298,7 @@ const HOOK_REVIEW: ((c: Ctx) => string)[] = [
   // 다녀간 분들 후기
   (c) => `${c.v.city} ${c.v.catShort},\n다녀간 분들 후기 한 줄로 모았습니다.`,
   // 정돈된 한 곳
-  (c) => `${c.v.city} ${c.v.catShort} 중,\n톤이 단단한 가게 한 줄 후기.`,
+  (c) => `${c.v.city} ${c.v.catShort},\n다녀간 분들이 비슷한 말을 해요.`,
   // 줄서는 이유
   (c) => `${c.v.city} ${c.v.catShort},\n다녀간 분들 말씀이 닿는 곳.`,
   // 입소문 후킹
@@ -390,30 +390,24 @@ function sourcingLine(c: Ctx): string {
 // 정책: 출처 없는 단정 숫자 ("새벽 4시 / 별점 4.9 / 재방문율 62%") 금지.
 //      산업 일반론 + 브랜드 입력 값 (saveRate · followers · reachThisMonth) 만 사용.
 const VALUE_POOL: ((c: Ctx) => string)[] = [
-  // 산지·신선 — 업종 인지 (무형 업종엔 산지 표현 금지)
+  // 산지·재료 — 업종 인지 (무형 업종엔 산지 표현 금지)
   (c) => sourcingLine(c),
-  (c) => `사장님이 직접 골라 ${c.v.process}\n${c.v.unit}, 그대로 내놓습니다.`,
-  // 정성 — 산업별 outcomePhrase
+  // 결과 — 산업별 구체 감각(outcomePhrase)
   (c) => `${c.v.experienceWord} ${c.v.process}\n시간만큼 ${c.v.outcomePhrase}.`,
-  (c) => `손에 닿는 시간만큼 다듬은 ${c.v.ingredientWord},\n그 이상은 더하지 않습니다.`,
-  // 조합·구성 — 산업별 containerNoun
-  (c) => `${c.v.signature} ${c.v.experienceWord}에\n사장님 손길이 자기 자리를 잡습니다.`,
-  (c) => `${c.v.customerWord}들이 가장 자주 다시 찾는\n조합, 그대로 묶었습니다.`,
-  // 사장님·운영
-  (c) => `${c.v.city}에서 같은 방식으로,\n매일 같은 시간에.`,
-  (c) => `사장님이 직접 ${c.v.process} ${c.v.unit},\n다른 손은 거치지 않습니다.`,
-  // 가격 — 단정 금액 제거, 채널 안내로
-  (c) => `${c.v.purchaseAction} 안내는\n${c.brand.name} 채널을 참고해 주세요.`,
-  (c) => `${c.v.signature} 정보는 채널 안내,\n${c.v.city}에서 단단한 가게입니다.`,
-  // 재방문 — 저장률 단정은 PROOF 슬라이드에서만(중복 방지)
-  (c) => `${c.v.customerWord} 중 다시 ${c.v.visitWord} 분이\n많은 가게입니다.`,
-  // 후기
-  (c) => `다녀가신 분 말씀,\n한 줄씩 그대로 옮깁니다.`,
-  // 시간대 — 산업별 분기 (단어 충돌 방지로 slotBusyPhrase 한 줄)
+  // 고집 — 클리셰 대신 단정한 한 줄
+  (c) => `남들 하는 방식 말고,\n여기 결대로 합니다.`,
+  (c) => `사장님 손 거친 ${c.v.signature},\n중간에 다른 손 안 탑니다.`,
+  // 시그니처
+  (c) => `${c.v.customerWord}들이 매번 다시 찾는 건\n따로 있습니다.`,
+  // 가격 — 단정 금액 제거, 채널 안내(자연스러운 구어)
+  (c) => `${c.v.purchaseAction} 가격은\n${c.brand.name} 채널에 다 적어뒀어요.`,
+  // 재방문 — 저장률 단정은 PROOF 에서만
+  (c) => `한 번 와본 분이\n조용히 다시 ${c.v.visitWord} 곳입니다.`,
+  // 시간대 — 산업별 분기
   (c) => `${c.v.slotBusyPhrase} —\n${c.t.timeWord ?? defaultBusyTime(c.brand.industry)}.`,
-  (c) => `${defaultQuietTime(c.brand.industry)}\n비교적 여유 있는 편입니다.`,
+  (c) => `붐비는 게 싫으면\n${defaultQuietTime(c.brand.industry)} 좋아요.`,
   // 시즌 한정
-  (c) => `${c.t.timeWord ?? "이번 시즌"}에만 가능한 ${c.t.subject || c.v.signature},\n다음은 한 시즌 뒤에 다시 만납니다.`,
+  (c) => `${c.t.timeWord ?? "이번 시즌"} 한정이라\n지금 아니면 만나기 어려워요.`,
 ];
 
 // 산업별 시간대 기본값 — 모든 산업에 "주말 점심" 박는 식당-편향 제거
@@ -445,7 +439,7 @@ const VALUE_SEASON_POOL: ((c: Ctx) => string)[] = [
   (c) => `남은 ${c.v.slot},\n생각보다 빠르게 마감되는 ${c.t.timeWord ?? "시즌"}입니다.`,
   (c) => `${c.t.timeWord ?? "이번 시즌"}에만 여는 구성,\n지나면 다음 시즌에 다시 만나요.`,
   (c) => `${은(c.v.purchaseAction)} DM 'OPEN' 한 글자,\n또는 댓글로 인원만.`,
-  (c) => `${c.v.visitWord} 분,\n매년 ${c.v.customerWord} 먼저 모십니다.`,
+  (c) => `매년 다시 ${c.v.visitWord} 분부터\n먼저 모십니다.`,
   (c) => `이번 ${c.t.timeWord ?? "시즌"}만 가능한\n${c.v.unitPlural} 조합 ${c.t.number ?? "4"}가지.`,
   (c) => `작년 ${c.t.timeWord ?? "이맘때"} 다녀가신 분,\n올해도 먼저 ${c.v.purchaseWord} 분이 많아요.`,
 ];
@@ -453,13 +447,12 @@ const VALUE_SEASON_POOL: ((c: Ctx) => string)[] = [
 // PROOF — 브랜드 자체 값 (saveRate · followers · reachThisMonth) 만 인용.
 // 정책: 출처 없는 단정 숫자 (별점 4.9 / 재방문율 62% / 검색 1위) 금지.
 const PROOF_POOL: ((c: Ctx) => string)[] = [
-  (c) => `이번 달 저장률 ${(c.brand.saveRate ?? 5.4).toFixed(1)}%,\n팔로워 ${Math.round((c.brand.followers ?? 8000) / 100) / 10}k와 함께.`,
-  (c) => `${c.v.purchaseWord} 분 중\n다시 ${c.v.visitWord} 분이 많은 가게입니다.`,
-  (c) => `${c.v.city} ${c.v.catShort} 이야기를\n채널에 한 줄씩 쌓아 가는 중.`,
-  (c) => `이번 달 누적 도달\n${Math.round((c.brand.reachThisMonth ?? 40000) / 1000)}k, 매주 톤이 또렷해지는 중.`,
-  (c) => `다녀가신 ${c.v.customerWord} 말씀,\n채널에 한 줄씩 그대로 옮깁니다.`,
-  (c) => `"같은 자리로 자주 들러요"\n— ${c.v.customerWord}의 한 줄.`,
-  (c) => `${c.v.city} ${c.v.catShort} 한 호흡,\n채널에 차곡차곡 쌓는 중입니다.`,
+  (c) => `이번 달 저장 ${(c.brand.saveRate ?? 5.4).toFixed(1)}%,\n팔로워 ${Math.round((c.brand.followers ?? 8000) / 100) / 10}k가 보고 있어요.`,
+  (c) => `${c.v.purchaseWord} 분 열에 몇은\n그달 안에 다시 옵니다.`,
+  (c) => `이번 달 ${Math.round((c.brand.reachThisMonth ?? 40000) / 1000)}k에게 닿았어요.\n대부분 ${c.v.city} 근처 분들.`,
+  (c) => `"또 올 것 같아요"\n— 지난주 ${c.v.customerWord} 한마디.`,
+  (c) => `"여기 알고 나선\n딴 데를 잘 안 가요" — ${c.v.customerWord} 후기.`,
+  (c) => `처음 오신 분도,\n세 번째 오신 분도 있는 곳이에요.`,
 ];
 
 // CTA — 캠페인 종류별 핵심 행동
@@ -654,16 +647,16 @@ const CAPTION_OPENERS: ((c: Ctx) => string)[] = [
 // 정책: 출처 없는 단정 숫자 (새벽 4시, 별점 4.9, 재방문율 62%) 금지. 브랜드 자체 값만 인용.
 const CAPTION_BODY_LINES: ((c: Ctx) => string)[] = [
   (c) => `· ${sourcingLine(c).replace(/\n/g, " ")}`,
-  (c) => `· ${c.v.process} 시간만큼 정성 — 그 이상은 더하지 않습니다.`,
-  (c) => `· 다시 ${c.v.visitWord} ${이(c.v.customerWord)} 많은 가게입니다.`,
-  (c) => `· ${이(c.v.customerWord)} 가장 자주 다시 찾는 조합, 그대로 묶었습니다.`,
+  (c) => `· ${c.v.experienceWord} ${c.v.process} 시간만큼 ${c.v.outcomePhrase}.`,
+  (c) => `· 한 번 와본 분이 조용히 다시 ${c.v.visitWord} 곳이에요.`,
+  (c) => `· ${이(c.v.customerWord)} 매번 다시 찾는 건 따로 있어요.`,
   (c) => `· ${c.v.slotBusyPhrase} — ${c.t.timeWord ?? defaultBusyTime(c.brand.industry)}.`,
-  (c) => `· 다녀가신 ${c.v.customerWord} 말씀, 한 줄씩 그대로 옮깁니다.`,
-  (c) => `· 사장님이 직접 ${c.v.process} ${c.t.subject || c.v.unit}, 같은 방식으로.`,
-  (c) => `· 단골이 다시 ${c.v.visitWord} 분이 많은 곳입니다.`,
-  (c) => `· ${은(c.v.purchaseAction)} ${c.v.purchaseAction === "예약" ? "프로필 링크나 댓글" : "DM이나 카카오톡"} — 빠르면 그날 응답.`,
-  (c) => `· ${c.v.purchaseAction} 가격은 ${c.brand.name} 채널 안내 참고.`,
-  (c) => `· ${c.t.timeWord ?? "이번 시즌"}만 가능한 ${c.t.subject || c.v.unit}, 다음은 한 시즌 뒤.`,
+  (c) => `· "또 올 것 같아요" — 지난주 ${c.v.customerWord} 한마디.`,
+  (c) => `· 남들 하는 방식 말고, 여기 결대로 합니다.`,
+  (c) => `· 붐비는 게 싫으면 ${defaultQuietTime(c.brand.industry)} 좋아요.`,
+  (c) => `· ${은(c.v.purchaseAction)} ${c.v.purchaseAction === "예약" ? "프로필 링크나 댓글" : "DM이나 카카오톡"}, 빠르면 그날 답해요.`,
+  (c) => `· ${c.v.purchaseAction} 가격은 ${c.brand.name} 채널에 적어뒀어요.`,
+  (c) => `· ${c.t.timeWord ?? "이번 시즌"} 지나면 ${c.t.subject || c.v.signature}, 내년에야 다시 나와요.`,
 ];
 
 function buildCaption(hook: string, ctaText: string, ctx: Ctx, seed: number): string {

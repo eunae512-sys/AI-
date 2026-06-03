@@ -166,7 +166,7 @@ export const HOOK_PATTERNS_BY_TYPE: Record<HookPattern, ((c: HookCtx) => string)
     // 청자에게 베푸는 톤
     (c) => `오늘만큼은 한 시간만 더,\n편히 머무시도록 자리 비워둡니다.`,
     (c) => `${c.t.timeWord ?? "이번 시즌"} 동안은,\n${c.v.customerWord}부터 먼저 안내드립니다.`,
-    (c) => `한 ${c.v.experienceWord},\n${c.v.process} 시간만큼 정성껏 차립니다.`,
+    (c) => `${c.v.experienceWord}, ${c.v.process} 시간은\n웬만하면 안 줄입니다.`,
   ],
   quote: [
     // 제3자 발화 인용 → 신뢰
