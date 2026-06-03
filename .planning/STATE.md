@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 Phase: 1 of 6 (Foundation & Multi-Tenant Data Model)
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-05-10 — Roadmap created (6 phases, 68/68 requirements mapped)
+Last activity: 2026-06-03 — Completed quick task 260603-w7i: 쇼츠 페이지 이름·문구 정리
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -63,6 +63,12 @@ None yet. (Use `/gsd-add-todo` to capture ideas during sessions.)
 - **Phase 5 research gate**: 진입 전 네이버 블로그 SEO·네이버 플레이스·카카오 비즈메시지 의무 표기·스마트스토어/쿠팡 채널 룰 최신 재확인 필요 (매년 변동).
 - **PIPA §26 위탁 + 국외 이전**: OpenAI/Anthropic 미국 전송에 대한 위탁 계약·정보주체 동의 플로우는 Phase 1에서 정책·UI 레벨로 자리 잡아야 함.
 - **REQUIREMENTS.md 카운트 불일치**: 헤더에 "v1 requirements: 64 total"로 적혀 있으나 실제 항목 수는 68. 트레이서빌리티는 68 기준으로 매핑됨.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260603-w7i | 쇼츠 페이지 이름·문구 정리 (멀티 플랫폼 카피 생성기 명확화) | 2026-06-03 | cef54be | [260603-w7i-shorts-copy-cleanup](./quick/260603-w7i-shorts-copy-cleanup/) |
 
 ## Deferred Items
 
