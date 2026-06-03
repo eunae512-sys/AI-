@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 Phase: 1 of 6 (Foundation & Multi-Tenant Data Model)
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-06-04 — Completed quick task 260604-md1: 가입 무드를 릴스·카드뉴스 생성에 반영
+Last activity: 2026-06-04 — Completed quick task 260604-md2: 무드를 카드뉴스 카피 톤에 반영
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -73,6 +73,7 @@ None yet. (Use `/gsd-add-todo` to capture ideas during sessions.)
 | 260604-cn2 | 카드뉴스·릴스 자막 카피 전문가 마케터 톤 고도화 | 2026-06-04 | d25dcf3 | [260604-cn2-cardnews-voice](./quick/260604-cn2-cardnews-voice/) |
 | 260604-cn3 | AI 생성 프롬프트 전문가 마케터 톤 통일 (few-shot + 클리셰 차단) | 2026-06-04 | 5f591ee | [260604-cn3-ai-prompt-voice](./quick/260604-cn3-ai-prompt-voice/) |
 | 260604-md1 | 가입 무드를 릴스·카드뉴스 이미지·영상 생성에 반영 | 2026-06-04 | d830b3b | [260604-md1-mood-propagation](./quick/260604-md1-mood-propagation/) |
+| 260604-md2 | 무드를 카드뉴스 카피 톤(후크·캡션)에도 반영 | 2026-06-04 | 1021f50 | [260604-md2-mood-copy-tone](./quick/260604-md2-mood-copy-tone/) |
 
 ## Deferred Items
 
