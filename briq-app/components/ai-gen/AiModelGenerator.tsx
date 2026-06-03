@@ -32,6 +32,7 @@ import {
   getRecommendedScenes,
   getScenesForIndustry,
 } from "@/lib/ai-gen/model-scenes";
+import { translateTopicToEN } from "@/lib/cardnews/video-query";
 import { applyAiWatermark, buildAiMeta } from "@/lib/ai-gen/watermark";
 
 type Props = {
@@ -74,14 +75,15 @@ export function AiModelGenerator({ industry, signatureMenu, topic, onGenerated, 
     setAge(s.defaultAge ?? "any");
   };
 
-  // 주제 반영: 실제 시그니처 메뉴가 있으면 그걸, 없으면 캠페인 주제를 씬의 소재로.
-  const themeSubject = signatureMenu?.[0] || topic?.trim() || undefined;
+  // 주제 반영: 한국어 주제를 영문 소재로 변환(이미지 모델·Pexels 폴백 매칭률↑).
+  // 변환 실패 시 원문 한국어로 폴백. 실제 시그니처 메뉴가 있으면 그걸 우선.
+  const topicEN = topic?.trim() ? (translateTopicToEN(topic) || topic.trim()) : undefined;
+  const themeSubject = signatureMenu?.[0] || topicEN || undefined;
   const promptEN = scene
     ? (() => {
         const base = scene.promptEN({ gender, age, signatureMenu: themeSubject });
-        const t = topic?.trim();
         // 사장님/손님 씬처럼 소재를 직접 안 쓰는 경우에도 주제가 화면에 드러나도록 컨텍스트 추가
-        return t && !base.includes(t) ? `${base} The scene is visually themed around "${t}".` : base;
+        return topicEN && !base.includes(topicEN) ? `${base} The scene is visually themed around ${topicEN}.` : base;
       })()
     : "";
 

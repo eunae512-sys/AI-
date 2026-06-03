@@ -225,6 +225,32 @@ export function extractVideoTokens(topic: string): VideoTopicTokens {
   return tokens;
 }
 
+// 영상 토큰 사전에 없는 카테고리 보조 (AI 출연자/이미지 프롬프트용)
+const TOPIC_EXTRA_KO_EN: Record<string, string> = {
+  룩북: "fashion lookbook",
+  디저트: "korean dessert",
+  파마: "hair perm",
+  헤어: "hair salon",
+  한옥: "hanok interior",
+  스테이: "stay interior",
+  네일: "nail art",
+};
+
+/**
+ * 한국어 주제 → 영문 소재 키워드 (AI 출연자·이미지 프롬프트용).
+ * 식재료/메뉴 사전 + 보조 사전으로 핵심 명사만 영문화. 매칭 0건이면 빈 문자열.
+ * 예) "여름 수박 케이크" → "watermelon cake patisserie"
+ */
+export function translateTopicToEN(topic: string): string {
+  if (!topic) return "";
+  const t = extractVideoTokens(topic);
+  const parts: string[] = [...t.ingredients, ...t.menu];
+  for (const [ko, en] of Object.entries(TOPIC_EXTRA_KO_EN)) {
+    if (topic.includes(ko) && !parts.includes(en)) parts.push(en);
+  }
+  return parts.slice(0, 3).join(" ").trim();
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 비디오 쿼리 빌더 — 산업 + 추출 토큰 합성, 짧고 또렷한 검색어
 // ─────────────────────────────────────────────────────────────────────────────
