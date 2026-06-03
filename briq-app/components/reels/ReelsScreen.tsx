@@ -7,7 +7,6 @@ import { compileReelsVideo, isCompileSupported, parseTrendStyle, describeTrendSt
 import { buildVideoQueryDetailed } from "@/lib/cardnews/video-query";
 import { WEEKLY_REEL_STYLES_BY_INDUSTRY, type WeeklyStyle } from "@/lib/trends/weekly-styles";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useBrand } from "@/components/brand/BrandProvider";
 import { useToast } from "@/components/ui/toast";
@@ -1126,7 +1125,6 @@ export function ReelsScreen() {
                     <div className="text-xs font-semibold truncate">{t.name}</div>
                     <div className="text-[10px] text-zinc-500 truncate">{t.desc}</div>
                   </div>
-                  <span className="text-[10px] text-emerald-600 font-bold shrink-0">{t.saveDelta}</span>
                 </button>
               ))}
             </div>
@@ -1186,38 +1184,6 @@ export function ReelsScreen() {
             </div>
             <div className="mt-2.5 text-[10px] text-zinc-500">
               실제 SNS에서 자주 보이는 패턴 기반 · 클리셰 X
-            </div>
-          </Card>
-
-          <Card className="p-4">
-            <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold mb-1 flex items-center gap-2">
-              <Type className="h-3 w-3" />후크 문구 (기존 풀)
-            </div>
-            <p className="text-[10px] text-zinc-500 mb-3">
-              {uploadedPhotos.length > 0
-                ? `클릭하면 현재 컷(${cutIdx + 1}/${uploadedPhotos.length})의 자막으로 적용됩니다`
-                : "사진 업로드 시 기본 자막 시드로 사용됩니다"}
-            </p>
-            <div className="space-y-1.5">
-              {HOOKS.map((h, i) => (
-                <button
-                  key={i}
-                  onClick={() => {
-                    setActiveHook(i);
-                    if (currentCut) {
-                      updateCaption(cutIdx, h);
-                      toast.success(`컷 ${cutIdx + 1} 자막을 "${h}" 으로 변경`);
-                    }
-                  }}
-                  className={`w-full text-left text-xs px-3 py-2 rounded-md border transition ${
-                    activeHook === i
-                      ? "border-zinc-900 dark:border-zinc-100 bg-zinc-50 dark:bg-zinc-900"
-                      : "border-zinc-100 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
-                  }`}
-                >
-                  {h}
-                </button>
-              ))}
             </div>
           </Card>
 
@@ -1438,11 +1404,12 @@ export function ReelsScreen() {
                   </motion.div>
                   )}
 
-                  <div className="absolute right-3 bottom-32 flex flex-col gap-3 text-white text-center z-10">
-                    <div><Heart className="h-5 w-5 mx-auto" /><div className="text-[10px]">2.4K</div></div>
-                    <div><MessageCircle className="h-5 w-5 mx-auto" /><div className="text-[10px]">87</div></div>
-                    <div><Share2 className="h-5 w-5 mx-auto" /><div className="text-[10px]">141</div></div>
-                    <div><Bookmark className="h-5 w-5 mx-auto" /><div className="text-[10px]">312</div></div>
+                  {/* 인스타 액션 아이콘 (미리보기용 — 가짜 수치 제거, 아이콘만) */}
+                  <div className="absolute right-3 bottom-32 flex flex-col gap-3.5 text-white/90 z-10 pointer-events-none">
+                    <Heart className="h-5 w-5 mx-auto" />
+                    <MessageCircle className="h-5 w-5 mx-auto" />
+                    <Share2 className="h-5 w-5 mx-auto" />
+                    <Bookmark className="h-5 w-5 mx-auto" />
                   </div>
                   <div className="absolute bottom-4 left-4 right-4 text-white text-[10px] flex items-center gap-1.5 z-10">
                     <span className="h-3 w-3 rounded bg-white/20" />♪ {customBgm ? `내 가사 · ${customBgm.moodLabel}` : BGM[activeBgm].name}
@@ -1485,13 +1452,13 @@ export function ReelsScreen() {
               {status === "done" ? (
                 <motion.div key="done" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/30 dark:bg-emerald-500/5 p-4 text-center">
                   <div className="text-[11px] uppercase tracking-widest text-emerald-700 dark:text-emerald-400 font-semibold">
-                    {uploadedPhotos.length > 0 ? `업로드 ${uploadedPhotos.length}장 적용됨` : "생성 완료 · 32초"}
+                    {uploadedPhotos.length > 0 ? `업로드 ${uploadedPhotos.length}장 적용됨` : "사진을 올려 시작하세요"}
                   </div>
                   <div className="mt-1 text-sm font-semibold">
-                    {cutCount}컷 · 자막 · 전환 · 썸네일 자동 적용
+                    {cutCount}컷 · 자막 · 전환 자동 적용
                   </div>
                   <div className="mt-2 text-[11px] text-zinc-500">
-                    {brand.name} 톤 v{brand.toneVersion} 적용됨 · 예상 저장률 5.8%
+                    {brand.name} 톤 v{brand.toneVersion} 적용됨
                   </div>
                 </motion.div>
               ) : (
@@ -1687,28 +1654,6 @@ export function ReelsScreen() {
                 </div>
               )}
             </div>
-          </Card>
-
-          <Card className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">자동 생성된 자산</div>
-              <Badge tone="emerald">5종</Badge>
-            </div>
-            <ul className="space-y-2 text-xs">
-              {[
-                { label: `릴스 30초 · ${cutCount}컷 · 9:16`, size: "12.4 MB" },
-                { label: "캡션 + 해시태그 12개", size: "1.2 KB" },
-                { label: "썸네일 1:1 + 9:16", size: "2.1 MB" },
-                { label: "카드뉴스 6장 (캐러셀)", size: "8.6 MB" },
-                { label: "네이버 블로그 본문 1편", size: "12 KB" },
-              ].map((it) => (
-                <li key={it.label} className="flex items-center gap-2 p-2 rounded-md bg-zinc-50 dark:bg-zinc-900/50">
-                  <span className="h-5 w-5 rounded bg-emerald-100 dark:bg-emerald-500/20 grid place-items-center text-emerald-700 dark:text-emerald-400 text-[10px] font-bold shrink-0">✓</span>
-                  <span className="flex-1 truncate font-medium">{it.label}</span>
-                  <span className="text-[10px] text-zinc-500">{it.size}</span>
-                </li>
-              ))}
-            </ul>
           </Card>
 
           <Card className="p-4">
