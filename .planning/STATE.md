@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 Phase: 1 of 6 (Foundation & Multi-Tenant Data Model)
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-06-04 — Completed quick task 260604-cn2: 카드뉴스·릴스 자막 카피 전문가 톤 고도화
+Last activity: 2026-06-04 — Completed quick task 260604-cn3: AI 생성 프롬프트 전문가 톤 통일
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -71,6 +71,7 @@ None yet. (Use `/gsd-add-todo` to capture ideas during sessions.)
 | 260603-w7i | 쇼츠 페이지 이름·문구 정리 (멀티 플랫폼 카피 생성기 명확화) | 2026-06-03 | cef54be | [260603-w7i-shorts-copy-cleanup](./quick/260603-w7i-shorts-copy-cleanup/) |
 | 260604-cn1 | 캠페인 카드뉴스 카피 문맥 정리 (후킹→내용→유도 일관성) | 2026-06-04 | 89841d7 | [260604-cn1-cardnews-coherence](./quick/260604-cn1-cardnews-coherence/) |
 | 260604-cn2 | 카드뉴스·릴스 자막 카피 전문가 마케터 톤 고도화 | 2026-06-04 | d25dcf3 | [260604-cn2-cardnews-voice](./quick/260604-cn2-cardnews-voice/) |
+| 260604-cn3 | AI 생성 프롬프트 전문가 마케터 톤 통일 (few-shot + 클리셰 차단) | 2026-06-04 | 5f591ee | [260604-cn3-ai-prompt-voice](./quick/260604-cn3-ai-prompt-voice/) |
 
 ## Deferred Items
 
