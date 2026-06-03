@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "motion/react";
 import { Upload, Play, Heart, MessageCircle, Bookmark, Share2, Sparkles, RefreshCw, Music, Type, Pencil, X, Film, Download, Loader2, UserCircle2 } from "lucide-react";
 import { compileReelsVideo, isCompileSupported, parseTrendStyle, describeTrendStyle } from "@/lib/reels/compile-video";
 import { buildVideoQueryDetailed } from "@/lib/cardnews/video-query";
-import { WEEKLY_REEL_STYLES_BY_INDUSTRY, type WeeklyStyle } from "@/lib/trends/weekly-styles";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useBrand } from "@/components/brand/BrandProvider";
@@ -20,7 +19,6 @@ import type { Industry, SceneRole } from "@/lib/ai-gen/model-scenes";
 import { getRecommendedScenes, getScenesForIndustry } from "@/lib/ai-gen/model-scenes";
 import type { MusicMood } from "@/lib/ai-gen/music-presets";
 import { synthesizeDemoMusic } from "@/lib/ai-gen/music-demo";
-import { suggestForWeeklyStyle } from "@/lib/trends/style-mapping";
 import { HOOK_BANK, fillSlots, isClean } from "@/lib/viral/voice-bank";
 import { pickFreshHookSeeded } from "@/lib/viral/recent-hooks";
 import { cn } from "@/lib/utils";
@@ -399,131 +397,7 @@ export function ReelsScreen() {
     toast.info("트렌드 스타일 제거 · 기본 자막으로 복원");
   };
 
-  // === 이번주 인기 릴스 스타일 — Pexels Video 자동 fetch ===
-  type WeeklyVideo = WeeklyStyle & {
-    status: "loading" | "ready" | "error";
-    videoUrl?: string;
-    posterUrl?: string;
-    duration?: number;
-    photographer?: string;
-    pexelsUrl?: string;
-  };
-  const [weeklyVideos, setWeeklyVideos] = React.useState<WeeklyVideo[]>([]);
-
-  React.useEffect(() => {
-    const styles = WEEKLY_REEL_STYLES_BY_INDUSTRY[brand.industry] ?? [];
-    setWeeklyVideos(styles.map((s) => ({ ...s, status: "loading" })));
-    let cancelled = false;
-
-    // 순차 fetch + 누적 excludeIds → 중복 영상 방지
-    // 각 카드 결과 도착 즉시 progressive 렌더링
-    (async () => {
-      const usedIds: number[] = [];
-      for (let i = 0; i < styles.length; i++) {
-        if (cancelled) return;
-        const s = styles[i];
-        try {
-          const res = await fetch("/api/search-pexels-video", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              query: s.pexelsQuery,
-              orientation: "portrait",
-              size: "large",
-              perPage: 50,
-              slideId: i + 1,
-              excludeIds: usedIds,
-            }),
-          });
-          const data = await res.json();
-          if (!data.ok) {
-            if (!cancelled) {
-              setWeeklyVideos((prev) => prev.map((p, idx) => (idx === i ? { ...p, status: "error" } : p)));
-            }
-            continue;
-          }
-          const videoId = data.meta?.videoId as number | undefined;
-          if (typeof videoId === "number") usedIds.push(videoId);
-          if (cancelled) return;
-          setWeeklyVideos((prev) =>
-            prev.map((p, idx) =>
-              idx === i
-                ? {
-                    ...p,
-                    status: "ready",
-                    videoUrl: data.video?.url as string,
-                    posterUrl: data.video?.poster as string,
-                    duration: data.video?.duration as number,
-                    photographer: data.meta?.photographer as string,
-                    pexelsUrl: data.meta?.pexelsUrl as string,
-                  }
-                : p,
-            ),
-          );
-        } catch {
-          if (!cancelled) {
-            setWeeklyVideos((prev) => prev.map((p, idx) => (idx === i ? { ...p, status: "error" } : p)));
-          }
-        }
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [brand.industry]);
-
-  const applyWeekly = (idx: number) => {
-    const w = weeklyVideos[idx];
-    if (!w?.videoUrl) {
-      toast.warn("영상 로딩 중입니다 — 잠시 후 다시 시도");
-      return;
-    }
-    const suggestion = suggestForWeeklyStyle({ title: w.title, format: w.format });
-    // 1) 트렌드 메타데이터 저장 (참고용 — 폰 프리뷰는 내 사진 유지)
-    setAppliedTrend({
-      videoUrl: w.videoUrl,
-      posterUrl: w.posterUrl,
-      title: w.title,
-      format: w.format,
-      hooks: w.hooks,
-      photographer: w.photographer,
-      pexelsUrl: w.pexelsUrl,
-      source: "weekly",
-      appliedAt: Date.now(),
-      suggestedMusicMood: suggestion.musicMood,
-      suggestedMusicMoodLabel: suggestion.musicMoodLabel,
-      suggestedSceneRole: suggestion.sceneRole,
-      suggestedSceneRoleLabel: suggestion.sceneRoleLabel,
-    });
-    // 2) 내 사진(upload)의 caption 을 트렌드 hooks 로 시드 (cycle)
-    if (w.hooks.length > 0) {
-      setPhotos((prev) => {
-        let uploadCount = 0;
-        return prev.map((p) => {
-          if (p.kind !== "upload") return p;
-          const caption = w.hooks[uploadCount % w.hooks.length];
-          uploadCount += 1;
-          return { ...p, caption };
-        });
-      });
-    }
-    // 3) 기존 컴파일 결과 무효화 (자막 바뀌었으니 재생성 필요)
-    if (compiled?.url) {
-      URL.revokeObjectURL(compiled.url);
-      setCompiled(null);
-    }
-    const uploadCount = photos.filter((p) => p.kind === "upload").length;
-    toast.success(
-      uploadCount > 0
-        ? `"${w.title}" 스타일 적용됨 · 자막 시드 + 추천 BGM/씬 자동 매칭`
-        : `"${w.title}" 적용됨 · 위 배너의 "AI 출연자로 시작" 으로 사진 없이 바로 만드세요`,
-    );
-    if (typeof window !== "undefined") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
-
+  // (참고 릴스 포맷 그리드 제거에 따라 weeklyVideos fetch/applyWeekly 데드코드 삭제)
   // 적용된 스타일의 추천 BGM 무드로 AI 음악 패널 자동 열기
   const startAiMusicForSuggested = () => {
     if (!appliedTrend?.suggestedMusicMood) return;
