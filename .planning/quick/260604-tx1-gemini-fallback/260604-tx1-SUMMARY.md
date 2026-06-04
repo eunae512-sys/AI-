@@ -32,5 +32,15 @@ commit: f1b99a6
 - **근본 해결책**: 사용자가 OpenAI 결제/크레딧을 채우면 OpenAI 경로 복구. 그 전까지 앱은 Gemini로 정상 동작(무료 티어).
 - 이미지 생성은 기존 image provider 추상화(gemini 어댑터+폴백)로 이미 graceful degrade.
 
-## Commit
+## 후속 (c36456b) — "본문 생성 실패 ... 폴백 템플릿"
+폴백 추가 후에도 **긴 블로그(2000~3000자)**에서 실패가 재현됨. 원인:
+- gemini-2.5-flash 의 **thinking 토큰이 maxOutputTokens 예산을 잠식** → JSON `{"body":"..."}` 가 ~1200자에서 잘림 → `JSON.parse` 실패(`Expected ',' or '}' at position 1246`) → OpenAI 폴백 → 쿼터 에러 노출.
+
+수정:
+- `lib/ai/text/gemini.ts`: `thinkingConfig.thinkingBudget=0` (구조화 생성엔 추론 불필요 → 출력 예산 전부 확보 + 속도/비용↓), `maxOutputTokens=8192` 명시.
+- 두 라우트: 전체 실패 시 **주 프로바이더(Gemini) 에러 우선 노출**(OpenAI 영구 쿼터 문구가 진짜 원인을 가리지 않게).
+- 검증: 2800자 목표 블로그가 잘림 없이 `source=gemini` 생성.
+
+## Commits
 - `f1b99a6` fix(text): OpenAI 쿼터 소진 시 Gemini 자동 폴백
+- `c36456b` fix(text): 긴 본문 Gemini 잘림 해결 (thinking off + maxOutputTokens)

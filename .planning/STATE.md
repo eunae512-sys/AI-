@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 Phase: 1 of 6 (Foundation & Multi-Tenant Data Model)
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-06-04 — Completed quick task 260604-tx1: 텍스트 생성 Gemini 폴백
+Last activity: 2026-06-04 — 텍스트 생성 Gemini 폴백 + 긴 본문 잘림 수정 (tx1)
 
 Progress: [░░░░░░░░░░] 0%
 
