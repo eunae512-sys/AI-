@@ -14,6 +14,7 @@ import {
   RULE,
   RULE_SOFT,
   PAPER_HOVER,
+  HL,
   SERIF_LATIN,
   SERIF_HANGUL,
 } from "@/lib/landing/tokens";
@@ -266,21 +267,24 @@ export function CasesSection() {
   return (
     <SectionContainer pad="wide" id="cases">
       <motion.div {...reveal}>
-        <Eyebrow>Currently running</Eyebrow>
-        <Headline size="md">이런 가게가 쓰고 있습니다</Headline>
+        <Eyebrow>Example scenarios</Eyebrow>
+        <Headline size="md">이런 가게라면, 이렇게 굴러갑니다</Headline>
+        <div className="mt-3 text-[12px]" style={{ fontFamily: SERIF_HANGUL, color: INK_MUTE }}>
+          실제 고객사가 아닌, 업종별 운영 예시입니다.
+        </div>
       </motion.div>
       <motion.div {...reveal} className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-8">
         {[
-          { name: "미옥당 한정식", note: "강남구 한정식 · 평일 점심 자리 안내", reach: "+47%" },
-          { name: "로스터리 1985", note: "서촌 스페셜티 카페 · 원두 입고 안내", reach: "+62%" },
-          { name: "서촌 한옥스테이", note: "종로 한옥 숙소 · 평일 예약 유도", reach: "+38%" },
+          { name: "미옥당 한정식", note: "강남구 한정식 · 평일 점심 자리 안내", run: "주 7회" },
+          { name: "로스터리 1985", note: "서촌 스페셜티 카페 · 원두 입고 안내", run: "주 6회" },
+          { name: "서촌 한옥스테이", note: "종로 한옥 숙소 · 평일 예약 유도", run: "주 5회" },
         ].map((c) => (
           <div key={c.name} className="pt-5" style={{ borderTop: `0.5px solid ${RULE}` }}>
             <div
               className="text-[10.5px] tracking-[0.22em] uppercase italic"
               style={{ color: INK_MUTE, fontFamily: SERIF_LATIN }}
             >
-              Case
+              Example
             </div>
             <h3
               className="mt-3 text-[19px] tracking-tight"
@@ -293,16 +297,16 @@ export function CasesSection() {
             </div>
             <div className="mt-6 flex items-baseline gap-2">
               <span
-                className="text-[40px] tabular-nums tracking-tight"
-                style={{ fontFamily: SERIF_LATIN, fontWeight: 400, color: INK }}
+                className="text-[40px] tracking-tight"
+                style={{ fontFamily: SERIF_HANGUL, fontWeight: 500, color: INK }}
               >
-                {c.reach}
+                {c.run}
               </span>
               <span
                 className="text-[10.5px] uppercase tracking-[0.18em]"
                 style={{ color: INK_MUTE }}
               >
-                monthly reach
+                자동 발행
               </span>
             </div>
           </div>
@@ -382,22 +386,31 @@ export function FinalCTA() {
         className="py-16 sm:py-24 text-center"
         style={{ borderTop: `0.5px solid ${RULE}`, borderBottom: `0.5px solid ${RULE}` }}
       >
-        <Eyebrow>가게 등록은 3분</Eyebrow>
+        <Eyebrow>Set up in 3 minutes</Eyebrow>
         <h2
           className="mt-5 text-[36px] sm:text-[56px] leading-[1.05] tracking-[-0.025em]"
           style={{ fontFamily: SERIF_LATIN, fontWeight: 400, color: INK }}
         >
           내일 아침,
           <br />
-          <em style={{ fontStyle: "italic", fontFamily: SERIF_LATIN }}>첫 발행이</em> 올라가 있습니다.
+          {/* 한글 강조는 이탤릭(가짜 기울임) 금지 — Hero 와 같은 크림 하이라이트 결 */}
+          <span className="relative inline-block">
+            <span className="relative z-10">첫 발행이</span>
+            <span
+              aria-hidden
+              className="absolute inset-x-[-2px] bottom-[6px] sm:bottom-[10px] h-[12px] sm:h-[18px] -z-0"
+              style={{ background: HL, opacity: 0.9 }}
+            />
+          </span>{" "}
+          올라가 있습니다.
         </h2>
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
           <Link
             href="/onboarding"
-            className="inline-flex items-center gap-3 h-[46px] px-7 text-[12.5px] tracking-[0.18em] uppercase font-medium transition-colors"
+            className="inline-flex items-center gap-3 h-[46px] px-7 text-[13.5px] tracking-[0.01em] font-medium transition-colors"
             style={{ background: "#14130F", color: "#FAF7EE" }}
           >
-            Begin
+            14일 무료로 시작
             <span aria-hidden className="text-[14px] tracking-normal">→</span>
           </Link>
           <Link
