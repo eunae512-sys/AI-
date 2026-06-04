@@ -16,6 +16,21 @@ import { Check, X, Minus } from "lucide-react";
 import { LandingNav } from "@/components/landing/Nav";
 import { PLANS, ANNUAL_DISCOUNT, INDUSTRY_RECOMMEND, formatKrw, type Plan } from "@/lib/billing/plans";
 import { cn } from "@/lib/utils";
+import { SAGE, HL } from "@/lib/landing/tokens";
+
+// 한글 강조 — 이탤릭(가짜 기울임) 금지. Hero/온보딩과 동일한 크림 하이라이트 결.
+function Hi({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="relative inline-block">
+      <span className="relative z-10">{children}</span>
+      <span
+        aria-hidden
+        className="absolute inset-x-[-2px] bottom-[4px] sm:bottom-[8px] h-[10px] sm:h-[16px] -z-0"
+        style={{ background: HL, opacity: 0.9 }}
+      />
+    </span>
+  );
+}
 
 type Cycle = "monthly" | "annual";
 
@@ -57,7 +72,7 @@ export default function PricingPage() {
           >
             디자이너 외주 1편 비용으로,
             <br />
-            <em style={{ fontStyle: "italic" }}>한 달 무한 발행.</em>
+            <Hi>한 달 무한 발행.</Hi>
           </h1>
           <p className="mt-6 max-w-[640px] text-[15px] leading-[1.65] text-zinc-600 dark:text-zinc-400">
             카드뉴스 만들고, 캡션 쓰고, 해시태그 고르고, 네이버 블로그 본문까지 — 매주 6-8시간 걸리던 일이 10분으로.
@@ -80,7 +95,7 @@ export default function PricingPage() {
               >
                 {c === "monthly" ? "월간 결제" : "연간 결제"}
                 {c === "annual" && (
-                  <span className="ml-2 text-[10px] text-emerald-500">−{Math.round(ANNUAL_DISCOUNT * 100)}%</span>
+                  <span className="ml-2 text-[10px]" style={{ color: SAGE }}>−{Math.round(ANNUAL_DISCOUNT * 100)}%</span>
                 )}
               </button>
             ))}
@@ -140,8 +155,8 @@ export default function PricingPage() {
             VAT 포함. 결제는 Toss Payments 로 안전하게 진행됩니다.
           </p>
           <p
-            className="mt-1.5 text-[10.5px] text-center italic"
-            style={{ color: "#4A4742", fontFamily: "'Cormorant Garamond', serif" }}
+            className="mt-1.5 text-[11px] text-center"
+            style={{ color: "#4A4742", fontFamily: "'Nanum Myeongjo', serif" }}
           >
             14일 무료체험 시작 시 카드 등록이 필요합니다. 체험 종료 전 해지 시 청구되지 않습니다.
           </p>
@@ -157,7 +172,7 @@ export default function PricingPage() {
             >
               디자이너 외주 1편 비용으로,
               <br />
-              <em style={{ fontStyle: "italic" }}>한 달 무한 발행.</em>
+              <Hi>한 달 무한 발행.</Hi>
             </h2>
 
             <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -190,7 +205,7 @@ export default function PricingPage() {
                   <CostRow label="8 채널 자동 변환" value="10초 / 캠페인" emerald />
                   <CostRow label="발행 자동화 (Webhook · 수동)" value="원클릭" emerald />
                 </ul>
-                <div className="mt-6 pt-5 border-t border-zinc-100 dark:border-zinc-900 text-[12px] text-emerald-600 dark:text-emerald-400">
+                <div className="mt-6 pt-5 border-t border-zinc-100 dark:border-zinc-900 text-[12px]" style={{ color: SAGE }}>
                   10배 가성비 · 매주 6시간 절약 = 한 달 24시간
                 </div>
               </div>
@@ -276,14 +291,14 @@ export default function PricingPage() {
           >
             오늘 가입하고,
             <br />
-            <em style={{ fontStyle: "italic" }}>내일 첫 카드뉴스를 발행하세요.</em>
+            <Hi>내일 첫 카드뉴스를 발행하세요.</Hi>
           </h2>
           <p className="mt-5 text-[14px] text-zinc-600 dark:text-zinc-400">
             카드 등록 후 14일 무료 체험. 체험 종료 전 해지하시면 청구되지 않습니다.
           </p>
           <Link
             href={`/billing/start?plan=pro&cycle=${cycle}`}
-            className="mt-8 inline-block px-8 h-12 leading-[3rem] bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[13px] tracking-[0.1em] uppercase font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
+            className="mt-8 inline-block px-8 h-12 leading-[3rem] bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[13.5px] tracking-[0.02em] font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
           >
             14일 무료체험 시작 →
           </Link>
@@ -306,19 +321,15 @@ function PlanCard({ plan, cycle, isRecommended }: { plan: Plan; cycle: Cycle; is
       className={cn(
         "border bg-white dark:bg-zinc-950 flex flex-col relative",
         isHighlighted
-          ? "border-zinc-900 dark:border-zinc-100 shadow-[0_20px_50px_-25px_rgba(0,0,0,0.3)]"
+          ? "border-zinc-900 dark:border-zinc-100 shadow-[0_12px_32px_-24px_rgba(20,19,15,0.20)]"
           : "border-zinc-200 dark:border-zinc-800",
       )}
     >
       {/* 추천 뱃지 */}
       {(plan.badge || isRecommended) && (
         <div
-          className={cn(
-            "absolute -top-3 left-5 px-2.5 py-0.5 text-[10px] tracking-[0.12em] uppercase",
-            isRecommended
-              ? "bg-emerald-500 text-white"
-              : "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900",
-          )}
+          className="absolute -top-3 left-5 px-2.5 py-0.5 text-[10px] tracking-[0.12em] uppercase text-white"
+          style={{ background: isRecommended ? SAGE : "#14130F" }}
         >
           {isRecommended ? "사장님께 추천" : plan.badge}
         </div>
@@ -326,9 +337,10 @@ function PlanCard({ plan, cycle, isRecommended }: { plan: Plan; cycle: Cycle; is
 
       <header className="px-6 pt-7 pb-5 border-b border-zinc-100 dark:border-zinc-900">
         <div className="editorial-label">{plan.name}</div>
+        {/* 태그라인은 한글 — 이탤릭(가짜 기울임) 금지. 명조 정자로. */}
         <h3
-          className="mt-2 text-[22px] tracking-tight"
-          style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontWeight: 500 }}
+          className="mt-2 text-[19px] tracking-tight"
+          style={{ fontFamily: "'Nanum Myeongjo', serif", fontWeight: 500 }}
         >
           {plan.tagline}
         </h3>
@@ -347,7 +359,7 @@ function PlanCard({ plan, cycle, isRecommended }: { plan: Plan; cycle: Cycle; is
           )}
         </div>
         {!isFree && !isAgency && cycle === "annual" && (
-          <div className="mt-1 text-[11px] text-emerald-600 dark:text-emerald-400">
+          <div className="mt-1 text-[11px]" style={{ color: SAGE }}>
             연간 결제 — 월 ₩{formatKrw(plan.priceMonthly - plan.priceAnnualMonthly)} 절약
           </div>
         )}
@@ -358,7 +370,7 @@ function PlanCard({ plan, cycle, isRecommended }: { plan: Plan; cycle: Cycle; is
         <Link
           href={ctaHrefFor(plan, cycle)}
           className={cn(
-            "mt-6 block text-center h-11 leading-[2.75rem] text-[12px] tracking-[0.1em] uppercase font-medium transition-colors",
+            "mt-6 block text-center h-11 leading-[2.75rem] text-[12.5px] tracking-[0.02em] font-medium transition-colors",
             isHighlighted
               ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200"
               : "border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900",
@@ -372,7 +384,7 @@ function PlanCard({ plan, cycle, isRecommended }: { plan: Plan; cycle: Cycle; is
         {plan.features.map((f, i) => (
           <li key={i} className="flex items-start gap-2 text-[12.5px]">
             {f.included ? (
-              <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-[3px]" />
+              <Check className="h-3.5 w-3.5 shrink-0 mt-[3px]" style={{ color: SAGE }} />
             ) : (
               <X className="h-3.5 w-3.5 text-zinc-300 dark:text-zinc-700 shrink-0 mt-[3px]" />
             )}
@@ -395,7 +407,7 @@ function CostRow({ label, value, emerald }: { label: string; value: string; emer
   return (
     <li className="flex items-baseline justify-between gap-3 py-1">
       <span>{label}</span>
-      <span className={cn("tabular-nums", emerald ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-zinc-500")}>
+      <span className={cn("tabular-nums", emerald ? "font-medium" : "text-zinc-500")} style={emerald ? { color: SAGE } : undefined}>
         {value}
       </span>
     </li>
