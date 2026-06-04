@@ -60,7 +60,7 @@ const Headline = ({ children, size = "lg" }: { children: React.ReactNode; size?:
         ? "text-[40px] sm:text-[56px] md:text-[64px]"
         : "text-[28px] sm:text-[36px]"
     }`}
-    style={{ fontFamily: SERIF_LATIN, fontWeight: 400, color: INK }}
+    style={{ fontFamily: SERIF_LATIN, fontWeight: 400, color: INK, wordBreak: "keep-all" }}
   >
     {children}
   </h2>
@@ -69,7 +69,7 @@ const Headline = ({ children, size = "lg" }: { children: React.ReactNode; size?:
 const Lede = ({ children }: { children: React.ReactNode }) => (
   <p
     className="mt-5 max-w-[640px] text-[15px] sm:text-[16px] leading-[1.7]"
-    style={{ fontFamily: SERIF_HANGUL, color: INK_SOFT }}
+    style={{ fontFamily: SERIF_HANGUL, color: INK_SOFT, wordBreak: "keep-all" }}
   >
     {children}
   </p>
@@ -134,33 +134,63 @@ export function ProblemSection() {
 // Brand Persona — AI 전속 모델
 // ─────────────────────────────────────────────────────────────
 
+// 전속 모델 = 일관된 인물 + 일관된 말투. 사진 대신 '캐스팅 시트' 활자로 증명한다.
+// (이미지 자산 확보 시, 각 플레이트 상단에 작은 초상 썸네일만 끼워넣으면 됨 — 구조 불변)
+const PERSONAS = [
+  { plate: "Plate I", title: "한정식 · 미옥당", archetype: "단정한 30대 안주인. 제철을 직접 고르는 손.", voice: "오늘 두릅, 딱 스무 접시." },
+  { plate: "Plate II", title: "스페셜티 카페 · 로스터리 1985", archetype: "말수 적은 바리스타. 매일 같은 시간 로스팅.", voice: "오늘 원두, 케냐 AA." },
+  { plate: "Plate III", title: "한옥 스테이 · 서촌", archetype: "빛을 살피는 호스트. 아침 햇살을 먼저 안내.", voice: "창호로 드는 여섯 시의 빛." },
+  { plate: "Plate IV", title: "뷰티 살롱", archetype: "손이 정확한 디자이너. 결을 살리는 한 컷.", voice: "이번 봄, 당신의 결." },
+  { plate: "Plate V", title: "피트니스", archetype: "군더더기 없는 코치. 핑계를 두지 않는 톤.", voice: "오늘 30분, 그거면 충분." },
+  { plate: "Plate VI", title: "동네 셀렉트숍", archetype: "취향 까다로운 큐레이터. 좋은 것만 골라두는 눈.", voice: "이번 주 입고, 딱 다섯 점." },
+];
+
 export function ReelsFeature() {
   return (
     <SectionContainer pad="wide" id="features">
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-x-10 md:gap-x-14 gap-y-8">
-        <motion.div {...reveal} className="md:col-span-5">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-x-10 md:gap-x-14 gap-y-10">
+        <motion.div {...reveal} className="md:col-span-4">
           <Eyebrow>Brand Persona</Eyebrow>
           <Headline size="md">전속 모델이 있는 가게</Headline>
           <Lede>
-            가게 컨셉에 맞는 전속 AI 모델을 한 번 정해두면, 이후 모든 콘텐츠가 같은 인물로 운영됩니다. 매번 다른 사람이 등장하지 않고, 진짜 전속 모델처럼.
+            가게 컨셉에 맞는 전속 AI 모델을 한 번 정해두면, 이후 모든 콘텐츠가 같은 인물·같은 말투로 운영됩니다. 매번 다른 사람이 등장하지 않고, 진짜 전속 모델처럼.
           </Lede>
         </motion.div>
-        <motion.div {...reveal} className="md:col-span-7">
-          <div className="grid grid-cols-3 gap-3">
-            {["cafe", "restaurant", "beauty", "fitness", "stay", "local"].map((ind) => (
-              <div
-                key={ind}
-                className="aspect-[3/4] flex items-end p-3"
-                style={{ border: `0.5px solid ${RULE}`, background: "rgba(20,19,15,0.025)" }}
-              >
+        <motion.div {...reveal} className="md:col-span-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-9">
+            {PERSONAS.map((p) => (
+              <div key={p.title} className="pt-5" style={{ borderTop: `0.5px solid ${RULE}` }}>
                 <div
-                  className="text-[10.5px] tracking-[0.22em] uppercase italic"
+                  className="text-[10px] tracking-[0.22em] uppercase italic"
                   style={{ color: INK_MUTE, fontFamily: SERIF_LATIN }}
                 >
-                  {ind}
+                  {p.plate}
+                </div>
+                <h3
+                  className="mt-2.5 text-[16px] leading-snug tracking-tight"
+                  style={{ fontFamily: SERIF_HANGUL, color: INK, fontWeight: 600, wordBreak: "keep-all" }}
+                >
+                  {p.title}
+                </h3>
+                <p
+                  className="mt-2 text-[13px] leading-[1.6]"
+                  style={{ fontFamily: SERIF_HANGUL, color: INK_SOFT }}
+                >
+                  {p.archetype}
+                </p>
+                <div
+                  className="mt-4 pt-3.5 text-[14px] leading-[1.5]"
+                  style={{ borderTop: `0.5px solid ${RULE_SOFT}`, fontFamily: SERIF_HANGUL, color: INK }}
+                >
+                  <span aria-hidden style={{ color: INK_MUTE }}>“</span>
+                  {p.voice}
+                  <span aria-hidden style={{ color: INK_MUTE }}>”</span>
                 </div>
               </div>
             ))}
+          </div>
+          <div className="mt-7 text-[12.5px]" style={{ fontFamily: SERIF_HANGUL, color: INK_MUTE }}>
+            한 번 정하면 — 모든 콘텐츠가 같은 인물·같은 말투로.
           </div>
         </motion.div>
       </div>
