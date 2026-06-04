@@ -7,6 +7,7 @@ status: complete
 commits:
   - ed4a8d2  # feat(landing): Hero 1등 고도화 1차
   - ecd34d6  # feat(landing): Sections 1등 고도화
+  - 864e9a3  # feat(landing): ReelsFeature 페르소나 플레이트
 ---
 
 # SUMMARY — 랜딩 Hero 1등 고도화 (1차)
@@ -31,7 +32,12 @@ commits:
 | 3 | FinalCTA CTA 'Begin' → '14일 무료로 시작' + 자간/대문자 보정 | FinalCTA |
 | 4 | CasesSection 정직화: 가짜 고객·'+47% reach' → '업종별 운영 예시' 고지 + 자동 발행 케이던스(주 7/6/5회) | CasesSection |
 
-미해결(자산 필요): ReelsFeature 전속모델 그리드 빈 플레이스홀더 — 이미지 생성 쿼터 복구 후 실제 비주얼로.
+## 3차 — ReelsFeature 빈 그리드 해결 (`864e9a3`)
+
+빈 회색 박스 6개 → **페르소나 플레이트(캐스팅 시트)**. 사진 대신 활자로 '일관된
+인물·말투'를 증명. 각 플레이트(I~VI) = 업종·가게명 + 아키타입 + 샘플 캡션.
+페이지 카드 관용구(상단 헤어라인) 준수. 자산 확보 시 초상 썸네일만 끼우면 됨.
++ Headline·Lede·플레이트 제목 `word-break: keep-all` (한글 중간 줄바꿈 방지).
 
 ## 검증
 

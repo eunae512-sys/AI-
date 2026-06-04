@@ -80,7 +80,7 @@ None yet. (Use `/gsd-add-todo` to capture ideas during sessions.)
 | 260604-rl1 | 릴스 화면 직관화 (자동회전 제거·참고그리드 삭제·컷 썸네일 편집) | 2026-06-04 | 6597e5e | [260604-rl1-reels-simplify](./quick/260604-rl1-reels-simplify/) |
 | 260604-bg1 | BGM 가사를 실제로 부르는 보컬 음악 생성 (fal minimax-music) | 2026-06-04 | 1291b32 | [260604-bg1-vocal-music](./quick/260604-bg1-vocal-music/) |
 | 260604-tx1 | OpenAI 쿼터 소진 시 텍스트 생성 Gemini 자동 폴백 | 2026-06-04 | f1b99a6 | [260604-tx1-gemini-fallback](./quick/260604-tx1-gemini-fallback/) |
-| 260604-pi2 | 랜딩 Hero+Sections 1등 고도화 (한글 이탤릭 제거·CTA 한글화·정직화·대비) | 2026-06-04 | ecd34d6 | [260604-pi2-landing-hero-uplift](./quick/260604-pi2-landing-hero-uplift/) |
+| 260604-pi2 | 랜딩 Hero+Sections 1등 고도화 (이탤릭 제거·CTA 한글화·정직화·페르소나 플레이트·keep-all) | 2026-06-04 | 864e9a3 | [260604-pi2-landing-hero-uplift](./quick/260604-pi2-landing-hero-uplift/) |
 
 ## Deferred Items
 
