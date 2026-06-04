@@ -3,13 +3,26 @@
 import * as React from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
-import { Coffee, Cake, Home, UtensilsCrossed, Scissors, Sparkles, ChevronLeft, Check } from "lucide-react";
+import { Coffee, Cake, Home, UtensilsCrossed, Scissors, Sparkles, ChevronLeft, Check, Camera, Images } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { extractPaletteFromPhotos, type ExtractedColor } from "@/lib/colors/extract-palette";
 import { inferMoodFromPalette } from "@/lib/brand/mood-detect";
 import { saveUserBrand } from "@/lib/brand/user-brand";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Industry as IndustryType, Mood as MoodIdType } from "@/types";
+import {
+  INK,
+  INK_SOFT,
+  INK_MUTE,
+  RULE,
+  RULE_SOFT,
+  PAPER,
+  PAPER_HOVER,
+  SAGE,
+  HL,
+  SERIF_LATIN,
+  SERIF_HANGUL,
+} from "@/lib/landing/tokens";
 
 // 업종 id → 한국 도시 기본값 (사용자가 도시 미입력 시)
 const INDUSTRY_DEFAULT_CITY: Record<string, string> = {
@@ -162,6 +175,59 @@ const PLAN_LABEL: Record<string, string> = {
   agency: "Agency",
 };
 
+// ── 매거진 결 공통 부속 — 랜딩(tokens)과 한 결 ──────────────────────────
+/** STEP 라벨 — 이탤릭 라틴 small caps (영문이라 진짜 이탤릭 OK) */
+function StepMark({ children, accent = false }: { children: React.ReactNode; accent?: boolean }) {
+  return (
+    <div
+      className="text-[10.5px] tracking-[0.22em] uppercase italic"
+      style={{ color: accent ? SAGE : INK_MUTE, fontFamily: SERIF_LATIN }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** 스텝 표제 — 세리프, 한글 중간 줄바꿈 방지 */
+function StepTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h1
+      className="mt-3 text-[30px] sm:text-[40px] leading-[1.08] tracking-[-0.02em]"
+      style={{ fontFamily: SERIF_HANGUL, color: INK, fontWeight: 500, wordBreak: "keep-all" }}
+    >
+      {children}
+    </h1>
+  );
+}
+
+/** 스텝 본문 lede */
+function StepLede({ children }: { children: React.ReactNode }) {
+  return (
+    <p
+      className="mt-3 text-[15px] sm:text-[16px] leading-[1.7]"
+      style={{ fontFamily: SERIF_HANGUL, color: INK_SOFT, wordBreak: "keep-all" }}
+    >
+      {children}
+    </p>
+  );
+}
+
+// 공통 버튼 스타일
+const PRIMARY_BTN =
+  "inline-flex items-center justify-center gap-2 h-[46px] px-7 text-[13.5px] tracking-[0.01em] font-medium transition-colors";
+const BACK_BTN =
+  "text-[12px] tracking-[0.04em] inline-flex items-center gap-1 transition-colors";
+
+const INPUT_CLS =
+  "mt-1.5 w-full h-11 px-3 text-[14px] transition-colors focus:outline-none";
+const inputStyle: React.CSSProperties = {
+  border: `0.5px solid ${RULE}`,
+  background: "#FFFFFF",
+  color: INK,
+  fontFamily: SERIF_HANGUL,
+};
+const labelStyle: React.CSSProperties = { color: INK, fontFamily: SERIF_HANGUL };
+
 export function Onboarding() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -276,18 +342,21 @@ export function Onboarding() {
   }, [step, photos]);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="border-b border-zinc-100 dark:border-zinc-900 backdrop-blur sticky top-0 z-10 bg-white/70 dark:bg-zinc-950/70">
+    <div className="min-h-screen flex flex-col" style={{ background: PAPER }}>
+      {/* Header — 매거진 매스트헤드 결 */}
+      <header
+        className="backdrop-blur-md sticky top-0 z-10"
+        style={{ background: "rgba(250, 247, 238, 0.8)", borderBottom: `0.5px solid ${RULE}` }}
+      >
         <div className="max-w-3xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-baseline gap-2">
             <span
               className="text-[18px] leading-none tracking-[-0.02em]"
-              style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 500 }}
+              style={{ fontFamily: SERIF_LATIN, fontWeight: 500, color: INK }}
             >
               BRIQ
             </span>
-            <span className="text-[9.5px] tracking-[0.22em] uppercase text-zinc-400">
+            <span className="text-[9.5px] tracking-[0.22em] uppercase" style={{ color: INK_MUTE }}>
               Onboarding
             </span>
           </Link>
@@ -299,21 +368,15 @@ export function Onboarding() {
               return (
                 <motion.span
                   key={i}
-                  className={cn(
-                    "h-1.5 rounded-full",
-                    done
-                      ? "bg-zinc-900 dark:bg-zinc-100 w-9"
-                      : current
-                      ? "w-12 bg-gradient-to-r from-indigo-500 to-pink-500"
-                      : "w-9 bg-zinc-200 dark:bg-zinc-800"
-                  )}
+                  className={cn("h-[3px]", current ? "w-12" : "w-9")}
+                  style={{ background: done || current ? INK : RULE }}
                   initial={false}
                   transition={{ type: "spring", stiffness: 380, damping: 30 }}
                 />
               );
             })}
           </div>
-          <div className="text-[11px] text-zinc-500 tabular-nums w-12 text-right">{step} / {totalSteps}</div>
+          <div className="text-[11px] tabular-nums w-12 text-right" style={{ color: INK_MUTE }}>{step} / {totalSteps}</div>
         </div>
       </header>
 
@@ -323,16 +386,14 @@ export function Onboarding() {
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="mb-8 sm:mb-10 -mt-2 sm:-mt-6 flex items-baseline gap-3 border-l-2 pl-4 py-2"
-            style={{ borderColor: "#14130F" }}
+            className="mb-8 sm:mb-10 -mt-2 sm:-mt-6 flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3 pl-4 py-2"
+            style={{ borderLeft: `2px solid ${INK}` }}
           >
-            <span className="text-[10.5px] tracking-[0.22em] uppercase text-zinc-500 dark:text-zinc-400">
+            <span className="text-[10.5px] tracking-[0.22em] uppercase italic shrink-0" style={{ color: INK_MUTE, fontFamily: SERIF_LATIN }}>
               Selected plan
             </span>
-            <span
-              className="text-[15px] sm:text-[17px]"
-              style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontWeight: 500 }}
-            >
+            {/* 한글 문장은 이탤릭(가짜 기울임) 금지 — 정자로 */}
+            <span className="text-[14px] sm:text-[15px]" style={{ fontFamily: SERIF_HANGUL, color: INK }}>
               {PLAN_LABEL[selectedPlan]} 플랜으로 시작합니다 — 14일 무료체험 (체험 종료 전 해지 가능).
             </span>
           </motion.div>
@@ -347,9 +408,9 @@ export function Onboarding() {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.35 }}
             >
-              <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">STEP 01</div>
-              <h1 className="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight">어떤 가게를 운영하세요?</h1>
-              <p className="mt-3 text-base text-zinc-600 dark:text-zinc-400">업종을 선택하면 BRIQ가 맞춤 톤·템플릿을 자동 적용합니다.</p>
+              <StepMark>Step 01</StepMark>
+              <StepTitle>어떤 가게를 운영하세요?</StepTitle>
+              <StepLede>업종을 선택하면 BRIQ가 맞춤 톤·템플릿을 자동 적용합니다.</StepLede>
               <div className="mt-10 grid grid-cols-2 md:grid-cols-3 gap-3">
                 {INDUSTRIES.map((it) => {
                   const Icon = it.Icon;
@@ -358,16 +419,15 @@ export function Onboarding() {
                     <button
                       key={it.id}
                       onClick={() => setIndustry(it.id)}
-                      className={cn(
-                        "rounded-xl border p-5 text-left transition-all",
-                        selected
-                          ? "border-zinc-900 dark:border-zinc-100 bg-zinc-50 dark:bg-zinc-900 shadow-[0_0_0_3px_rgba(17,24,39,0.06)]"
-                          : "border-zinc-200 dark:border-zinc-800 hover:border-zinc-900 dark:hover:border-zinc-100 hover:-translate-y-0.5"
-                      )}
+                      className="p-5 text-left transition-all"
+                      style={{
+                        border: `0.5px solid ${selected ? INK : RULE}`,
+                        background: selected ? PAPER_HOVER : "transparent",
+                      }}
                     >
-                      <Icon className="h-7 w-7 text-zinc-700 dark:text-zinc-300" strokeWidth={1.5} />
-                      <div className="mt-3 text-base font-semibold">{it.label}</div>
-                      <div className="text-[12px] text-zinc-500 mt-0.5">{it.sub}</div>
+                      <Icon className="h-7 w-7" strokeWidth={1.5} style={{ color: INK }} />
+                      <div className="mt-3 text-[15px]" style={{ fontFamily: SERIF_HANGUL, color: INK, fontWeight: 600 }}>{it.label}</div>
+                      <div className="text-[12px] mt-0.5" style={{ color: INK_MUTE }}>{it.sub}</div>
                     </button>
                   );
                 })}
@@ -376,12 +436,8 @@ export function Onboarding() {
                 <button
                   onClick={next}
                   disabled={!industry}
-                  className={cn(
-                    "text-sm font-medium px-5 py-2.5 rounded-md transition-colors",
-                    industry
-                      ? "bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900 hover:opacity-90"
-                      : "bg-zinc-200 text-zinc-400 cursor-not-allowed dark:bg-zinc-800 dark:text-zinc-600",
-                  )}
+                  className={cn(PRIMARY_BTN, !industry && "cursor-not-allowed")}
+                  style={industry ? { background: INK, color: PAPER } : { background: "rgba(20,19,15,0.10)", color: INK_MUTE }}
                 >
                   다음 →
                 </button>
@@ -398,13 +454,9 @@ export function Onboarding() {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.35 }}
             >
-              <div className="text-[11px] uppercase tracking-[0.15em] text-zinc-400 font-semibold">STEP 02</div>
-              <h1 className="mt-2 text-[26px] sm:text-3xl md:text-4xl font-semibold tracking-tight leading-[1.15]">
-                브랜드 분위기는<br />어떤 결인가요?
-              </h1>
-              <p className="mt-3 text-[14px] sm:text-base text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                선택한 무드로 컬러·폰트·문체 톤이 자동 매칭됩니다.
-              </p>
+              <StepMark>Step 02</StepMark>
+              <StepTitle>브랜드 분위기는<br />어떤 결인가요?</StepTitle>
+              <StepLede>선택한 무드로 컬러·폰트·문체 톤이 자동 매칭됩니다.</StepLede>
               <div className="mt-8 sm:mt-10 grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                 {MOODS.map((m) => {
                   const selected = mood === m.id;
@@ -413,12 +465,10 @@ export function Onboarding() {
                       key={m.id}
                       onClick={() => setMood(m.id)}
                       className={cn(
-                        "group rounded-2xl overflow-hidden text-left transition-all bg-white dark:bg-zinc-950",
-                        "ring-1 ring-zinc-200/60 dark:ring-zinc-800/60",
-                        selected
-                          ? `ring-2 ${m.ringClass} shadow-[0_8px_24px_-12px_rgba(0,0,0,0.18)] -translate-y-0.5`
-                          : "hover:ring-zinc-400 dark:hover:ring-zinc-600 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_-6px_rgba(0,0,0,0.12)]",
+                        "group overflow-hidden text-left transition-all",
+                        selected ? `ring-2 ${m.ringClass} -translate-y-0.5` : "hover:-translate-y-0.5",
                       )}
+                      style={{ border: `0.5px solid ${selected ? INK : RULE}`, background: "#FFFFFF" }}
                     >
                       {/* Moodboard preview — editorial paint chip */}
                       <div className={cn("relative aspect-[4/3] bg-gradient-to-br overflow-hidden", m.gradient)}>
@@ -432,14 +482,14 @@ export function Onboarding() {
                         {/* selected check — minimal, no shadow */}
                         {selected && (
                           <div className="absolute top-3 right-3 h-6 w-6 rounded-full bg-white/95 backdrop-blur grid place-items-center">
-                            <Check className="h-3 w-3 text-zinc-900" strokeWidth={2.5} />
+                            <Check className="h-3 w-3" strokeWidth={2.5} style={{ color: INK }} />
                           </div>
                         )}
-                        {/* serif italic tag — magazine spread label */}
+                        {/* serif italic tag — magazine spread label (영문, 진짜 이탤릭 OK) */}
                         <span
                           className="absolute bottom-3 left-4 text-[12px] italic tracking-tight"
                           style={{
-                            fontFamily: '"Cormorant Garamond", "Times New Roman", serif',
+                            fontFamily: SERIF_LATIN,
                             color: "rgba(0,0,0,0.55)",
                             mixBlendMode: "multiply",
                           }}
@@ -454,26 +504,22 @@ export function Onboarding() {
                         ))}
                       </div>
                       <div className="p-4 sm:p-5">
-                        <div className="font-semibold text-[15px] sm:text-[14px] tracking-tight">{m.label}</div>
-                        <div className="text-[12px] text-zinc-500 mt-1 leading-relaxed">{m.sub}</div>
+                        <div className="text-[15px] sm:text-[14px] tracking-tight" style={{ fontFamily: SERIF_HANGUL, color: INK, fontWeight: 600 }}>{m.label}</div>
+                        <div className="text-[12px] mt-1 leading-relaxed" style={{ color: INK_MUTE }}>{m.sub}</div>
                       </div>
                     </button>
                   );
                 })}
               </div>
               <div className="mt-10 flex items-center justify-between">
-                <button onClick={back} className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 inline-flex items-center gap-1">
+                <button onClick={back} className={BACK_BTN} style={{ color: INK_MUTE }}>
                   <ChevronLeft className="h-3 w-3" />이전
                 </button>
                 <button
                   onClick={next}
                   disabled={!mood}
-                  className={cn(
-                    "text-sm font-medium px-5 py-2.5 rounded-md transition-colors",
-                    mood
-                      ? "bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900 hover:opacity-90"
-                      : "bg-zinc-200 text-zinc-400 cursor-not-allowed dark:bg-zinc-800 dark:text-zinc-600",
-                  )}
+                  className={cn(PRIMARY_BTN, !mood && "cursor-not-allowed")}
+                  style={mood ? { background: INK, color: PAPER } : { background: "rgba(20,19,15,0.10)", color: INK_MUTE }}
                 >
                   다음 →
                 </button>
@@ -484,37 +530,34 @@ export function Onboarding() {
           {/* Step 3 - Instagram connect (현재 베타: 직접 업로드만) */}
           {step === 3 && (
             <motion.section key="s3" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.35 }}>
-              <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">STEP 03</div>
-              <h1 className="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight">인스타 자동 분배는 곧 열립니다</h1>
-              <p className="mt-3 text-base text-zinc-600 dark:text-zinc-400">
-                지금은 사장님이 카드뉴스·캡션을 한 번에 만든 뒤, 인스타에 직접 올리시는 방식이에요. <br className="hidden sm:block" />
+              <StepMark>Step 03</StepMark>
+              <StepTitle>인스타 자동 분배는 곧 열립니다</StepTitle>
+              <StepLede>
+                지금은 사장님이 카드뉴스·캡션을 한 번에 만든 뒤, 인스타에 직접 올리시는 방식이에요.
                 Meta 비즈니스 API 연동은 베타 다음 단계에서 자동으로 사장님 계정에 연결됩니다.
-              </p>
+              </StepLede>
               <div className="mt-10 space-y-3">
-                <div className="w-full rounded-xl border border-zinc-200 dark:border-zinc-800 p-5 flex items-center gap-4 text-left">
-                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-fuchsia-500/40 via-pink-500/40 to-orange-400/40 grid place-items-center text-white font-bold text-lg">IG</div>
+                <div className="p-5 flex items-center gap-4 text-left" style={{ border: `0.5px solid ${RULE}` }}>
+                  <div className="h-11 w-11 grid place-items-center text-[12px] tracking-[0.08em]" style={{ border: `0.5px solid ${RULE}`, color: INK_MUTE, fontFamily: SERIF_LATIN }}>IG</div>
                   <div className="flex-1">
-                    <div className="font-semibold text-sm">Instagram 자동 분배 — 준비 중</div>
-                    <div className="text-[12px] text-zinc-500 mt-0.5">Meta 비즈니스 API 심사 진행 중 · 베타 다음 단계</div>
+                    <div className="text-[14px]" style={{ fontFamily: SERIF_HANGUL, color: INK, fontWeight: 600 }}>Instagram 자동 분배 — 준비 중</div>
+                    <div className="text-[12px] mt-0.5" style={{ color: INK_MUTE }}>Meta 비즈니스 API 심사 진행 중 · 베타 다음 단계</div>
                   </div>
-                  <span className="text-[10px] tracking-[0.12em] uppercase px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300">곧</span>
+                  <span className="text-[10px] tracking-[0.16em] uppercase italic" style={{ color: INK_MUTE, fontFamily: SERIF_LATIN }}>Soon</span>
                 </div>
-                <div className="rounded-xl border border-emerald-200 dark:border-emerald-900/40 bg-emerald-50/40 dark:bg-emerald-500/5 p-5">
-                  <div className="font-semibold text-sm">지금은 — 사진 직접 업로드</div>
-                  <div className="text-[12px] text-zinc-600 dark:text-zinc-400 mt-1">
+                <div className="p-5" style={{ border: `0.5px solid ${RULE}`, borderLeft: `2px solid ${SAGE}`, background: PAPER_HOVER }}>
+                  <div className="text-[14px]" style={{ fontFamily: SERIF_HANGUL, color: INK, fontWeight: 600 }}>지금은 — 사진 직접 업로드</div>
+                  <div className="text-[12.5px] mt-1 leading-relaxed" style={{ fontFamily: SERIF_HANGUL, color: INK_SOFT }}>
                     매장 사진 5~10장을 다음 단계에서 올려주시면, 카드뉴스·캡션·블로그·릴스가 자동으로 만들어집니다.
                     인스타에는 한 번의 복사·붙여넣기로 올리실 수 있어요.
                   </div>
                 </div>
               </div>
               <div className="mt-10 flex items-center justify-between">
-                <button onClick={back} className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 inline-flex items-center gap-1">
+                <button onClick={back} className={BACK_BTN} style={{ color: INK_MUTE }}>
                   <ChevronLeft className="h-3 w-3" />이전
                 </button>
-                <button
-                  onClick={next}
-                  className="text-sm font-medium px-5 py-2.5 rounded-md bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900 hover:opacity-90"
-                >
+                <button onClick={next} className={PRIMARY_BTN} style={{ background: INK, color: PAPER }}>
                   사진 올리러 가기 →
                 </button>
               </div>
@@ -524,9 +567,9 @@ export function Onboarding() {
           {/* Step 4 - Photo upload */}
           {step === 4 && (
             <motion.section key="s4" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.35 }}>
-              <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">STEP 04</div>
-              <h1 className="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight">사진 5~10장만<br />업로드해 주세요</h1>
-              <p className="mt-3 text-base text-zinc-600 dark:text-zinc-400">매장·메뉴·공간 사진. BRIQ가 컬러·구도·분위기를 분석합니다.</p>
+              <StepMark>Step 04</StepMark>
+              <StepTitle>사진 5~10장만<br />업로드해 주세요</StepTitle>
+              <StepLede>매장·메뉴·공간 사진. BRIQ가 컬러·구도·분위기를 분석합니다.</StepLede>
               <button
                 type="button"
                 onClick={() => photoInputRef.current?.click()}
@@ -536,16 +579,15 @@ export function Onboarding() {
                 }}
                 onDragLeave={() => setDragOver(false)}
                 onDrop={onDrop}
-                className={cn(
-                  "mt-8 w-full rounded-2xl border-2 border-dashed p-10 text-center transition cursor-pointer block",
-                  dragOver
-                    ? "border-zinc-900 dark:border-zinc-100 bg-zinc-50 dark:bg-zinc-900/60"
-                    : "border-zinc-200 dark:border-zinc-800 hover:border-zinc-900 dark:hover:border-zinc-100",
-                )}
+                className="mt-8 w-full p-10 text-center transition cursor-pointer block"
+                style={{
+                  border: `1px dashed ${dragOver ? INK : RULE}`,
+                  background: dragOver ? PAPER_HOVER : "transparent",
+                }}
               >
-                <div className="text-5xl">📷</div>
-                <div className="mt-4 text-base font-medium">이곳에 사진을 드롭하거나 클릭</div>
-                <div className="mt-1 text-[12px] text-zinc-500">JPG · PNG · HEIC · 최대 {MAX_PHOTOS}장</div>
+                <Camera className="h-9 w-9 mx-auto" strokeWidth={1.25} style={{ color: INK_MUTE }} />
+                <div className="mt-4 text-[15px]" style={{ fontFamily: SERIF_HANGUL, color: INK, fontWeight: 500 }}>이곳에 사진을 드롭하거나 클릭</div>
+                <div className="mt-1 text-[12px]" style={{ color: INK_MUTE }}>JPG · PNG · HEIC · 최대 {MAX_PHOTOS}장</div>
               </button>
 
               {/* 모바일 보조 — 갤러리 / 카메라 두 갈래 (PC 에선 위 dropzone 충분) */}
@@ -553,16 +595,18 @@ export function Onboarding() {
                 <button
                   type="button"
                   onClick={() => photoInputRef.current?.click()}
-                  className="flex-1 h-11 rounded-md border border-zinc-200 dark:border-zinc-800 text-sm font-medium hover:border-zinc-900 dark:hover:border-zinc-100"
+                  className="flex-1 h-11 inline-flex items-center justify-center gap-2 text-[13.5px]"
+                  style={{ border: `0.5px solid ${RULE}`, color: INK, fontFamily: SERIF_HANGUL }}
                 >
-                  🖼️ 사진 선택
+                  <Images className="h-4 w-4" strokeWidth={1.5} /> 사진 선택
                 </button>
                 <button
                   type="button"
                   onClick={() => cameraInputRef.current?.click()}
-                  className="flex-1 h-11 rounded-md border border-zinc-200 dark:border-zinc-800 text-sm font-medium hover:border-zinc-900 dark:hover:border-zinc-100"
+                  className="flex-1 h-11 inline-flex items-center justify-center gap-2 text-[13.5px]"
+                  style={{ border: `0.5px solid ${RULE}`, color: INK, fontFamily: SERIF_HANGUL }}
                 >
-                  📷 직접 촬영
+                  <Camera className="h-4 w-4" strokeWidth={1.5} /> 직접 촬영
                 </button>
               </div>
 
@@ -593,7 +637,8 @@ export function Onboarding() {
                       initial={{ scale: 0.8, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ delay: i * 0.04 }}
-                      className="relative aspect-square rounded-lg overflow-hidden group"
+                      className="relative aspect-square overflow-hidden group"
+                      style={{ border: `0.5px solid ${RULE}` }}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
@@ -607,7 +652,7 @@ export function Onboarding() {
                           e.stopPropagation();
                           removePhoto(i);
                         }}
-                        className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 grid place-items-center rounded-full bg-black/65 hover:bg-rose-600 text-white"
+                        className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 grid place-items-center rounded-full bg-black/65 hover:bg-black text-white"
                         aria-label="삭제"
                       >
                         <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
@@ -620,7 +665,8 @@ export function Onboarding() {
                     <button
                       type="button"
                       onClick={() => photoInputRef.current?.click()}
-                      className="aspect-square rounded-lg border-2 border-dashed border-zinc-200 dark:border-zinc-700 grid place-items-center text-zinc-400 hover:border-zinc-400 dark:hover:border-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors text-2xl"
+                      className="aspect-square grid place-items-center transition-colors text-2xl"
+                      style={{ border: `1px dashed ${RULE}`, color: INK_MUTE }}
                       aria-label="사진 더 추가"
                     >
                       +
@@ -629,55 +675,55 @@ export function Onboarding() {
                 </div>
               ) : null}
 
-              <div className="mt-3 text-[11px] text-zinc-500">
-                업로드된 사진: <b>{photos.length}장</b>
+              <div className="mt-3 text-[11px]" style={{ color: INK_MUTE }}>
+                업로드된 사진: <b style={{ color: INK }}>{photos.length}장</b>
                 {photos.length >= MIN_PHOTOS ? (
-                  <span className="text-emerald-600 ml-1">· 최소 {MIN_PHOTOS}장 충족 ✓</span>
+                  <span className="ml-1" style={{ color: SAGE }}>· 최소 {MIN_PHOTOS}장 충족 ✓</span>
                 ) : (
-                  <span className="text-amber-600 ml-1">
+                  <span className="ml-1" style={{ color: INK_SOFT }}>
                     · 분석 시작까지 {MIN_PHOTOS - photos.length}장 더 필요
                   </span>
                 )}
               </div>
 
               {/* 가게 정보 입력 — 카피 생성 정확도 결정적 */}
-              <div className="mt-10 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 sm:p-6">
-                <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">
-                  가게 정보 (카피에 그대로 반영됩니다)
-                </div>
-                <h2 className="mt-2 text-lg font-semibold tracking-tight">
+              <div className="mt-10 p-5 sm:p-6" style={{ border: `0.5px solid ${RULE}` }}>
+                <StepMark>가게 정보 (카피에 그대로 반영됩니다)</StepMark>
+                <h2 className="mt-2 text-[19px] tracking-tight" style={{ fontFamily: SERIF_HANGUL, color: INK, fontWeight: 600, wordBreak: "keep-all" }}>
                   사장님 가게를 한 줄로 소개해 주세요
                 </h2>
-                <p className="mt-1 text-xs text-zinc-500">
+                <p className="mt-1 text-[12.5px]" style={{ color: INK_MUTE, fontFamily: SERIF_HANGUL }}>
                   이 정보로 릴스·카드뉴스·블로그 카피가 만들어져요. 비워두면 일반 템플릿으로 생성됩니다.
                 </p>
 
                 <div className="mt-5 space-y-4">
                   <div>
-                    <label className="text-xs font-semibold">가게 이름</label>
+                    <label className="text-[12px] font-semibold" style={labelStyle}>가게 이름</label>
                     <input
                       type="text"
                       value={shopName}
                       onChange={(e) => setShopName(e.target.value)}
                       placeholder="예: 미옥당 본점"
-                      className="mt-1.5 w-full h-11 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
+                      className={INPUT_CLS}
+                      style={inputStyle}
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold">한 줄 소개 (선택)</label>
+                    <label className="text-[12px] font-semibold" style={labelStyle}>한 줄 소개 (선택)</label>
                     <input
                       type="text"
                       value={tagline}
                       onChange={(e) => setTagline(e.target.value)}
                       placeholder="예: 엄마 손맛 그대로, 강남에서 30년"
                       maxLength={40}
-                      className="mt-1.5 w-full h-11 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
+                      className={INPUT_CLS}
+                      style={inputStyle}
                     />
-                    <div className="mt-1 text-[10px] text-zinc-400 tabular-nums">{tagline.length}/40</div>
+                    <div className="mt-1 text-[10px] tabular-nums" style={{ color: INK_MUTE }}>{tagline.length}/40</div>
                   </div>
                   <div>
-                    <label className="text-xs font-semibold">시그니처 메뉴 3개 (선택)</label>
-                    <p className="mt-1 text-[11px] text-zinc-500">
+                    <label className="text-[12px] font-semibold" style={labelStyle}>시그니처 메뉴 3개 (선택)</label>
+                    <p className="mt-1 text-[11px]" style={{ color: INK_MUTE }}>
                       대표 메뉴/상품을 적으면 카피에서 이 이름들을 우선 사용해요.
                     </p>
                     <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -693,35 +739,36 @@ export function Onboarding() {
                           }}
                           placeholder={["갈비찜", "냉이된장국", "5첩 한정식"][idx]}
                           maxLength={20}
-                          className="h-11 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
+                          className="h-11 px-3 text-[14px] focus:outline-none"
+                          style={inputStyle}
                         />
                       ))}
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-zinc-100 dark:border-zinc-900">
-                    <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">
-                      사장님 정보 (결제·알림용)
-                    </div>
+                  <div className="pt-4" style={{ borderTop: `0.5px solid ${RULE_SOFT}` }}>
+                    <StepMark>사장님 정보 (결제·알림용)</StepMark>
                     <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs font-semibold">사장님 이름</label>
+                        <label className="text-[12px] font-semibold" style={labelStyle}>사장님 이름</label>
                         <input
                           type="text"
                           value={ownerName}
                           onChange={(e) => setOwnerName(e.target.value)}
                           placeholder="예: 홍길동"
-                          className="mt-1.5 w-full h-11 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
+                          className={INPUT_CLS}
+                          style={inputStyle}
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold">이메일</label>
+                        <label className="text-[12px] font-semibold" style={labelStyle}>이메일</label>
                         <input
                           type="email"
                           value={ownerEmail}
                           onChange={(e) => setOwnerEmail(e.target.value)}
                           placeholder="예: hong@email.com"
-                          className="mt-1.5 w-full h-11 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
+                          className={INPUT_CLS}
+                          style={inputStyle}
                         />
                       </div>
                     </div>
@@ -730,7 +777,7 @@ export function Onboarding() {
               </div>
 
               <div className="mt-10 flex items-center justify-between gap-3 flex-wrap">
-                <button onClick={back} className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 inline-flex items-center gap-1">
+                <button onClick={back} className={BACK_BTN} style={{ color: INK_MUTE }}>
                   <ChevronLeft className="h-3 w-3" />이전
                 </button>
                 <div className="flex items-center gap-4 ml-auto">
@@ -738,7 +785,8 @@ export function Onboarding() {
                   {photos.length < MIN_PHOTOS && (
                     <button
                       onClick={next}
-                      className="text-[12.5px] underline underline-offset-[6px] decoration-[0.5px] decoration-zinc-300 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+                      className="text-[12.5px] underline underline-offset-[6px] decoration-[0.5px]"
+                      style={{ color: INK_SOFT, textDecorationColor: RULE }}
                       title="기본 톤으로 일단 시작 — 사진은 나중에 추가하실 수 있습니다"
                     >
                       사진 없이 일단 시작
@@ -747,12 +795,8 @@ export function Onboarding() {
                   <button
                     onClick={next}
                     disabled={photos.length < MIN_PHOTOS}
-                    className={cn(
-                      "text-sm font-medium px-5 py-2.5 rounded-md transition-colors",
-                      photos.length >= MIN_PHOTOS
-                        ? "bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900 hover:opacity-90"
-                        : "bg-zinc-200 text-zinc-400 cursor-not-allowed dark:bg-zinc-800 dark:text-zinc-600",
-                    )}
+                    className={cn(PRIMARY_BTN, photos.length < MIN_PHOTOS && "cursor-not-allowed")}
+                    style={photos.length >= MIN_PHOTOS ? { background: INK, color: PAPER } : { background: "rgba(20,19,15,0.10)", color: INK_MUTE }}
                   >
                     분석 시작 →
                   </button>
@@ -764,42 +808,38 @@ export function Onboarding() {
           {/* Step 5 - AI analysis */}
           {step === 5 && (
             <motion.section key="s5" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.35 }}>
-              <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">STEP 05</div>
-              <h1 className="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight">BRIQ가 브랜드를 분석 중...</h1>
-              <p className="mt-3 text-base text-zinc-600 dark:text-zinc-400">평균 47초 소요됩니다. 잠시만 기다려 주세요.</p>
-              <div className="mt-12 space-y-3">
+              <StepMark>Step 05</StepMark>
+              <StepTitle>BRIQ가 브랜드를 분석 중…</StepTitle>
+              <StepLede>평균 47초 소요됩니다. 잠시만 기다려 주세요.</StepLede>
+              <div className="mt-12 space-y-2.5">
                 {STAGES.map((s, i) => {
                   const done = analysisStep > i;
                   const active = analysisStep === i;
                   return (
                     <motion.div
                       key={s.id}
-                      className={cn(
-                        "rounded-xl border p-4 flex items-center gap-3 transition-all",
-                        done
-                          ? "border-emerald-200 dark:border-emerald-900/40 bg-emerald-50/30 dark:bg-emerald-500/5"
-                          : active
-                          ? "border-violet-200 dark:border-violet-900/40 bg-gradient-to-r from-violet-50/30 to-transparent dark:from-violet-500/5"
-                          : "border-zinc-100 dark:border-zinc-800 opacity-50"
-                      )}
+                      className="p-4 flex items-center gap-3 transition-all"
+                      style={{
+                        border: `0.5px solid ${done || active ? RULE : RULE_SOFT}`,
+                        background: active ? PAPER_HOVER : "transparent",
+                        opacity: done || active ? 1 : 0.5,
+                      }}
                     >
                       <div
-                        className={cn(
-                          "h-8 w-8 rounded-lg grid place-items-center font-bold text-sm",
-                          done
-                            ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400"
-                            : active
-                            ? "bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-400"
-                            : "bg-zinc-100 dark:bg-zinc-800 text-zinc-400"
-                        )}
+                        className="h-8 w-8 grid place-items-center text-sm"
+                        style={{
+                          border: `0.5px solid ${done ? INK : active ? SAGE : RULE}`,
+                          background: done ? INK : "transparent",
+                          color: done ? PAPER : active ? SAGE : INK_MUTE,
+                        }}
                       >
                         {done ? <Check className="h-4 w-4" /> : active ? <motion.span animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}>◐</motion.span> : "○"}
                       </div>
                       <div className="flex-1">
-                        <div className="text-sm font-medium">{s.title}</div>
-                        {s.sub && <div className="text-[11px] text-zinc-500 mt-0.5">{s.sub}</div>}
+                        <div className="text-[14px]" style={{ fontFamily: SERIF_HANGUL, color: INK, fontWeight: 500 }}>{s.title}</div>
+                        {s.sub && <div className="text-[11px] mt-0.5" style={{ color: INK_MUTE }}>{s.sub}</div>}
                       </div>
-                      {done && <span className="text-[10px] text-emerald-600 font-medium">완료</span>}
+                      {done && <span className="text-[10px] tracking-[0.12em] uppercase italic" style={{ color: SAGE, fontFamily: SERIF_LATIN }}>done</span>}
                     </motion.div>
                   );
                 })}
@@ -810,22 +850,26 @@ export function Onboarding() {
           {/* Step 6 - Results */}
           {step === 6 && (
             <motion.section key="s6" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.4 }}>
-              <div className="text-[11px] uppercase tracking-widest text-emerald-600 dark:text-emerald-400 font-semibold">STEP 06 · 분석 완료</div>
-              <h1 className="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight">사장님 브랜드,<br /><span className="gradient-text">이렇게 정리됐어요.</span></h1>
+              <StepMark accent>Step 06 · 분석 완료</StepMark>
+              <StepTitle>
+                사장님 브랜드,<br />
+                <span className="relative inline-block">
+                  <span className="relative z-10">이렇게 정리됐어요.</span>
+                  <span aria-hidden className="absolute inset-x-[-2px] bottom-[4px] sm:bottom-[6px] h-[10px] sm:h-[14px] -z-0" style={{ background: HL, opacity: 0.9 }} />
+                </span>
+              </StepTitle>
               <div className="mt-10 space-y-4">
-                <div className="rounded-2xl border border-zinc-100 dark:border-zinc-800 p-6">
+                <div className="p-6" style={{ border: `0.5px solid ${RULE}` }}>
                   <div className="flex items-center justify-between gap-3 flex-wrap">
-                    <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">
-                      브랜드 컬러 (업로드 사진 {photos.length}장에서 추출)
-                    </div>
+                    <StepMark>브랜드 컬러 (업로드 사진 {photos.length}장에서 추출)</StepMark>
                     {extractedPalette.length > 0 && (
-                      <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
-                        {extractedPalette.length}개 컬러 추출됨
+                      <div className="text-[10px] tracking-[0.12em] uppercase italic" style={{ color: SAGE, fontFamily: SERIF_LATIN }}>
+                        {extractedPalette.length} colors
                       </div>
                     )}
                   </div>
                   {extractError ? (
-                    <div className="mt-3 text-[12px] text-amber-700 dark:text-amber-400">
+                    <div className="mt-3 text-[12px]" style={{ color: INK_SOFT }}>
                       컬러 추출 실패: {extractError} — 기본 팔레트로 진행합니다.
                     </div>
                   ) : null}
@@ -849,33 +893,31 @@ export function Onboarding() {
                         className="space-y-1.5"
                       >
                         <div
-                          className="aspect-square rounded-lg border border-zinc-100 dark:border-zinc-800"
-                          style={{ background: c.hex }}
+                          className="aspect-square"
+                          style={{ background: c.hex, border: `0.5px solid ${RULE}` }}
                         />
-                        <div className="text-[10.5px] font-medium truncate">{c.name}</div>
-                        <div className="text-[9.5px] text-zinc-500 tabular-nums">{c.hex}</div>
+                        <div className="text-[10.5px] font-medium truncate" style={{ color: INK }}>{c.name}</div>
+                        <div className="text-[9.5px] tabular-nums" style={{ color: INK_MUTE }}>{c.hex}</div>
                       </motion.div>
                     ))}
                   </div>
                 </div>
-                <div className="rounded-2xl border border-zinc-100 dark:border-zinc-800 p-6">
-                  <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">
-                    브랜드 톤 (업종 · 무드 기반 매칭)
-                  </div>
-                  <div className="mt-3 text-base font-medium leading-relaxed" style={{ fontFamily: "'Nanum Myeongjo', serif" }}>
-                    "{industry ? INDUSTRY_TONE[industry] ?? "사장님의 브랜드 결을 단정한 톤으로 담습니다" : "사장님의 브랜드 결을 단정한 톤으로 담습니다"}."
+                <div className="p-6" style={{ border: `0.5px solid ${RULE}` }}>
+                  <StepMark>브랜드 톤 (업종 · 무드 기반 매칭)</StepMark>
+                  <div className="mt-3 text-[16px] leading-relaxed" style={{ fontFamily: SERIF_HANGUL, color: INK }}>
+                    “{industry ? INDUSTRY_TONE[industry] ?? "사장님의 브랜드 결을 단정한 톤으로 담습니다" : "사장님의 브랜드 결을 단정한 톤으로 담습니다"}.”
                   </div>
                   {mood && MOOD_TONE_MODIFIER[mood] && (
-                    <div className="mt-3 text-[12px] text-zinc-500 leading-relaxed">
-                      <span className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold mr-2">무드 가중</span>
+                    <div className="mt-3 text-[12px] leading-relaxed" style={{ color: INK_SOFT }}>
+                      <span className="text-[10px] uppercase tracking-[0.18em] mr-2" style={{ color: INK_MUTE }}>무드 가중</span>
                       {MOOD_TONE_MODIFIER[mood]}
                     </div>
                   )}
                   {/* 사진 팔레트로 자동 추천된 무드 — 다른 칩 누르면 직접 변경 */}
-                  <div className="mt-5 pt-4 border-t border-zinc-100 dark:border-zinc-800">
-                    <div className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold mb-2">
+                  <div className="mt-5 pt-4" style={{ borderTop: `0.5px solid ${RULE_SOFT}` }}>
+                    <div className="text-[10px] uppercase tracking-[0.18em] mb-2" style={{ color: INK_MUTE }}>
                       {moodAutoDetected ? "사진 분석 추천 무드" : "무드"}
-                      <span className="ml-2 normal-case tracking-normal text-zinc-400">
+                      <span className="ml-2 normal-case tracking-normal" style={{ color: INK_MUTE }}>
                         {moodAutoDetected ? "· 업로드 사진 팔레트 기반 (직접 변경 가능)" : "· 직접 선택됨"}
                       </span>
                     </div>
@@ -887,11 +929,13 @@ export function Onboarding() {
                             key={m.id}
                             type="button"
                             onClick={() => { setMood(m.id); setMoodAutoDetected(false); }}
-                            className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition ${
-                              on
-                                ? "border-zinc-900 dark:border-zinc-100 bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                                : "border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:border-zinc-400"
-                            }`}
+                            className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] transition"
+                            style={{
+                              border: `0.5px solid ${on ? INK : RULE}`,
+                              background: on ? INK : "transparent",
+                              color: on ? PAPER : INK_SOFT,
+                              fontFamily: SERIF_HANGUL,
+                            }}
                           >
                             <span className="flex -space-x-0.5">
                               {m.swatches.slice(0, 3).map((sw, i) => (
@@ -907,8 +951,8 @@ export function Onboarding() {
                 </div>
               </div>
               <div className="mt-10 flex items-center justify-between">
-                <button onClick={back} className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100">조정하기</button>
-                <button onClick={next} className="text-sm font-medium px-5 py-2.5 rounded-md bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900">완벽해요 → 첫 릴스 만들기</button>
+                <button onClick={back} className={BACK_BTN} style={{ color: INK_MUTE }}>조정하기</button>
+                <button onClick={next} className={PRIMARY_BTN} style={{ background: INK, color: PAPER }}>완벽해요 → 첫 릴스 만들기</button>
               </div>
             </motion.section>
           )}
@@ -924,17 +968,18 @@ export function Onboarding() {
 
             return (
             <motion.section key="s7" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.4 }}>
-              <div className="text-[11px] uppercase tracking-widest text-emerald-600 dark:text-emerald-400 font-semibold">STEP 07 · 완료</div>
-              <h1 className="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight">첫 릴스가<br />방금 만들어졌어요 ✦</h1>
-              <p className="mt-3 text-base text-zinc-600 dark:text-zinc-400">
+              <StepMark accent>Step 07 · 완료</StepMark>
+              <StepTitle>첫 릴스가<br />방금 만들어졌어요 ✦</StepTitle>
+              <StepLede>
                 업로드하신 사진 {photos.length}장과 추출된 팔레트로 30초 릴스를 자동 편집했습니다.
-              </p>
+              </StepLede>
               <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                 <div className="relative mx-auto w-full" style={{ maxWidth: 280 }}>
                   <motion.div
                     initial={{ scale: 0.95, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="rounded-[28px] border-[8px] border-zinc-900 dark:border-zinc-700 bg-zinc-900 overflow-hidden shadow-2xl"
+                    className="rounded-[28px] overflow-hidden"
+                    style={{ border: `8px solid ${INK}`, background: INK, boxShadow: "0 24px 60px -24px rgba(20,19,15,0.45)" }}
                   >
                     <div className="aspect-[9/16] relative overflow-hidden">
                       {/* 업로드한 첫 사진 — 실제 영상 첫 프레임으로 사용 */}
@@ -970,7 +1015,7 @@ export function Onboarding() {
                         {moodTag && (
                           <span
                             className="ml-auto text-[9px] italic tracking-tight"
-                            style={{ fontFamily: '"Cormorant Garamond", "Times New Roman", serif', color: "rgba(255,255,255,0.85)" }}
+                            style={{ fontFamily: SERIF_LATIN, color: "rgba(255,255,255,0.85)" }}
                           >
                             {moodTag}
                           </span>
@@ -978,7 +1023,7 @@ export function Onboarding() {
                       </div>
                       {/* 업종별 후크 카피 */}
                       <div className="absolute bottom-16 left-4 right-4 text-white">
-                        <div className="text-[22px] font-bold leading-[1.2] drop-shadow-lg">
+                        <div className="text-[22px] font-bold leading-[1.2] drop-shadow-lg" style={{ fontFamily: SERIF_HANGUL, wordBreak: "keep-all" }}>
                           {hook.line1}<br />{hook.line2}
                         </div>
                         <div className="mt-2 text-[10px] text-white/85 drop-shadow">{hook.hashtag}</div>
@@ -995,32 +1040,32 @@ export function Onboarding() {
                   </motion.div>
                 </div>
                 <div className="space-y-3">
-                  <div className="rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/30 dark:bg-emerald-500/5 p-4">
-                    <div className="text-[10px] uppercase tracking-widest text-emerald-700 dark:text-emerald-400 font-semibold">생성된 콘텐츠</div>
-                    <ul className="mt-2 space-y-1.5 text-xs">
-                      <li className="flex items-center gap-2"><Check className="h-3 w-3 text-emerald-600" />{industryLabel} 인스타 릴스 30초 (8컷, 업로드 사진 기반)</li>
-                      <li className="flex items-center gap-2"><Check className="h-3 w-3 text-emerald-600" />브랜드 톤 캡션 + 해시태그 12개</li>
-                      <li className="flex items-center gap-2"><Check className="h-3 w-3 text-emerald-600" />썸네일 1:1 / 9:16 (추출 팔레트 적용)</li>
-                      <li className="flex items-center gap-2"><Check className="h-3 w-3 text-emerald-600" />카드뉴스 6장 (캐러셀)</li>
-                      <li className="flex items-center gap-2"><Check className="h-3 w-3 text-emerald-600" />네이버 블로그 본문 1편</li>
+                  <div className="p-4" style={{ border: `0.5px solid ${RULE}`, borderLeft: `2px solid ${SAGE}`, background: PAPER_HOVER }}>
+                    <StepMark accent>생성된 콘텐츠</StepMark>
+                    <ul className="mt-2 space-y-1.5 text-[12.5px]" style={{ fontFamily: SERIF_HANGUL, color: INK_SOFT }}>
+                      <li className="flex items-center gap-2"><Check className="h-3 w-3 shrink-0" style={{ color: SAGE }} />{industryLabel} 인스타 릴스 30초 (8컷, 업로드 사진 기반)</li>
+                      <li className="flex items-center gap-2"><Check className="h-3 w-3 shrink-0" style={{ color: SAGE }} />브랜드 톤 캡션 + 해시태그 12개</li>
+                      <li className="flex items-center gap-2"><Check className="h-3 w-3 shrink-0" style={{ color: SAGE }} />썸네일 1:1 / 9:16 (추출 팔레트 적용)</li>
+                      <li className="flex items-center gap-2"><Check className="h-3 w-3 shrink-0" style={{ color: SAGE }} />카드뉴스 6장 (캐러셀)</li>
+                      <li className="flex items-center gap-2"><Check className="h-3 w-3 shrink-0" style={{ color: SAGE }} />네이버 블로그 본문 1편</li>
                     </ul>
                   </div>
                   {/* 적용된 사용자 데이터 요약 */}
-                  <div className="rounded-xl border border-zinc-100 dark:border-zinc-800 p-4">
-                    <div className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">반영된 사장님 데이터</div>
-                    <ul className="mt-2.5 space-y-1.5 text-[11.5px] text-zinc-600 dark:text-zinc-400">
-                      <li>업종: <span className="text-zinc-900 dark:text-zinc-100 font-medium">{industryLabel}</span></li>
-                      {moodTag && <li>무드: <span className="text-zinc-900 dark:text-zinc-100 font-medium">{moodTag}</span></li>}
-                      <li>업로드 사진: <span className="text-zinc-900 dark:text-zinc-100 font-medium">{photos.length}장</span></li>
-                      <li>추출 팔레트: <span className="text-zinc-900 dark:text-zinc-100 font-medium">{extractedPalette.length}개 컬러</span></li>
+                  <div className="p-4" style={{ border: `0.5px solid ${RULE}` }}>
+                    <StepMark>반영된 사장님 데이터</StepMark>
+                    <ul className="mt-2.5 space-y-1.5 text-[11.5px]" style={{ color: INK_SOFT, fontFamily: SERIF_HANGUL }}>
+                      <li>업종: <span style={{ color: INK, fontWeight: 600 }}>{industryLabel}</span></li>
+                      {moodTag && <li>무드: <span style={{ color: INK, fontWeight: 600 }}>{moodTag}</span></li>}
+                      <li>업로드 사진: <span style={{ color: INK, fontWeight: 600 }}>{photos.length}장</span></li>
+                      <li>추출 팔레트: <span style={{ color: INK, fontWeight: 600 }}>{extractedPalette.length}개 컬러</span></li>
                     </ul>
                     {extractedPalette.length > 0 && (
                       <div className="mt-2.5 flex gap-1">
                         {extractedPalette.map((c) => (
                           <div
                             key={c.hex}
-                            className="h-4 flex-1 rounded-sm border border-zinc-100 dark:border-zinc-800"
-                            style={{ background: c.hex }}
+                            className="h-4 flex-1"
+                            style={{ background: c.hex, border: `0.5px solid ${RULE}` }}
                             title={`${c.name} · ${c.hex}`}
                           />
                         ))}
@@ -1073,14 +1118,15 @@ export function Onboarding() {
                     // 3) Free 플랜 또는 미선택 — 바로 대시보드
                     router.push("/dashboard");
                   }}
-                  className="text-sm font-medium px-6 py-3 rounded-md bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900 hover:opacity-90"
+                  className="text-[13.5px] font-medium px-6 py-3 tracking-[0.01em] transition-colors"
+                  style={{ background: INK, color: PAPER }}
                 >
                   {selectedPlan && selectedPlan !== "free"
                     ? `${PLAN_LABEL[selectedPlan]} 14일 무료체험 시작하기 →`
                     : "대시보드로 들어가기 →"}
                 </button>
                 {selectedPlan && selectedPlan !== "free" && (
-                  <p className="text-[11px] text-zinc-500">
+                  <p className="text-[11px]" style={{ color: INK_MUTE }}>
                     다음 화면에서 결제수단만 등록하시면 됩니다. 14일 후 첫 청구 — 그 전에 해지 시 청구 없음.
                   </p>
                 )}
