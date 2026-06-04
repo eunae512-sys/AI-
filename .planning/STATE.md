@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 Phase: 1 of 6 (Foundation & Multi-Tenant Data Model)
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-06-04 — Completed quick task 260604-pi2: 랜딩 Hero+Sections 1등 고도화
+Last activity: 2026-06-05 — Completed quick task 260605-ob1: 온보딩 에디토리얼 디자인 시스템 이관
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -81,6 +81,7 @@ None yet. (Use `/gsd-add-todo` to capture ideas during sessions.)
 | 260604-bg1 | BGM 가사를 실제로 부르는 보컬 음악 생성 (fal minimax-music) | 2026-06-04 | 1291b32 | [260604-bg1-vocal-music](./quick/260604-bg1-vocal-music/) |
 | 260604-tx1 | OpenAI 쿼터 소진 시 텍스트 생성 Gemini 자동 폴백 | 2026-06-04 | f1b99a6 | [260604-tx1-gemini-fallback](./quick/260604-tx1-gemini-fallback/) |
 | 260604-pi2 | 랜딩 Hero+Sections 1등 고도화 (이탤릭 제거·CTA 한글화·정직화·페르소나 플레이트·keep-all) | 2026-06-04 | 864e9a3 | [260604-pi2-landing-hero-uplift](./quick/260604-pi2-landing-hero-uplift/) |
+| 260605-ob1 | 온보딩 매거진 에디토리얼 디자인 시스템 전면 이관 (랜딩과 한 결) | 2026-06-05 | 35919bb | [260605-ob1-onboarding-editorial](./quick/260605-ob1-onboarding-editorial/) |
 
 ## Deferred Items
 
