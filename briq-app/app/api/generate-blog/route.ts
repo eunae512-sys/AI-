@@ -439,6 +439,8 @@ ${buildViralMandate({ voice, platform: "naver" })}`;
     const blogOrder: ("gemini" | "openai")[] = preferOpenAI ? ["openai", "gemini"] : ["gemini", "openai"];
     let lastMsg = "";
     let lastStatus = 500;
+    let geminiMsg = ""; // Gemini(주 프로바이더) 에러는 따로 보관 — OpenAI 쿼터 문구에 가려지지 않게
+    let geminiStatus = 0;
     for (const provider of blogOrder) {
       try {
         if (provider === "gemini") {
@@ -471,11 +473,15 @@ ${buildViralMandate({ voice, platform: "naver" })}`;
         const err = e as { error?: { message?: string }; message?: string; status?: number; code?: number };
         lastMsg = err?.error?.message || err?.message || String(e);
         lastStatus = err?.status || err?.code || 500;
+        if (provider === "gemini") { geminiMsg = lastMsg; geminiStatus = lastStatus; }
         console.error("[blog-gen]", provider, lastStatus, lastMsg.slice(0, 120));
       }
     }
     if (!bodyText) {
-      return NextResponse.json({ ok: false, error: lastMsg || "본문 생성 실패" }, { status: lastStatus });
+      // 주 프로바이더(Gemini) 에러를 우선 노출 — OpenAI 쿼터는 영구 소진이라 정보가치 낮음
+      const errMsg = geminiMsg || lastMsg || "본문 생성 실패";
+      const errStatus = geminiStatus || lastStatus;
+      return NextResponse.json({ ok: false, error: errMsg }, { status: errStatus });
     }
 
     // 자동 확장 — 첫 응답이 목표의 70% 미만이면 한 번만 retry 로 늘림

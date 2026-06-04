@@ -29,6 +29,7 @@ export async function geminiGenerateJson(opts: {
   user: string;
   model?: string;
   temperature?: number;
+  maxOutputTokens?: number;
 }): Promise<GeminiJsonResult> {
   const apiKey = process.env.GOOGLE_GENAI_API_KEY ?? "";
   const model = opts.model || process.env.GEMINI_TEXT_MODEL || "gemini-2.5-flash";
@@ -42,6 +43,11 @@ export async function geminiGenerateJson(opts: {
       systemInstruction: opts.system,
       responseMimeType: "application/json",
       temperature: opts.temperature ?? 0.7,
+      // 긴 본문(블로그 2000~3000자)이 JSON 중간에 잘려 파싱 실패하지 않도록 충분히 확보
+      maxOutputTokens: opts.maxOutputTokens ?? 8192,
+      // gemini-2.5-flash 는 thinking 토큰이 maxOutputTokens 예산을 잠식 → 긴 본문이 잘림.
+      // 구조화 카피/본문 생성엔 추론 불필요하므로 thinking 끔(출력 예산 확보 + 속도/비용↓).
+      thinkingConfig: { thinkingBudget: 0 },
     },
   });
 

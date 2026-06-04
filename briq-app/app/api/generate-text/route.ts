@@ -198,6 +198,8 @@ ${buildViralMandate({ voice, platform: "general" })}`;
   let usage: unknown = undefined;
   let lastMsg = "";
   let lastStatus = 500;
+  let geminiMsg = ""; // Gemini(주 프로바이더) 에러 별도 보관
+  let geminiStatus = 0;
 
   for (const provider of order) {
     try {
@@ -241,15 +243,16 @@ ${buildViralMandate({ voice, platform: "general" })}`;
       const err = e as { error?: { message?: string }; message?: string; status?: number; code?: number };
       lastMsg = err?.error?.message || err?.message || String(e);
       lastStatus = err?.status || err?.code || 500;
+      if (provider === "gemini") { geminiMsg = lastMsg; geminiStatus = lastStatus; }
       console.error("[text-gen]", provider, lastStatus, lastMsg.slice(0, 120));
     }
   }
 
   if (slides.length === 0) {
-    return NextResponse.json(
-      { ok: false, error: lastMsg || "텍스트 생성 실패", status: lastStatus },
-      { status: lastStatus },
-    );
+    // 주 프로바이더(Gemini) 에러 우선 노출 — OpenAI 쿼터 문구가 진짜 원인을 가리지 않게
+    const errMsg = geminiMsg || lastMsg || "텍스트 생성 실패";
+    const errStatus = geminiStatus || lastStatus;
+    return NextResponse.json({ ok: false, error: errMsg, status: errStatus }, { status: errStatus });
   }
 
   const forbiddenList = forbidden
