@@ -3,7 +3,7 @@
 
 export const INK = "#14130F";              // warm black — 본문/표제
 export const INK_SOFT = "#4A4742";         // 보조 본문
-export const INK_MUTE = "#8C8881";         // 메타·캡션
+export const INK_MUTE = "#767268";         // 메타·캡션 — 작은 라벨 가독성 위해 살짝 진하게(대비 ↑)
 export const RULE = "rgba(20,19,15,0.12)"; // 0.5px hairline 룰
 export const RULE_SOFT = "rgba(20,19,15,0.06)"; // 더 약한 분할선
 export const PAPER = "#FAF7EE";            // 페이지 종이 워시

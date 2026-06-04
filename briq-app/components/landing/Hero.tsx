@@ -123,12 +123,8 @@ export function Hero() {
             </span>
             <span className="block mt-1 sm:mt-2">
               <Quiet>SNS 는{" "}</Quiet>
-              <em
-                className="italic"
-                style={{ fontFamily: SERIF_LATIN, fontStyle: "italic", color: INK, fontWeight: 400 }}
-              >
-                자동으로
-              </em>
+              {/* 한글 강조는 이탤릭(가짜 기울임) 대신 풀-잉크 + 무게로 — 주변 muted 와의 대비가 강조를 만든다 */}
+              <span style={{ color: INK, fontWeight: 500 }}>자동으로</span>
               <Quiet>{" "}굴러갑니다.</Quiet>
             </span>
           </h1>
@@ -161,7 +157,7 @@ export function Hero() {
             <ul className="mt-3 space-y-1.5 text-[12.5px]" style={{ color: INK_SOFT, fontFamily: SERIF_HANGUL }}>
               <li>· 14일 무료 · 카드 입력 없음</li>
               <li>· 3분 만에 가입</li>
-              <li>· 한국 소상공인 <em className="not-italic tabular-nums">200+</em> 가게 사용 중</li>
+              <li>· 인스타·블로그·카카오 한 곳에서</li>
             </ul>
           </aside>
         </motion.div>
@@ -179,22 +175,22 @@ export function Hero() {
             className="col-span-12 lg:col-span-11 flex flex-col sm:flex-row items-stretch sm:items-baseline gap-x-8 gap-y-5 pb-6 border-b"
             style={{ borderColor: RULE }}
           >
-            {/* Primary — 솔리드 잉크. 작고 단정. */}
+            {/* Primary — 솔리드 잉크. 한국 사장님 대상이라 한글 라벨, 자간 절제(한글은 넓은 자간·대문자 금물) */}
             <Link
               href="/onboarding"
-              className="group inline-flex items-center justify-center gap-3 h-12 sm:h-[46px] px-7 text-[12.5px] tracking-[0.16em] uppercase font-medium transition-colors"
+              className="group inline-flex items-center justify-center gap-3 h-12 sm:h-[46px] px-7 text-[13.5px] tracking-[0.01em] font-medium transition-colors"
               style={{ background: INK, color: PAPER_WASH }}
             >
-              Begin
+              14일 무료로 시작
               <span aria-hidden className="text-[14px] tracking-normal transition-transform group-hover:translate-x-0.5">→</span>
             </Link>
             {/* Secondary — 헤어라인 outlined */}
             <Link
               href="/dashboard"
-              className="inline-flex items-center justify-center gap-2 h-12 sm:h-[46px] px-6 text-[12.5px] tracking-[0.16em] uppercase transition-colors hover:bg-[rgba(20,19,15,0.04)]"
+              className="inline-flex items-center justify-center gap-2 h-12 sm:h-[46px] px-6 text-[13.5px] tracking-[0.01em] transition-colors hover:bg-[rgba(20,19,15,0.04)]"
               style={{ border: `0.5px solid ${INK}`, color: INK }}
             >
-              View the demo
+              데모 둘러보기
             </Link>
             {/* Tertiary — pure underline link, 매거진 결 (모바일에서도 노출) */}
             <Link
@@ -218,12 +214,16 @@ export function Hero() {
           </div>
           <div className="col-span-12 lg:col-span-11">
             <Kicker>Field Notes · 지금 가게에서</Kicker>
+            {/* 정직성: 아래 수치는 실제 운영 화면을 본뜬 예시 미리보기 */}
+            <div className="mt-1.5 text-[10.5px] italic" style={{ fontFamily: SERIF_LATIN, color: INK_MUTE }}>
+              An illustrative preview · 실제 운영 화면 예시
+            </div>
             {today && (
               <div
-                className="mt-2 text-[12px] italic"
-                style={{ fontFamily: SERIF_LATIN, color: INK_SOFT }}
+                className="mt-2 text-[12px]"
+                style={{ fontFamily: SERIF_HANGUL, color: INK_SOFT }}
               >
-                오늘은 <em className="not-italic" style={{ fontFamily: SERIF_HANGUL, color: INK, fontWeight: 500 }}>{today.weekdayKo}요일</em>입니다.
+                오늘은 <strong style={{ color: INK, fontWeight: 600 }}>{today.weekdayKo}요일</strong>입니다.
               </div>
             )}
             <p
@@ -236,8 +236,8 @@ export function Hero() {
               오늘 자동 발행은 <Stamp>2</Stamp> 건 완료되었습니다. 댓글·DM 자동
               응답은 <em className="italic" style={{ fontFamily: SERIF_LATIN }}>ON</em>{" "}
               — 평균 <Stamp>3분</Stamp> 안에 회신합니다. 이번 주 진행 중인
-              캠페인은 두 개, <em className="italic" style={{ fontFamily: SERIF_LATIN }}>신메뉴</em>{" "}
-              와 <em className="italic" style={{ fontFamily: SERIF_LATIN }}>어버이날</em>.
+              캠페인은 두 개, <span style={{ color: INK, fontWeight: 600, borderBottom: `0.5px solid ${RULE}`, paddingBottom: 1 }}>신메뉴</span>{" "}
+              와 <span style={{ color: INK, fontWeight: 600, borderBottom: `0.5px solid ${RULE}`, paddingBottom: 1 }}>어버이날</span>.
             </p>
 
             {/* 라이브 메트릭 — 박스 없이 본문 사이에 numbered figures */}
@@ -261,6 +261,9 @@ export function Hero() {
           </div>
           <div className="col-span-12 lg:col-span-11">
             <Kicker>Diary · 이번 주 발행 일지</Kicker>
+            <div className="mt-1.5 text-[10.5px] italic" style={{ fontFamily: SERIF_LATIN, color: INK_MUTE }}>
+              An illustrative preview · 실제 운영 화면 예시
+            </div>
             <ol className="mt-5 border-t" style={{ borderColor: RULE }}>
               {WEEK.map((w, i) => {
                 const isToday = today?.weekdayIdx === i;
@@ -300,7 +303,7 @@ export function Hero() {
                       fontFamily: SERIF_HANGUL,
                       color: INK,
                       fontWeight: isToday ? 600 : 500,
-                      fontStyle: isToday ? "italic" : "normal",
+                      // 한글은 이탤릭(가짜 기울임) 금지 — '오늘' 강조는 무게·dot·Today 라벨로
                     }}
                   >
                     {w.day}
@@ -380,7 +383,7 @@ export function Hero() {
           <span aria-hidden className="text-left italic" style={{ fontFamily: SERIF_LATIN, fontStyle: "italic", letterSpacing: 0, textTransform: "none", opacity: 0.55 }}>
             3 min
           </span>
-          <span className="text-center">Begin</span>
+          <span className="text-center tracking-[0.04em] normal-case">무료로 시작</span>
           <span aria-hidden className="text-right text-[14px] tracking-normal">→</span>
         </Link>
       </motion.div>
