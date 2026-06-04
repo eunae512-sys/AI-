@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 Phase: 1 of 6 (Foundation & Multi-Tenant Data Model)
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-06-04 — 텍스트 생성 Gemini 폴백 + 긴 본문 잘림 수정 (tx1)
+Last activity: 2026-06-04 — BGM 가사 보컬 음악 생성(fal) 추가 (bg1)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -78,6 +78,7 @@ None yet. (Use `/gsd-add-todo` to capture ideas during sessions.)
 | 260604-ai1 | AI 출연자 생성을 캠페인 주제에 맞게 (주제 무관 결과 해결) | 2026-06-04 | 264871a | [260604-ai1-aimodel-topic](./quick/260604-ai1-aimodel-topic/) |
 | 260604-ai2 | AI 출연자 주제 영문 변환으로 매칭 정확도 향상 | 2026-06-04 | 0e30baa | [260604-ai2-topic-translate](./quick/260604-ai2-topic-translate/) |
 | 260604-rl1 | 릴스 화면 직관화 (자동회전 제거·참고그리드 삭제·컷 썸네일 편집) | 2026-06-04 | 6597e5e | [260604-rl1-reels-simplify](./quick/260604-rl1-reels-simplify/) |
+| 260604-bg1 | BGM 가사를 실제로 부르는 보컬 음악 생성 (fal minimax-music) | 2026-06-04 | 1291b32 | [260604-bg1-vocal-music](./quick/260604-bg1-vocal-music/) |
 | 260604-tx1 | OpenAI 쿼터 소진 시 텍스트 생성 Gemini 자동 폴백 | 2026-06-04 | f1b99a6 | [260604-tx1-gemini-fallback](./quick/260604-tx1-gemini-fallback/) |
 
 ## Deferred Items
