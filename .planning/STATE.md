@@ -91,6 +91,17 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-05-10
-Stopped at: Roadmap (6 phases) + STATE.md initialized; REQUIREMENTS.md traceability updated. Ready for `/gsd-plan-phase 1`.
-Resume file: None
+**Active goal:** 소상공인 자동화 마케팅 플랫폼 — 전세계 1등 사이트 (디테일 고도화 모드)
+
+**다음 작업 (NEXT): 랜딩 페이지를 1등 수준으로 고도화**
+- 대상: `briq-app/app/page.tsx` → `components/landing/{Nav,Hero,Sections}.tsx`
+- 목표: "전세계 1등 *사이트*"의 첫인상·전환. 히어로 카피/비주얼 위계, 신뢰요소(소셜프루프·실데이터), CTA 명확성, 반응형·모션 절제, 카피 톤(전문가 마케터·AI클리셰 0).
+- 방식: GSD quick — 한 섹션씩 감사→개선→tsc/빌드→스크린샷 검증→원자 커밋.
+- 재개 명령 예: "랜딩 Hero부터 1등 수준으로 고도화"
+
+**고도화 우선순위(랜딩 다음):** 온보딩(활성화) → 결제/요금제(신뢰) → 대시보드(운영 효율) → /cardnews·/reels 편집 디테일.
+
+**환경 메모:** dev 서버는 `pnpm dev` 가 의존성 검증서 실패 → `cd briq-app && ./node_modules/.bin/next dev -p 3000` 로 직접 띄울 것. OpenAI 쿼터·fal 잔액 소진 상태(텍스트/이미지/영상/음악은 Gemini 폴백으로 동작, 보컬음악·AI영상은 결제 충전 필요).
+
+Last session: 2026-06-04
+Resume file: STATE.md (이 블록)
