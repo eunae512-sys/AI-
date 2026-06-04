@@ -489,8 +489,25 @@ ${buildViralMandate({ voice, platform: "naver" })}`;
     let initialCharCount = bodyText.replace(/\s+/g, "").length;
     let expandedOnce = false;
     let secondUsage: { prompt_tokens?: number; completion_tokens?: number } = {};
-    // Gemini 로 생성된 경우 OpenAI 확장(쿼터 소진 위험) 건너뜀 — Gemini 본문은 그대로 사용
-    if (!usedGemini && initialCharCount < minChars) {
+    // Gemini 본문이 짧으면 Gemini 로 한 번 더 확장 (세계급 SEO = 목표 분량 충족).
+    if (usedGemini && initialCharCount < minChars) {
+      try {
+        const expandUser =
+          `${userPrompt}\n\n[현재 초안]\n${bodyText}\n\n` +
+          `위 초안이 ${initialCharCount}자로 ${minChars}자에 미달합니다. 같은 구조·문체·관점을 유지하면서 ` +
+          `각 문단에 구체적인 장면·예시·감각 묘사를 2~3문장씩 더해 전체 ${targetChars}자 내외로 자연스럽게 늘려 주세요. ` +
+          `기존 문장은 그대로 두고 새 문장만 끼워 넣으세요. 출력은 JSON {"body":"..."} 형식만.`;
+        const g2 = await geminiGenerateJson({ system: systemPrompt, user: expandUser, maxOutputTokens: 8192 });
+        const eb = (((g2.json as { body?: string })?.body) ?? "").trim();
+        if (eb && eb.replace(/\s+/g, "").length > initialCharCount) {
+          bodyText = eb;
+          expandedOnce = true;
+          geminiCost += g2.costUsd;
+        }
+      } catch {
+        // 확장 실패 — 첫 응답 그대로
+      }
+    } else if (!usedGemini && initialCharCount < minChars) {
       try {
         const expandRes = await openai.chat.completions.create({
           model,
