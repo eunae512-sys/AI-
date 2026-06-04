@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ensureFalConfigured, fal } from "@/lib/ai/video/fal";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
 
 // 가사 → AI 음악 생성
-// 1순위: REPLICATE_API_TOKEN — meta/musicgen 모델
-// 2순위: demoMode 시그널 반환 → 클라이언트가 Web Audio 로 합성
+// 1순위: FAL_KEY — fal-ai/minimax-music/v2 (가사를 실제로 부르는 보컬 모델)
+// 2순위: REPLICATE_API_TOKEN — meta/musicgen (악기 전용, 보컬 없음)
+// 3순위: demoMode 시그널 → 클라이언트가 Web Audio 로 합성 (악기 전용)
+const FAL_MUSIC_MODEL = process.env.FAL_MUSIC_MODEL || "fal-ai/minimax-music/v2";
 
 type Body = {
   instrumentalPrompt?: string;
@@ -33,6 +36,41 @@ export async function POST(req: NextRequest) {
       { ok: false, error: "instrumentalPrompt 필요" },
       { status: 400 },
     );
+  }
+
+  // ── 1순위: fal.ai minimax-music — 가사를 실제로 부르는 보컬 모델 ──
+  const lyrics = (body.lyrics ?? "").trim();
+  if (ensureFalConfigured() && lyrics.length >= 10) {
+    const startedFal = Date.now();
+    try {
+      const stylePrompt = prompt.slice(0, 300); // 무드/장르 설명 (10~300자)
+      const r = (await fal.subscribe(FAL_MUSIC_MODEL, {
+        input: { prompt: stylePrompt, lyrics_prompt: lyrics.slice(0, 3000) },
+      })) as { data?: { audio?: { url?: string } } };
+      const url = r?.data?.audio?.url;
+      if (url) {
+        const costUsd = 0.04; // minimax-music v2 대략 단가
+        return NextResponse.json({
+          ok: true,
+          audioUrl: url,
+          meta: {
+            source: "fal-minimax-music",
+            model: FAL_MUSIC_MODEL,
+            vocals: true,
+            durationSec,
+            bpm: body.bpm ?? 100,
+            mood: body.mood,
+            latencyMs: Date.now() - startedFal,
+            costUsd,
+            costKrw: Math.round(costUsd * 1400),
+          },
+        });
+      }
+      // url 없으면 아래 폴백으로
+    } catch (e) {
+      console.error("[generate-music] fal", (e as Error)?.message?.slice(0, 140));
+      // fal 실패 → musicgen/데모 폴백
+    }
   }
 
   const token = process.env.REPLICATE_API_TOKEN;
