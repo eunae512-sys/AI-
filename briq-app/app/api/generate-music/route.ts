@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
 
   // ── 1순위: fal.ai minimax-music — 가사를 실제로 부르는 보컬 모델 ──
   const lyrics = (body.lyrics ?? "").trim();
+  let falNote = ""; // fal 실패 사유 — 데모 폴백 시 사용자에게 노출
   if (ensureFalConfigured() && lyrics.length >= 10) {
     const startedFal = Date.now();
     try {
@@ -68,7 +69,12 @@ export async function POST(req: NextRequest) {
       }
       // url 없으면 아래 폴백으로
     } catch (e) {
-      console.error("[generate-music] fal", (e as Error)?.message?.slice(0, 140));
+      const ex = e as { message?: string; status?: number; body?: { detail?: string } };
+      const detail = ex?.body?.detail || ex?.message || "";
+      console.error("[generate-music] fal ERROR", ex?.status, detail);
+      falNote = /balance|locked|exhaust/i.test(detail)
+        ? "fal.ai 잔액 소진 — 보컬 음악 생성 불가(충전 필요). 임시 데모 BGM(악기)으로 대체"
+        : "보컬 음악 생성 실패 — 임시 데모 BGM(악기)으로 대체";
       // fal 실패 → musicgen/데모 폴백
     }
   }
@@ -84,7 +90,7 @@ export async function POST(req: NextRequest) {
         durationSec,
         bpm: body.bpm ?? 100,
         mood: body.mood ?? "warm-acoustic",
-        notice: "REPLICATE_API_TOKEN 미설정 — 브라우저 합성 데모 음악으로 대체",
+        notice: falNote || "REPLICATE_API_TOKEN 미설정 — 브라우저 합성 데모 음악으로 대체",
         costUsd: 0,
         costKrw: 0,
       },
