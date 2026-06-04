@@ -396,7 +396,7 @@ const VALUE_POOL: ((c: Ctx) => string)[] = [
   (c) => `${c.v.experienceWord} ${c.v.process}\n시간만큼 ${c.v.outcomePhrase}.`,
   // 고집 — 클리셰 대신 단정한 한 줄
   (c) => `남들 하는 방식 말고,\n여기 결대로 합니다.`,
-  (c) => `사장님 손 거친 ${c.v.signature},\n중간에 다른 손 안 탑니다.`,
+  (c) => `사장님이 직접 챙기는 ${c.v.signature},\n중간에 대충이 없습니다.`,
   // 시그니처
   (c) => `${c.v.customerWord}들이 매번 다시 찾는 건\n따로 있습니다.`,
   // 가격 — 단정 금액 제거, 채널 안내(자연스러운 구어)
