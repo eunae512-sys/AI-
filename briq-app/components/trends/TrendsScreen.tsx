@@ -443,9 +443,9 @@ export function TrendsScreen() {
                   <div className="text-xs font-semibold">{s.format}</div>
                   <div className="text-[11px] text-zinc-500 mt-0.5">톤·구성 참고용</div>
                   <div className="mt-2 flex items-center gap-1 flex-wrap">
-                    {s.hooks.map((h) => (
+                    {s.hooks.map((h, i) => (
                       <span
-                        key={h}
+                        key={`${h}-${i}`}
                         className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800"
                       >
                         {h}

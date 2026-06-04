@@ -708,8 +708,8 @@ function PlatformCard({
             </button>
           </div>
           <div className="flex flex-wrap gap-1.5">
-            {result.hashtags.map((h) => (
-              <span key={h} className="text-xs bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 px-2 py-0.5 rounded">
+            {result.hashtags.map((h, i) => (
+              <span key={`${h}-${i}`} className="text-xs bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 px-2 py-0.5 rounded">
                 {h}
               </span>
             ))}

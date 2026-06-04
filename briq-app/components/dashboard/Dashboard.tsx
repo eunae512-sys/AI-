@@ -653,7 +653,7 @@ function CoverStory({
             {t.caption}
           </p>
           <div className="mt-5 flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-zinc-500 dark:text-zinc-500">
-            {t.hashtags.slice(0, 5).map((h) => <span key={h} className="tracking-[0.01em]">{h}</span>)}
+            {t.hashtags.slice(0, 5).map((h, i) => <span key={`${h}-${i}`} className="tracking-[0.01em]">{h}</span>)}
           </div>
 
           {/* 매거진 colophon 결 — 직원 메모 작게 */}
