@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 Phase: 1 of 6 (Foundation & Multi-Tenant Data Model)
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-06-05 — /cardnews 슬라이드 letterhead 에 브랜드 로고 실제 배선 (CardnewsScreen 은 자체 렌더라 캠페인 카루셀과 달리 로고 누락이었음 — BrandMarkPicker 인라인 + logoDataUrl 렌더 분기, 폴백=이니셜, tsc 0, 양쪽 스크린샷) (260605-lzm)
+Last activity: 2026-06-05 — /cardnews letterhead 로고 위치 토글(좌상/중앙/우상) 반영 (CardnewsScreen 정렬이 justify-start 고정이라 픽커 위치값 미반영이었음 — letterheadAlign() 헬퍼 + 마크그룹 flex-1 정렬, 페이지카운터는 우측 고정 유지, 폴백 이니셜도 동일 정렬, CardnewsCarousel 의 alignFor 패턴 미러, tsc 0, 좌/우 CDP 스크린샷 육안 확인) (260605-cnp). 직전: letterhead 에 로고 실제 배선 (260605-lzm)
 
 Progress: [░░░░░░░░░░] 0%
 

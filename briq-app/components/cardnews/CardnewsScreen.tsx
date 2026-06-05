@@ -278,6 +278,20 @@ const INDUSTRY_PROMPT_DEFAULTS: Record<
   },
 };
 
+// letterhead 브랜드 마크 가로 정렬 — 픽커의 위치 토글(좌상/중앙/우상)을 반영.
+// 페이지 카운터는 우측 고정이라, 마크 그룹(flex-1)을 좌/중/우로 정렬해 위치를 옮긴다.
+function letterheadAlign(pos: BrandMarkConfig["position"]): string {
+  switch (pos) {
+    case "top-center":
+      return "justify-center";
+    case "top-right":
+      return "justify-end";
+    case "top-left":
+    default:
+      return "justify-start";
+  }
+}
+
 export function CardnewsScreen() {
   const { brand, userBrand } = useBrand();
   const toast = useToast();
@@ -1423,7 +1437,7 @@ export function CardnewsScreen() {
 
                 {/* 매거진 letterhead — 브랜드 마크 + 슬라이드 번호 (모든 layout 공통) */}
                 <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2 z-10">
-                  <div className="flex items-center gap-2 min-w-0">
+                  <div className={cn("flex flex-1 items-center gap-2 min-w-0", letterheadAlign(brandMark.position))}>
                     {/* 브랜드 마크 — 로고 있으면 이미지(어두운 배경이라 흰 틴트), 없으면 컬러 이니셜 폴백.
                         showOnInner=false 면 표지(i=0)에만 로고, 나머지는 이니셜. */}
                     {brandMark.logoDataUrl && (i === 0 || brandMark.showOnInner) ? (
