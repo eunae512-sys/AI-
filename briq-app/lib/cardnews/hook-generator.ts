@@ -23,6 +23,7 @@ import { 은, 이, 을 } from "@/lib/utils/korean-particles";
 // 시중 잘된 카드뉴스 학습 패턴 — 후크 7종 · 업종별 시퀀스 · 톤 매핑.
 // 출처: docs/cardnews-branding-research.md (29CM · 무신사 · 콤포타블 · 노티드 등).
 import { HOOK_PATTERNS_BY_TYPE } from "@/lib/cardnews/hook-patterns";
+import { translateTopicToEN } from "@/lib/cardnews/video-query";
 
 export type CardnewsCampaignKind =
   | "신메뉴"
@@ -634,6 +635,17 @@ function translateSubject(subject: string): string {
     룩북: "fashion lookbook",
     컬러: "hair color salon",
     헤어: "hair salon",
+    // 음료 — imageQueryFor 1차 빠른 매핑
+    레몬에이드: "lemonade",
+    레모네이드: "lemonade",
+    에이드: "fruit ade sparkling",
+    자몽: "grapefruit",
+    청귤: "green tangerine",
+    한라봉: "hallabong citrus",
+    스무디: "fruit smoothie",
+    셰이크: "milkshake",
+    망고: "mango",
+    딸기: "strawberry",
   };
   let out = subject;
   for (const [k, v] of Object.entries(map)) {
@@ -658,9 +670,13 @@ function imageQueryFor(role: SlideRole, ctx: Ctx): string {
   const moodStyle = MOOD_IMAGE_STYLE[ctx.brand.mood ?? "warm"] ?? MOOD_IMAGE_STYLE.warm;
   const tail = `${moodStyle}, editorial magazine, shallow depth of field, film aesthetic, no people`;
   const industrySubject = industryScene[ctx.brand.industry as Industry] ?? industryScene.restaurant;
-  const topicSubject = translateSubject(ctx.t.subject);
-  // 토픽이 industry 와 같은 결이면 industry scene 만 사용, 다르면 토픽 우선
-  const subject = topicSubject !== ctx.t.subject ? `${topicSubject}, ${industrySubject}` : industrySubject;
+  // translateSubject 성공 시 그것 우선; 실패(입력 그대로 반환) 시 video-query 사전으로 폴백
+  const direct = translateSubject(ctx.t.subject);
+  const translated = direct !== ctx.t.subject ? direct : translateTopicToEN(ctx.t.subject);
+  // 번역 결과가 있으면 토픽 우선 결합, 완전히 비어있을 때만 industry-only 폴백
+  const subject = translated && translated.trim().length > 0
+    ? `${translated}, ${industrySubject}`
+    : industrySubject;
 
   // 역할별 구도만 지정 — 톤/분위기는 mood(tail)가 결정하도록 고정 톤 단어 제거
   switch (role) {
