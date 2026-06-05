@@ -66,23 +66,6 @@ function SectionLabel({ icon: Icon, children }: { icon?: React.ElementType; chil
 // 헤어라인 사각 카드 — SaaS Card 대체. 큰 여백.
 const cardStyle: React.CSSProperties = { border: `0.5px solid ${RULE}`, background: "#FFFFFF" };
 
-const TEMPLATES = [
-  { id: "morning", name: "새벽 시간순 다큐", desc: "한정식 · 카페 · 베이커리", saveDelta: "+312%", grad: "from-amber-200 via-rose-300 to-amber-400" },
-  { id: "asmr", name: "ASMR 디테일 컷", desc: "디저트 · 미용 · 시술", saveDelta: "+248%", grad: "from-stone-700 to-stone-900" },
-  { id: "info", name: "5분 정보형 카드", desc: "의료 · 학원 · 안내형", saveDelta: "+189%", grad: "from-sky-100 via-slate-200 to-blue-300" },
-  { id: "stay", name: "공간 무드 V-log", desc: "숙소 · 펜션 · 한옥", saveDelta: "+167%", grad: "from-amber-100 via-stone-200 to-amber-300" },
-];
-
-// 업종별 기본 템플릿 매핑
-const INDUSTRY_DEFAULT_TPL: Record<string, string> = {
-  restaurant: "morning",
-  cafe: "morning",
-  dessert: "asmr",
-  beauty: "asmr",
-  stay: "stay",
-  local: "info",
-};
-
 const BGM: { name: string; mood: string; synthMood: MusicMood; bpm: number }[] = [
   { name: "Lo-Fi Calm Morning", mood: "차분 · 새벽", synthMood: "lofi-chill", bpm: 75 },
   { name: "Acoustic Sunshine", mood: "밝음 · 오전", synthMood: "warm-acoustic", bpm: 95 },
@@ -120,10 +103,8 @@ export function ReelsScreen() {
     }
     return detail?.topHooks ?? ["새벽 4시, 시장이 깨어납니다"];
   }, [isUserBrand, userBrand, brand.industry, detail?.topHooks]);
-  const defaultTpl = INDUSTRY_DEFAULT_TPL[brand.industry] ?? "morning";
 
   const [status, setStatus] = React.useState<Status>("done");
-  const [activeTpl, setActiveTpl] = React.useState(defaultTpl);
   const [activeHook, setActiveHook] = React.useState(0);
   const [activeBgm, setActiveBgm] = React.useState(0);
 
@@ -165,20 +146,14 @@ export function ReelsScreen() {
   }, [mounted, brand.id, brand.industry, brand.city, brand.name, isUserBrand, userBrand?.signatureMenu, viralSeed]);
   const rerollViralHooks = () => setViralSeed((s) => s + 1);
 
-  const DEFAULT_PHOTOS = [
-    "from-amber-200 to-rose-300",
-    "from-violet-300 to-pink-400",
-    "from-amber-300 to-stone-700",
-    "from-slate-300 to-stone-500",
-    "from-amber-100 to-amber-300",
-    "from-rose-200 to-amber-200",
-  ];
+  // 업로드 전 빈 시드 칸 수 — 칸은 빈 PAPER 사각형으로만 렌더(아래 그리드 참고)
+  const SEED_SLOT_COUNT = 6;
   type Photo =
-    | { kind: "gradient"; grad: string }
+    | { kind: "gradient" }
     | { kind: "upload"; url: string; name: string; caption: string };
-  const [photos, setPhotos] = React.useState<Photo[]>(
-    DEFAULT_PHOTOS.map((g) => ({ kind: "gradient", grad: g })),
-  );
+  const seedPhotos = (): Photo[] =>
+    Array.from({ length: SEED_SLOT_COUNT }, () => ({ kind: "gradient" }));
+  const [photos, setPhotos] = React.useState<Photo[]>(seedPhotos);
   React.useEffect(() => {
     // 사용자 브랜드면 온보딩에서 올린 사진을 자동 시드 (캡션은 후크 순환)
     if (isUserBrand && userBrand && userBrand.photos.length > 0) {
@@ -191,7 +166,7 @@ export function ReelsScreen() {
       setPhotos(seeded);
       return;
     }
-    setPhotos(DEFAULT_PHOTOS.map((g) => ({ kind: "gradient", grad: g })));
+    setPhotos(seedPhotos());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [brand.id, isUserBrand, userBrand]);
 
@@ -371,9 +346,8 @@ export function ReelsScreen() {
     });
   };
 
-  // 브랜드 전환 시 자동으로 해당 업종 템플릿으로 점프
+  // 브랜드 전환 시 후크 선택 초기화
   React.useEffect(() => {
-    setActiveTpl(INDUSTRY_DEFAULT_TPL[brand.industry] ?? "morning");
     setActiveHook(0);
   }, [brand.id, brand.industry]);
 
@@ -1158,7 +1132,7 @@ export function ReelsScreen() {
                       ? `compiled-${compiled.durationMs}-${compiled.size}`
                       : currentCut
                       ? `cut-${cutIdx}-${currentCut.url.slice(-12)}`
-                      : activeTpl
+                      : "empty"
                   }
                   initial={{ opacity: 0, scale: 1.04 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -1211,7 +1185,8 @@ export function ReelsScreen() {
                         {brand.letter}
                       </div>
                       <div className="text-[11px] font-medium drop-shadow">{brand.name}</div>
-                      <button className="ml-auto text-[11px] bg-white/20 backdrop-blur px-2.5 py-1 rounded-full">팔로우</button>
+                      {/* IG 목업 장식 — 비인터랙티브 (하단 하트·댓글 아이콘과 동일하게 pointer-events-none) */}
+                      <span className="ml-auto text-[11px] bg-white/20 backdrop-blur px-2.5 py-1 rounded-full pointer-events-none select-none">팔로우</span>
                     </div>
                   )}
 
@@ -1227,8 +1202,10 @@ export function ReelsScreen() {
                     </div>
                   )}
 
-                  {/* React 자막 오버레이 — 컴파일된 영상이 재생 중이면 숨김 (영상에 자막 baked-in) */}
-                  {!compiled && (
+                  {/* React 자막 오버레이 — 컴파일 영상엔 자막 baked-in 이라 숨김.
+                      업로드 컷이 없으면(빈 상태) 샘플 자막이 "예시 화면" 안내문과 겹쳐
+                      가독성을 해치므로 currentCut 있을 때만 렌더. */}
+                  {!compiled && currentCut && (
                   <motion.div
                     key={`caption-${cutIdx}-${brand.id}-${activeHook}`}
                     initial={{ opacity: 0, y: 8 }}
