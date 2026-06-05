@@ -439,7 +439,7 @@ const VALUE_POOL: ((c: Ctx) => string)[] = [
   // 산지·재료 — 업종 인지 (무형 업종엔 산지 표현 금지)
   (c) => sourcingLine(c),
   // 결과 — 산업별 구체 감각(outcomePhrase)
-  (c) => `${c.v.experienceWord} ${c.v.process}\n시간만큼 ${c.v.outcomePhrase}.`,
+  (c) => `정성껏 ${c.v.process}\n시간만큼 ${c.v.outcomePhrase}.`,
   // 고집 — 클리셰 대신 단정한 한 줄
   (c) => `요란하게는 안 해도,\n오던 분들은 다 아세요.`,
   (c) => `사장님이 직접 챙기는 ${c.v.signature},\n어디 하나 대충이 없습니다.`,
@@ -745,7 +745,7 @@ const MOOD_CAPTION_OPENER: Record<string, (c: Ctx) => string> = {
 // 정책: 출처 없는 단정 숫자 (새벽 4시, 별점 4.9, 재방문율 62%) 금지. 브랜드 자체 값만 인용.
 const CAPTION_BODY_LINES: ((c: Ctx) => string)[] = [
   (c) => `· ${sourcingLine(c).replace(/\n/g, " ")}`,
-  (c) => `· ${c.v.experienceWord} ${c.v.process} 시간만큼 ${c.v.outcomePhrase}.`,
+  (c) => `· 하나하나 ${c.v.process} 시간만큼 ${c.v.outcomePhrase}.`,
   (c) => `· 한 번 와본 분이 조용히 다시 ${c.v.visitWord} 곳이에요.`,
   (c) => `· ${이(c.v.customerWord)} 매번 다시 찾는 건 따로 있어요.`,
   (c) => `· ${c.v.slotBusyPhrase} — ${c.t.timeWord ?? defaultBusyTime(c.brand.industry)}.`,
