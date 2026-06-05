@@ -59,17 +59,51 @@ export function SmartTextOverlay({
   /** 개발 중 안전영역 가이드 라인 노출 (디버깅) */
   showSafeZoneGuide?: boolean;
 }) {
-  const imgRef = React.useRef<HTMLImageElement | null>(null);
   const [imgEl, setImgEl] = React.useState<HTMLImageElement | null>(null);
   const [imgReady, setImgReady] = React.useState(false);
 
-  // 이미지 로드 → element ref 갱신
+  // 컨테이너 실제 픽셀 높이 측정 — 폰트 크기를 cqh(컨테이너 쿼리, 절대배치에서 불안정)
+  // 대신 측정값으로 직접 계산. (이전엔 cqh 가 컨테이너 없이 깨져 글자가 안 보였음)
+  const rootRef = React.useRef<HTMLDivElement>(null);
+  const [boxH, setBoxH] = React.useState(0);
+  React.useEffect(() => {
+    const el = rootRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const update = () => setBoxH(el.clientHeight);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // 세일리언시(피사체 회피)용 이미지는 crossOrigin 으로 별도 로드한다.
+  // 표시용 <img> 는 crossOrigin 없이 그려야 CDN(Pexels 등)이 CORS 헤더를 안 줘도
+  // 무조건 보인다 — 예전엔 표시 img 에 crossOrigin 을 걸어 CORS 실패 시 프레임이
+  // 통째로 비어 보였다. 세일리언시 프로브가 실패하면 안전영역 배치로 자연 폴백.
   React.useEffect(() => {
     setImgReady(false);
     setImgEl(null);
+    if (!imageUrl || typeof window === "undefined") return;
+    let cancelled = false;
+    const probe = new window.Image();
+    probe.crossOrigin = "anonymous";
+    probe.referrerPolicy = "no-referrer";
+    probe.onload = () => {
+      if (!cancelled) {
+        setImgEl(probe);
+        setImgReady(true);
+      }
+    };
+    probe.onerror = () => {
+      /* CORS/네트워크 실패 → 세일리언시 없이 안전영역 폴백 (표시 img 는 영향 없음) */
+    };
+    probe.src = imageUrl;
+    return () => {
+      cancelled = true;
+    };
   }, [imageUrl]);
 
-  // placements 계산 — 이미지 로드 후, items 또는 target 변경 시
+  // placements 계산 — 세일리언시 프로브 로드 후, items 또는 target 변경 시
   const placements = React.useMemo(() => {
     return items.map((it) =>
       computePlacement({
@@ -83,31 +117,27 @@ export function SmartTextOverlay({
   }, [items, target, aspectRatio, imgEl, imgReady]);
 
   return (
-    <div className={`relative overflow-hidden ${className ?? ""}`}>
+    // 위치 클래스 충돌 주의: 호출부가 className 으로 `absolute inset-0` 을 준다.
+    // 여기에 `relative` 를 또 박으면 캐스케이드상 relative 가 이겨 inset-0 이 무시되고
+    // (자식이 전부 절대배치라) 높이 0 으로 붕괴 → 아무것도 안 보였다. position 은
+    // className 에 맡기고, className 이 없을 때만 relative 로 폴백.
+    <div ref={rootRef} className={`overflow-hidden ${className ?? "relative"}`}>
       {imageUrl ? (
+        // 표시용 — crossOrigin 없이(항상 보이게). 세일리언시는 위 프로브가 담당.
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          ref={(el) => {
-            imgRef.current = el;
-          }}
           src={imageUrl}
           alt=""
-          crossOrigin="anonymous"
-          referrerPolicy="no-referrer"
-          onLoad={(e) => {
-            const el = e.currentTarget as HTMLImageElement;
-            setImgEl(el);
-            setImgReady(true);
-          }}
           className="absolute inset-0 h-full w-full object-cover"
         />
       ) : (
-        <div className="absolute inset-0 bg-zinc-200 dark:bg-zinc-800" />
+        // 이미지 없을 때 — 평평한 회색 대신 따뜻한 다크 바탕(빈 느낌 방지 + 밝은 글씨 가독)
+        <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #3a342c 0%, #211d17 100%)" }} />
       )}
 
       {/* 각 텍스트 항목 — placement 결과로 절대 위치 */}
       {placements.map((p, i) => (
-        <TextLayer key={`${items[i].role}-${i}`} item={items[i]} p={p} />
+        <TextLayer key={`${items[i].role}-${i}`} item={items[i]} p={p} boxH={boxH} />
       ))}
 
       {/* 디버그 — 안전영역 / region 가이드 */}
@@ -116,7 +146,7 @@ export function SmartTextOverlay({
   );
 }
 
-function TextLayer({ item, p }: { item: SmartTextItem; p: PlacementResult }) {
+function TextLayer({ item, p, boxH }: { item: SmartTextItem; p: PlacementResult; boxH: number }) {
   const colorClass = p.textColor === "light" ? "text-white" : "text-zinc-900";
   // 모바일 가독성 — role 별 min/max 다르게.
   // 작은 미리보기 컨테이너에서도 14px 이상은 보장.
@@ -132,7 +162,11 @@ function TextLayer({ item, p }: { item: SmartTextItem; p: PlacementResult }) {
         : item.role === "cta" ? 28
           : item.role === "subtitle" ? 22
             : 14;
-  const fontSize = `clamp(${minPx}px, ${p.fontSizePct * 100}cqh, ${maxPx}px)`;
+  // 측정 높이 기반 픽셀 폰트 — fontSizePct 는 컨테이너 높이 대비 비율.
+  // 측정 전(boxH=0)엔 minPx 로 안전 폴백.
+  const fontSize = boxH > 0
+    ? `${Math.max(minPx, Math.min(maxPx, p.fontSizePct * boxH))}px`
+    : `${minPx}px`;
   const justify =
     p.alignment === "center" ? "items-center text-center"
       : p.alignment === "right" ? "items-end text-right"

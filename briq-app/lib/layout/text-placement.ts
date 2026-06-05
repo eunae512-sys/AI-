@@ -646,6 +646,13 @@ export function recommendBackdrop(opts: {
   return { kind: "scrim-center", opacity: 0.35 };
 }
 
+// 이미지 분석이 없을 때 위치(band)에 맞춰 바닥 스크림 종류 결정 — 항상 가독 확보용
+function bandFallbackScrim(band: AnchorBand): BackdropKind {
+  if (band === "top" || band === "upper-center") return "scrim-top";
+  if (band === "bottom" || band === "lower-center") return "scrim-bottom";
+  return "scrim-center";
+}
+
 // ─────────────────────────────────────────────────────────────
 // 메인 export — 한 줄 호출
 // ─────────────────────────────────────────────────────────────
@@ -674,13 +681,20 @@ export function computePlacement(opts: {
     extraMasks,
   });
 
-  const textColor = pickTextColor(region.meanLuminance);
-  const backdrop = recommendBackdrop({
-    meanLuminance: region.meanLuminance,
-    saliency: region.saliency,
-    textColor,
-    band,
-  });
+  // 이미지 분석이 없을 때(서버 렌더·CORS·미로드)는 바탕 휘도를 알 수 없다.
+  // 기본 lum=128 → pickTextColor 가 검은 글씨를 골라 어두운 릴스/스토리 프레임에서
+  // 글자가 사라지고 미리보기가 통째로 빈 것처럼 보였다. 이미지가 없을 땐 '밝은 글씨 +
+  // 바닥 스크림'을 강제해 어떤 바탕에서도 읽히게 한다(표시 img 로딩 전/실패 시 포함).
+  const noImage = !grid;
+  const textColor: "light" | "dark" = noImage ? "light" : pickTextColor(region.meanLuminance);
+  const backdrop = noImage
+    ? { kind: bandFallbackScrim(band), opacity: 0.5 }
+    : recommendBackdrop({
+        meanLuminance: region.meanLuminance,
+        saliency: region.saliency,
+        textColor,
+        band,
+      });
 
   // 가로 폭에 맞는 줄당 글자 수 추정 — 폰트 사이즈와 박스 폭으로
   // 컨테이너 폭 1 기준, 한국어 한 글자 폭 ≈ fontSizePct * (aspectRatio ? 1 : 1)
