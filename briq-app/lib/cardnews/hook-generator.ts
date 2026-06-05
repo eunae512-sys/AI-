@@ -17,8 +17,9 @@
 //   7. CTA — 단 하나의 행동
 
 import type { Brand } from "@/types";
-import type { CardnewsSlide, CardnewsMarketing, SlideRole } from "@/components/campaigns/types";
+import type { CardnewsSlide, CardnewsMarketing, SlideRole, SlideComposition } from "@/components/campaigns/types";
 import { brandHandle, brandWordmark } from "@/lib/brand/brand-context";
+import { buildAutoSequence } from "@/lib/brand/layout-preset";
 import { 은, 이, 을 } from "@/lib/utils/korean-particles";
 // 시중 잘된 카드뉴스 학습 패턴 — 후크 7종 · 업종별 시퀀스 · 톤 매핑.
 // 출처: docs/cardnews-branding-research.md (29CM · 무신사 · 콤포타블 · 노티드 등).
@@ -920,52 +921,57 @@ export function generateCardnewsCampaign(
     `${v.signature} 라인`,
   ];
 
-  // 슬라이드별 디자이너 컴포지션 분배 — 7장이 각각 다른 결로 흐른다.
-  //   1: masthead (표지)
-  //   2: pillar-left (좌측 세로선 + 챕터 넘버럴)
-  //   3: paper-split (페이퍼 패널 + 이미지)
-  //   4: overlay-card (이미지 + 페이퍼 카드)
-  //   5: pillar-left (반복하되 이미지/내용 다름)
-  //   6: type-hero (PROOF 슬라이드는 타이포 자체가 비주얼)
-  //   7: masthead (CTA — 표지와 짝을 이루는 닫음)
-  //
-  // 종이 톤도 같은 슬라이드에 같은 색이 두 번 안 나오도록 시드 픽.
+  // 슬라이드별 컴포지션은 buildAutoSequence 로 결정 — 앵커(표지/증거/CTA) 고정, 중간만 변주.
+  // 종이 톤은 톤을 쓰는 컴포지션(paper-split/overlay-card/type-hero)일 때만 부여한다.
+
+  // 업종 + 시드로 7장 컴포지션 시퀀스 결정 — 앵커(0,5,6) 고정, 중간(1..4) 변주.
+  const comps = buildAutoSequence(brand.industry, kind, seed);
+
   const tones: NonNullable<CardnewsSlide["paperTone"]>[] = ["cream", "dust", "sand", "sage", "ink"];
   const pickTone = (offset: number) => tones[(seed + offset) % tones.length];
 
+  // 컴포지션이 페이퍼 톤을 쓰는 슬라이드(paper-split/overlay-card/type-hero)에만 톤 부여.
+  // pillar-left/masthead 는 undefined → 톤 없음. 인접 톤 중복은 index*3 offset 으로 회피.
+  const toneFor = (idx: number, comp: SlideComposition): CardnewsSlide["paperTone"] | undefined =>
+    comp === "paper-split" || comp === "overlay-card" || comp === "type-hero"
+      ? pickTone(idx * 3 + 2)
+      : undefined;
+
   const slides: CardnewsSlide[] = [
     // 1. 표지
-    { n: 1, role: "hook", display: "cover", composition: "masthead", caption: hook,
+    { n: 1, role: "hook", display: "cover", composition: comps[0], caption: hook,
       subtext: t.subject || v.signature,
       footer: issueLabel, ink: "light", textAt: "center",
       imageQuery: imageQueryFor("hook", ctx) },
-    // 2. 페인포인트 — 좌측 세로선 결
-    { n: 2, role: "problem", display: "inner", composition: "pillar-left", caption: problem,
+    // 2. 페인포인트 — 중간 변주 슬롯
+    { n: 2, role: "problem", display: "inner", composition: comps[1], paperTone: toneFor(1, comps[1]),
+      caption: problem,
       subtext: pick(innerSubtexts, seed, 1),
       ink: "light", textAt: "bottom-left",
       imageQuery: imageQueryFor("problem", ctx) },
-    // 3. VALUE — 페이퍼 패널 좌측
-    { n: 3, role: "value", display: "inner", composition: "paper-split", paperTone: pickTone(2),
+    // 3. VALUE — 중간 변주 슬롯
+    { n: 3, role: "value", display: "inner", composition: comps[2], paperTone: toneFor(2, comps[2]),
       caption: values[0], subtext: pick(innerSubtexts, seed, 2),
       ink: "dark", textAt: "top-left",
       imageQuery: imageQueryFor("value", ctx) },
-    // 4. VALUE — 이미지 위 페이퍼 카드 오버레이
-    { n: 4, role: "value", display: "inner", composition: "overlay-card", paperTone: pickTone(5),
+    // 4. VALUE — 중간 변주 슬롯
+    { n: 4, role: "value", display: "inner", composition: comps[3], paperTone: toneFor(3, comps[3]),
       caption: values[1], subtext: pick(innerSubtexts, seed, 3),
       ink: "dark", textAt: "center",
       imageQuery: imageQueryFor("value", ctx) },
-    // 5. VALUE — 다시 필러 (방향 반전)
-    { n: 5, role: "value", display: "inner", composition: "pillar-left", caption: values[2],
+    // 5. VALUE — 중간 변주 슬롯
+    { n: 5, role: "value", display: "inner", composition: comps[4], paperTone: toneFor(4, comps[4]),
+      caption: values[2],
       subtext: pick(innerSubtexts, seed, 4),
       ink: "light", textAt: "bottom-left",
       imageQuery: imageQueryFor("value", ctx) },
-    // 6. PROOF — 타이포 히어로 (페이퍼 톤 위)
-    { n: 6, role: "proof", display: "inner", composition: "type-hero", paperTone: pickTone(8),
+    // 6. PROOF — 앵커 type-hero (페이퍼 톤 위)
+    { n: 6, role: "proof", display: "inner", composition: comps[5], paperTone: toneFor(5, comps[5]),
       caption: proof, subtext: `${wordmark} · ${v.city}`,
       ink: "dark", textAt: "center",
       imageQuery: imageQueryFor("proof", ctx) },
-    // 7. CTA — 표지와 짝, 마감 마스트헤드
-    { n: 7, role: "cta", display: "inner", composition: "masthead", caption: ctaVariant.slide,
+    // 7. CTA — 앵커 masthead (표지와 짝, 마감)
+    { n: 7, role: "cta", display: "inner", composition: comps[6], caption: ctaVariant.slide,
       subtext: handle, footer: handle, ink: "light", textAt: "center",
       imageQuery: imageQueryFor("cta", ctx) },
   ];
