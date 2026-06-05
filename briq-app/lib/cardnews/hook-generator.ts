@@ -442,7 +442,7 @@ const VALUE_POOL: ((c: Ctx) => string)[] = [
   (c) => `${c.v.experienceWord} ${c.v.process}\n시간만큼 ${c.v.outcomePhrase}.`,
   // 고집 — 클리셰 대신 단정한 한 줄
   (c) => `요란하게는 안 해도,\n오던 분들은 다 아세요.`,
-  (c) => `사장님이 직접 챙기는 ${c.v.signature},\n중간에 대충이 없습니다.`,
+  (c) => `사장님이 직접 챙기는 ${c.v.signature},\n어디 하나 대충이 없습니다.`,
   // 시그니처
   (c) => `${c.v.customerWord}들이 매번 다시 찾는 건\n따로 있습니다.`,
   // 가격 — 단정 금액 제거, 채널 안내(자연스러운 구어)
@@ -685,7 +685,7 @@ function imageQueryFor(role: SlideRole, ctx: Ctx): string {
     case "problem":
       return `${subject} quiet corner, ${tail}`;
     case "value":
-      return `${subject} detail close up, hands texture, ${tail}`;
+      return `${subject} detail close up, ${tail}`;
     case "proof":
       return `${subject} intimate scene, candid, ${tail}`;
     case "cta":
@@ -916,7 +916,7 @@ export function generateCardnewsCampaign(
   const innerSubtexts = [
     `${v.city} ${v.catShort}`,
     `${kind} · ${t.timeWord ?? "이번 시즌"}`,
-    `${이(v.customerWord)} 가장 자주 ${v.purchaseAction}하는 결`,
+    `${이(v.customerWord)} 가장 많이 찾는 ${v.signature}`,
     `${v.signature} 라인`,
   ];
 
