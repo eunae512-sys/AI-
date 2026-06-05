@@ -815,16 +815,18 @@ export function ReelsScreen() {
           <motion.div
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-4 rounded-xl border border-violet-200 dark:border-violet-900/40 bg-violet-50/60 dark:bg-violet-500/10 p-3 sm:p-3.5"
+            className="mb-10 p-5 sm:p-6"
+            style={{ border: `0.5px solid ${RULE}`, borderLeft: `2px solid ${SAGE}`, background: PAPER_HOVER }}
           >
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-4">
               {/* 참고 썸네일 */}
               {appliedTrend.pexelsUrl || appliedTrend.videoUrl ? (
                 <a
                   href={appliedTrend.pexelsUrl || appliedTrend.videoUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="relative h-12 w-12 rounded-md overflow-hidden bg-zinc-900 shrink-0 group"
+                  className="relative h-14 w-14 overflow-hidden shrink-0 group"
+                  style={{ border: `0.5px solid ${RULE}`, background: INK }}
                   title="참고 영상 보기 (새 탭)"
                 >
                   {appliedTrend.posterUrl && (
@@ -839,41 +841,42 @@ export function ReelsScreen() {
                 </a>
               ) : (
                 <div
-                  className={`h-12 w-12 rounded-md shrink-0 bg-gradient-to-br ${appliedTrend.accentGradient ?? "from-violet-400 to-rose-500"}`}
+                  className="h-14 w-14 shrink-0"
+                  style={{ border: `0.5px solid ${RULE}`, background: PAPER }}
                   aria-hidden
                 />
               )}
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[10px] uppercase tracking-[0.15em] text-violet-700/80 dark:text-violet-300/70 font-semibold">
-                    트렌드 스타일 적용
-                  </span>
+                  <Eyebrow accent>Style applied</Eyebrow>
                   {appliedTrend.source === "calendar" && (
-                    <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-violet-200/60 dark:bg-violet-500/20 text-violet-800 dark:text-violet-200 font-semibold">
+                    <span className="text-[9.5px] tracking-[0.1em] px-1.5 py-0.5" style={{ border: `0.5px solid ${RULE}`, color: INK_MUTE, fontFamily: SERIF_HANGUL }}>
                       캘린더
                     </span>
                   )}
                 </div>
-                <div className="mt-0.5 text-sm font-semibold text-violet-900 dark:text-violet-100 truncate">
+                <div className="mt-1.5 text-[16px] tracking-[-0.01em] truncate" style={{ fontFamily: SERIF_HANGUL, color: INK, fontWeight: 600 }}>
                   {appliedTrend.title}
-                  <span className="ml-1.5 text-[11px] font-normal text-violet-700/80 dark:text-violet-300/70">
+                  <span className="ml-2 text-[12px]" style={{ color: INK_MUTE, fontWeight: 400 }}>
                     · {appliedTrend.format}
                   </span>
                 </div>
               </div>
 
-              <Button variant="outline" size="sm" onClick={clearAppliedTrend} className="shrink-0">
-                <X className="h-3.5 w-3.5" />제거
-              </Button>
+              <button
+                onClick={clearAppliedTrend}
+                className="shrink-0 inline-flex items-center gap-1.5 h-9 px-3 text-[12px] tracking-[0.01em] transition-colors"
+                style={{ border: `0.5px solid ${RULE}`, color: INK_SOFT, fontFamily: SERIF_HANGUL }}
+              >
+                <X className="h-3.5 w-3.5" strokeWidth={1.75} />제거
+              </button>
             </div>
 
-            {/* ★ 구체 파라미터 칩 — 사용자가 "뭐가 어떻게 바뀌는지" 시각적으로 확인 */}
-            <div className="mt-3 pt-3 border-t border-violet-200/60 dark:border-violet-900/40">
-              <div className="text-[10px] uppercase tracking-widest text-violet-700/70 dark:text-violet-300/60 font-semibold mb-1.5">
-                이 스타일이 영상에 입히는 변화
-              </div>
-              <div className="flex items-center gap-1.5 flex-wrap">
+            {/* 구체 파라미터 칩 — "뭐가 어떻게 바뀌는지" 시각화 */}
+            <div className="mt-5 pt-5" style={{ borderTop: `0.5px solid ${RULE_SOFT}` }}>
+              <SectionLabel>이 스타일이 영상에 입히는 변화</SectionLabel>
+              <div className="mt-2.5 flex items-center gap-2 flex-wrap">
                 <StyleChip>{styleSummary.cutLabel}</StyleChip>
                 <StyleChip>{styleSummary.zoomLabel}</StyleChip>
                 <StyleChip>{styleSummary.fadeLabel}</StyleChip>
@@ -883,9 +886,9 @@ export function ReelsScreen() {
                   <StyleChip>자막 {appliedTrend.hooks.length}개 시드</StyleChip>
                 ) : null}
               </div>
-              <div className="mt-2 text-[10.5px] text-violet-700/70 dark:text-violet-300/60">
-                폰 미리보기엔 <b>자막만</b> 바뀌어 보이고, 컷 속도·줌·전환은 아래 <b>"영상으로 변환"</b>을 눌러야 실제 .mp4에 입혀집니다.
-              </div>
+              <p className="mt-3 text-[12px] leading-[1.7]" style={{ fontFamily: SERIF_HANGUL, color: INK_SOFT, wordBreak: "keep-all" }}>
+                폰 미리보기엔 <b style={{ color: INK }}>자막만</b> 바뀌어 보이고, 컷 속도·줌·전환은 아래 <b style={{ color: INK }}>‘영상으로 변환’</b>을 눌러야 실제 .mp4에 입혀집니다.
+              </p>
               <button
                 type="button"
                 onClick={() => {
@@ -896,33 +899,31 @@ export function ReelsScreen() {
                   el.classList.add("ring-2", "ring-offset-2");
                   window.setTimeout(() => el.classList.remove("ring-2", "ring-offset-2"), 1600);
                 }}
-                className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold px-3 py-2 transition-colors"
+                className="mt-4 inline-flex items-center gap-2 h-[40px] px-5 text-[13px] tracking-[0.01em] font-medium transition-colors"
+                style={{ background: INK, color: PAPER, fontFamily: SERIF_HANGUL }}
               >
                 이 스타일로 영상 만들기 <span aria-hidden>→</span>
               </button>
 
-              {/* ★ AI 자동 매칭 추천 — 스타일에 어울리는 BGM 무드 + 출연자 씬 */}
+              {/* AI 자동 매칭 추천 — 스타일에 어울리는 BGM 무드 + 출연자 씬 */}
               {(appliedTrend.suggestedMusicMoodLabel || appliedTrend.suggestedSceneRoleLabel) && (
-                <div className="mt-3 pt-3 border-t border-violet-200/60 dark:border-violet-900/40">
-                  <div className="text-[10px] uppercase tracking-widest text-violet-700/70 dark:text-violet-300/60 font-semibold mb-1.5">
-                    이 스타일에 어울리는 AI 자동 매칭
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="mt-5 pt-5" style={{ borderTop: `0.5px solid ${RULE_SOFT}` }}>
+                  <SectionLabel>이 스타일에 어울리는 AI 자동 매칭</SectionLabel>
+                  <div className="mt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {appliedTrend.suggestedMusicMoodLabel && (
                       <button
                         onClick={startAiMusicForSuggested}
-                        className="text-left rounded-lg border border-violet-300/60 dark:border-violet-700/60 bg-white/60 dark:bg-zinc-950/40 hover:border-violet-500 dark:hover:border-violet-500 px-3 py-2 transition-colors group"
+                        className="text-left p-3.5 transition-colors group"
+                        style={{ border: `0.5px solid ${RULE}`, background: "#FFFFFF" }}
                       >
                         <div className="flex items-center gap-1.5">
-                          <Music className="h-3 w-3 text-violet-500" />
-                          <span className="text-[10px] uppercase tracking-wider text-violet-700/80 dark:text-violet-300/70 font-semibold">
-                            추천 BGM
-                          </span>
+                          <Music className="h-3 w-3" strokeWidth={1.75} style={{ color: SAGE }} />
+                          <Eyebrow>추천 BGM</Eyebrow>
                         </div>
-                        <div className="mt-0.5 text-xs font-semibold text-violet-900 dark:text-violet-100">
+                        <div className="mt-1 text-[13px]" style={{ fontFamily: SERIF_HANGUL, color: INK, fontWeight: 600 }}>
                           {appliedTrend.suggestedMusicMoodLabel}
                         </div>
-                        <div className="text-[10px] text-violet-700/70 dark:text-violet-300/60 mt-0.5 group-hover:text-violet-900 dark:group-hover:text-violet-100">
+                        <div className="text-[11px] mt-1" style={{ color: INK_MUTE, fontFamily: SERIF_HANGUL }}>
                           가사 적고 음악 만들기 →
                         </div>
                       </button>
@@ -930,18 +931,17 @@ export function ReelsScreen() {
                     {appliedTrend.suggestedSceneRoleLabel && (
                       <button
                         onClick={startAiSceneForSuggested}
-                        className="text-left rounded-lg border border-violet-300/60 dark:border-violet-700/60 bg-white/60 dark:bg-zinc-950/40 hover:border-violet-500 dark:hover:border-violet-500 px-3 py-2 transition-colors group"
+                        className="text-left p-3.5 transition-colors group"
+                        style={{ border: `0.5px solid ${RULE}`, background: "#FFFFFF" }}
                       >
                         <div className="flex items-center gap-1.5">
-                          <UserCircle2 className="h-3 w-3 text-violet-500" />
-                          <span className="text-[10px] uppercase tracking-wider text-violet-700/80 dark:text-violet-300/70 font-semibold">
-                            추천 AI 출연자
-                          </span>
+                          <UserCircle2 className="h-3 w-3" strokeWidth={1.75} style={{ color: SAGE }} />
+                          <Eyebrow>추천 AI 출연자</Eyebrow>
                         </div>
-                        <div className="mt-0.5 text-xs font-semibold text-violet-900 dark:text-violet-100">
+                        <div className="mt-1 text-[13px]" style={{ fontFamily: SERIF_HANGUL, color: INK, fontWeight: 600 }}>
                           {appliedTrend.suggestedSceneRoleLabel}
                         </div>
-                        <div className="text-[10px] text-violet-700/70 dark:text-violet-300/60 mt-0.5 group-hover:text-violet-900 dark:group-hover:text-violet-100">
+                        <div className="text-[11px] mt-1" style={{ color: INK_MUTE, fontFamily: SERIF_HANGUL }}>
                           {uploadedPhotos.length === 0 ? "사진 없이 바로 만들기 →" : "출연자 추가 →"}
                         </div>
                       </button>
@@ -1734,10 +1734,13 @@ export function ReelsScreen() {
   );
 }
 
-// 트렌드 스타일 파라미터 칩 — 배너용
+// 트렌드 스타일 파라미터 칩 — 배너용 (헤어라인 사각)
 function StyleChip({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center text-[10.5px] px-2 py-0.5 rounded-md bg-white/70 dark:bg-zinc-900/70 border border-violet-200/60 dark:border-violet-900/40 text-violet-900 dark:text-violet-100 font-medium">
+    <span
+      className="inline-flex items-center text-[11px] px-2.5 py-1 tracking-[0.01em]"
+      style={{ border: `0.5px solid ${RULE}`, background: "#FFFFFF", color: INK_SOFT, fontFamily: SERIF_HANGUL }}
+    >
       {children}
     </span>
   );
