@@ -1150,7 +1150,8 @@ export function ReelsScreen() {
             <motion.div
               animate={{ y: [0, -6, 0] }}
               transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-              className="relative rounded-[36px] border-[10px] border-zinc-900 dark:border-zinc-700 bg-zinc-900 overflow-hidden shadow-2xl"
+              className="relative rounded-[36px] overflow-hidden"
+              style={{ border: `9px solid ${INK}`, background: INK, boxShadow: "0 24px 60px -24px rgba(20,19,15,0.45)" }}
             >
               <AnimatePresence mode="wait">
                 <motion.div
@@ -1165,11 +1166,8 @@ export function ReelsScreen() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.98 }}
                   transition={{ duration: 0.5 }}
-                  className={`aspect-[9/16] relative overflow-hidden ${
-                    compiled || currentCut
-                      ? ""
-                      : `bg-gradient-to-br ${TEMPLATES.find((t) => t.id === activeTpl)?.grad}`
-                  }`}
+                  className="aspect-[9/16] relative overflow-hidden"
+                  style={compiled || currentCut ? undefined : { background: PAPER }}
                 >
                   {compiled ? (
                     <video
@@ -1188,7 +1186,18 @@ export function ReelsScreen() {
                       alt={currentCut.name}
                       className="absolute inset-0 h-full w-full object-cover"
                     />
-                  ) : null}
+                  ) : (
+                    /* 빈 상태 — 사진 업로드 전 의도적 안내 (예시 화면) */
+                    <div className="absolute inset-0 grid place-items-center px-8 text-center" style={{ background: PAPER }}>
+                      <div>
+                        <Film className="h-8 w-8 mx-auto" strokeWidth={1.25} style={{ color: INK_MUTE }} />
+                        <div className="mt-4 text-[13px] leading-[1.6]" style={{ fontFamily: SERIF_HANGUL, color: INK, fontWeight: 500, wordBreak: "keep-all" }}>
+                          사진을 올리면<br />여기에서 30초 릴스가 미리보기됩니다
+                        </div>
+                        <div className="mt-2 text-[11px]" style={{ color: INK_MUTE, fontFamily: SERIF_HANGUL }}>예시 화면</div>
+                      </div>
+                    </div>
+                  )}
                   {/* readability gradient — 자막 가독성 (compiled 는 자체 오버레이 있음) */}
                   {!compiled && currentCut && (
                     <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/55 pointer-events-none" />
@@ -1197,7 +1206,10 @@ export function ReelsScreen() {
                   {/* IG 헤더 — 컴파일된 영상엔 브랜드명이 baked-in 이므로 숨김 */}
                   {!compiled && (
                     <div className="absolute top-4 left-4 right-4 flex items-center gap-2 text-white z-10">
-                      <div className={`h-7 w-7 rounded-full bg-gradient-to-br ${brand.gradient} grid place-items-center text-[10px] font-bold`}>
+                      <div
+                        className="h-7 w-7 rounded-full ring-1 ring-white/40 grid place-items-center text-[10px] font-bold"
+                        style={{ background: brand.brandColors?.primary ?? INK }}
+                      >
                         {brand.letter}
                       </div>
                       <div className="text-[11px] font-medium drop-shadow">{brand.name}</div>
@@ -1279,7 +1291,7 @@ export function ReelsScreen() {
                     <Bookmark className="h-5 w-5 mx-auto" />
                   </div>
                   <div className="absolute bottom-4 left-4 right-4 text-white text-[10px] flex items-center gap-1.5 z-10">
-                    <span className="h-3 w-3 rounded bg-white/20" />♪ {customBgm ? `${customBgm.lyrics ? "내 가사 · " : ""}${customBgm.moodLabel}` : BGM[activeBgm].name}
+                    <Music className="h-3 w-3 shrink-0" strokeWidth={1.75} /> {customBgm ? `${customBgm.lyrics ? "내 가사 · " : ""}${customBgm.moodLabel}` : BGM[activeBgm].name}
                     {uploadedPhotos.length > 0 && (
                       <span className="ml-auto opacity-80">
                         컷 {cutIdx + 1}/{uploadedPhotos.length}
@@ -1289,20 +1301,23 @@ export function ReelsScreen() {
                 </motion.div>
               </AnimatePresence>
             </motion.div>
-            <div className="absolute -inset-8 -z-10 rounded-full bg-gradient-to-br from-rose-300/20 via-violet-400/20 to-indigo-400/20 blur-3xl" />
           </div>
 
           {/* Cut 썸네일 스트립 — 모든 컷을 한눈에, 탭하면 그 컷으로 이동 + 자막 바로 편집 */}
           {uploadedPhotos.length > 0 && !compiled && (
-            <div className="mt-4 w-full max-w-[420px]">
-              <div className="flex items-center justify-between mb-1.5">
-                <div className="text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+            <div className="mt-6 w-full max-w-[420px]">
+              <div className="flex items-center justify-between mb-2.5">
+                <div className="text-[12px]" style={{ color: INK, fontFamily: SERIF_HANGUL, fontWeight: 600 }}>
                   컷 {cutIdx + 1} / {uploadedPhotos.length}
-                  <span className="ml-1.5 text-[10px] font-normal text-zinc-400">썸네일을 눌러 자막 편집</span>
+                  <span className="ml-2 text-[11px]" style={{ color: INK_MUTE, fontWeight: 400 }}>썸네일을 눌러 자막 편집</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <button onClick={() => stepCut(-1)} aria-label="이전 컷" className="h-6 w-6 grid place-items-center rounded-md border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 text-zinc-500">◀</button>
-                  <button onClick={() => stepCut(1)} aria-label="다음 컷" className="h-6 w-6 grid place-items-center rounded-md border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 text-zinc-500">▶</button>
+                <div className="flex items-center gap-1.5">
+                  <button onClick={() => stepCut(-1)} aria-label="이전 컷" className="h-7 w-7 grid place-items-center transition-colors" style={{ border: `0.5px solid ${RULE}`, color: INK_SOFT }}>
+                    <ChevronLeft className="h-3.5 w-3.5" strokeWidth={1.75} />
+                  </button>
+                  <button onClick={() => stepCut(1)} aria-label="다음 컷" className="h-7 w-7 grid place-items-center transition-colors" style={{ border: `0.5px solid ${RULE}`, color: INK_SOFT }}>
+                    <ChevronRight className="h-3.5 w-3.5" strokeWidth={1.75} />
+                  </button>
                 </div>
               </div>
               <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-thin">
@@ -1314,9 +1329,8 @@ export function ReelsScreen() {
                       type="button"
                       onClick={() => { setCutIdx(i); setEditingCaption(true); }}
                       title={p.caption || `컷 ${i + 1}`}
-                      className={`group relative shrink-0 w-12 aspect-[9/16] rounded-lg overflow-hidden transition-all ${
-                        on ? "ring-2 ring-violet-500" : "ring-1 ring-zinc-200 dark:ring-zinc-800 hover:ring-zinc-400"
-                      }`}
+                      className="group relative shrink-0 w-12 aspect-[9/16] overflow-hidden transition-all"
+                      style={{ outline: on ? `1.5px solid ${INK}` : `0.5px solid ${RULE}`, outlineOffset: on ? "1px" : "0px" }}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={p.url} alt={`컷 ${i + 1}`} className="absolute inset-0 h-full w-full object-cover" />
@@ -1324,7 +1338,7 @@ export function ReelsScreen() {
                       <span className="absolute bottom-0.5 left-0 right-0 text-center text-[8px] leading-tight text-white/95 px-0.5 line-clamp-2 drop-shadow">
                         {(p.caption || "").split("\n")[0] || "자막 없음"}
                       </span>
-                      <span className="absolute top-0.5 left-0.5 text-[8px] font-bold text-white bg-black/55 rounded px-1 tabular-nums">{i + 1}</span>
+                      <span className="absolute top-0.5 left-0.5 text-[8px] font-bold text-white bg-black/55 px-1 tabular-nums">{i + 1}</span>
                     </button>
                   );
                 })}
@@ -1333,26 +1347,27 @@ export function ReelsScreen() {
           )}
 
           {/* Status bar */}
-          <div className="mt-6 w-full max-w-[420px]">
+          <div className="mt-8 w-full max-w-[420px]">
             <AnimatePresence mode="wait">
               {status === "done" ? (
-                <motion.div key="done" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/30 dark:bg-emerald-500/5 p-4 text-center">
-                  <div className="text-[11px] uppercase tracking-widest text-emerald-700 dark:text-emerald-400 font-semibold">
-                    {uploadedPhotos.length > 0 ? `업로드 ${uploadedPhotos.length}장 적용됨` : "사진을 올려 시작하세요"}
+                <motion.div key="done" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 text-center" style={{ border: `0.5px solid ${RULE}`, borderTop: `2px solid ${SAGE}`, background: PAPER_HOVER }}>
+                  <Eyebrow accent>
+                    {uploadedPhotos.length > 0 ? `Applied · ${uploadedPhotos.length} photos` : "Ready"}
+                  </Eyebrow>
+                  <div className="mt-1.5 text-[15px]" style={{ color: INK, fontFamily: SERIF_HANGUL, fontWeight: 600, wordBreak: "keep-all" }}>
+                    {uploadedPhotos.length > 0 ? `${cutCount}컷 · 자막 · 전환 자동 적용` : "사진을 올려 시작하세요"}
                   </div>
-                  <div className="mt-1 text-sm font-semibold">
-                    {cutCount}컷 · 자막 · 전환 자동 적용
-                  </div>
-                  <div className="mt-2 text-[11px] text-zinc-500">
+                  <div className="mt-2 text-[11.5px]" style={{ color: INK_MUTE, fontFamily: SERIF_HANGUL }}>
                     {brand.name} 톤 v{brand.toneVersion} 적용됨
                   </div>
                 </motion.div>
               ) : (
-                <motion.div key={status} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-xl border border-violet-200 dark:border-violet-900/50 bg-gradient-to-r from-violet-50/30 to-pink-50/30 dark:from-violet-500/5 dark:to-pink-500/5 p-4 text-center">
-                  <div className="text-[11px] uppercase tracking-widest text-violet-700 dark:text-violet-400 font-semibold">
-                    {status === "uploading" && "업로드 중..."}
-                    {status === "analyzing" && "분위기 · 컷 분석 중..."}
-                    {status === "generating" && "자막 · BGM · 전환 자동 생성 중..."}
+                <motion.div key={status} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 text-center" style={{ border: `0.5px solid ${RULE}`, background: PAPER_HOVER }}>
+                  <div className="text-[13px] inline-flex items-center gap-2" style={{ color: INK_SOFT, fontFamily: SERIF_HANGUL }}>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    {status === "uploading" && "업로드 중…"}
+                    {status === "analyzing" && "분위기 · 컷 분석 중…"}
+                    {status === "generating" && "자막 · BGM · 전환 자동 생성 중…"}
                   </div>
                 </motion.div>
               )}
