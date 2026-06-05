@@ -51,6 +51,9 @@ import { isFeatureAllowed as isFeatureAllowedFor } from "@/lib/billing/gate";
 import { LimitReachedModal } from "@/components/billing/LimitReachedModal";
 import { Watermark } from "@/components/billing/Watermark";
 import type { UsageKind } from "@/lib/billing/usage";
+import { BrandMarkPicker } from "@/components/campaigns/BrandMarkPicker";
+import { loadBrandMark, saveBrandMark } from "@/lib/brand/brand-mark";
+import type { BrandMarkConfig } from "@/components/campaigns/types";
 
 type Source = "pexels" | "gemini" | "codex" | "ai";
 
@@ -303,6 +306,25 @@ export function CardnewsScreen() {
   const [factCheck, setFactCheck] = useState<FactCheckIssue[] | null>(null);
   const [keyMissing, setKeyMissing] = useState<string | null>(null);
   const [bannerDismissed, setBannerDismissed] = useState(false);
+
+  // 브랜드 마크 (로고/워드마크) — brand.id 별 localStorage 영속. 캠페인 카드뉴스와 동일 인프라 재사용.
+  const [brandMark, setBrandMark] = useState<BrandMarkConfig>(() => loadBrandMark(brand.id));
+  useEffect(() => {
+    setBrandMark(loadBrandMark(brand.id));
+    const onUpdate = (e: Event) => {
+      const detail = (e as CustomEvent<{ brandId: string }>).detail;
+      if (!detail || detail.brandId === brand.id) setBrandMark(loadBrandMark(brand.id));
+    };
+    window.addEventListener("briq:brand-mark-updated", onUpdate);
+    return () => window.removeEventListener("briq:brand-mark-updated", onUpdate);
+  }, [brand.id]);
+  const updateBrandMark = useCallback(
+    (next: BrandMarkConfig) => {
+      setBrandMark(next);
+      saveBrandMark(brand.id, next);
+    },
+    [brand.id],
+  );
 
   // 주제 입력 모드 — 주제 한 줄 → 슬라이드 + 레이아웃 자동 구성
   const [topicInput, setTopicInput] = useState("");
@@ -1352,6 +1374,11 @@ export function CardnewsScreen() {
         <div className="mt-3 text-[11px] text-zinc-500">
           현재: <span className="font-medium text-zinc-700 dark:text-zinc-300">{SOURCE_LABEL[source].label}</span> · {SOURCE_LABEL[source].sub}
         </div>
+
+        {/* 브랜드 마크 — 로고 업로드 시 6장 letterhead 에 일관 적용 (없으면 업체명 워드마크) */}
+        <div className="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-800">
+          <BrandMarkPicker config={brandMark} brandWordmark={brand.name} onChange={updateBrandMark} />
+        </div>
       </Card>
 
       {/* Slide grid */}
@@ -1397,17 +1424,33 @@ export function CardnewsScreen() {
                 {/* 매거진 letterhead — 브랜드 마크 + 슬라이드 번호 (모든 layout 공통) */}
                 <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2 z-10">
                   <div className="flex items-center gap-2 min-w-0">
-                    <span
-                      className="h-5 w-5 rounded-full shrink-0 grid place-items-center text-[8px] font-bold text-white"
-                      style={{
-                        background: c
-                          ? `linear-gradient(135deg, ${c.hex}, ${colors[(i + 1) % Math.max(1, colors.length)]?.hex ?? c.hex})`
-                          : undefined,
-                        backgroundColor: c ? undefined : "rgba(255,255,255,0.15)",
-                      }}
-                    >
-                      {brand.letter}
-                    </span>
+                    {/* 브랜드 마크 — 로고 있으면 이미지(어두운 배경이라 흰 틴트), 없으면 컬러 이니셜 폴백.
+                        showOnInner=false 면 표지(i=0)에만 로고, 나머지는 이니셜. */}
+                    {brandMark.logoDataUrl && (i === 0 || brandMark.showOnInner) ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={brandMark.logoDataUrl}
+                        alt=""
+                        className="w-auto object-contain shrink-0"
+                        style={{
+                          maxHeight: i === 0 ? "20px" : "16px",
+                          filter: "brightness(0) invert(1)",
+                          opacity: i === 0 ? 0.95 : 0.82,
+                        }}
+                      />
+                    ) : (
+                      <span
+                        className="h-5 w-5 rounded-full shrink-0 grid place-items-center text-[8px] font-bold text-white"
+                        style={{
+                          background: c
+                            ? `linear-gradient(135deg, ${c.hex}, ${colors[(i + 1) % Math.max(1, colors.length)]?.hex ?? c.hex})`
+                            : undefined,
+                          backgroundColor: c ? undefined : "rgba(255,255,255,0.15)",
+                        }}
+                      >
+                        {brand.letter}
+                      </span>
+                    )}
                     <div className="min-w-0">
                       {editing?.idx === i && editing.field === "label" ? (
                         <input
