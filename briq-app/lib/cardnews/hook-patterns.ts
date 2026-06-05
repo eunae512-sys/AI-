@@ -4,6 +4,7 @@
 // 반복적으로 보이는 7컷 카드뉴스 구조 · 후크 카피 · CTA 패턴을 코드화.
 
 import type { Brand } from "@/types";
+import { 을 } from "@/lib/utils/korean-particles";
 
 /** 7컷 매트릭스의 각 자리(역할). */
 export type SlideRole =
@@ -158,7 +159,7 @@ export const HOOK_PATTERNS_BY_TYPE: Record<HookPattern, ((c: HookCtx) => string)
   ],
   question: [
     // 답을 찾아 슬라이드 넘김
-    (c) => `오늘은 어떤 ${c.v.experienceWord}을\n골라드릴까요?`,
+    (c) => `오늘은 어떤 ${을(c.v.experienceWord)}\n골라드릴까요?`,
     (c) => `${c.v.city}에서 ${c.v.catShort},\n어디까지 가야 진가가 보일까요?`,
     (c) => `${c.t.subject || c.v.signature},\n어디서 제대로 받을지 고민이셨다면.`,
   ],
