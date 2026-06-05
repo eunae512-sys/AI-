@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 Phase: 1 of 6 (Foundation & Multi-Tenant Data Model)
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-06-05 — 카드뉴스 AI 이미지 한도/플랜 거절도 우아한 데모 폴백으로 (하드 403 제거) (260605-ci1)
+Last activity: 2026-06-05 — 카드뉴스 브랜드 로고 검증: 이미 완전 구현·배선됨(로고/워드마크 폴백 스크린샷 확인, 코드 0줄) (260605-ll7)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -89,6 +89,7 @@ None yet. (Use `/gsd-add-todo` to capture ideas during sessions.)
 | 260605-mp1 | 인스타 모바일 미리보기 빈 화면 수정 (SmartTextOverlay position 충돌 붕괴·cqh 폰트·CORS) | 2026-06-05 | ffb8d36 | [260605-mp1-mobile-preview-empty](./quick/260605-mp1-mobile-preview-empty/) |
 | 260605-i6k | /reels 에디토리얼 디자인 시스템 전면 이관 (SaaS 색·그라데이션·이모지·다크모드 제거 → 종이+잉크·세리프·헤어라인·SAGE) + 밀도 완화로 공간 확보, 로직 무손상 | 2026-06-05 | 96c7e94 | [260605-i6k-reels-editorial-rework](./quick/260605-i6k-reels-editorial-rework/) |
 | 260605-ck1 | 카드뉴스 주제 키워드 유실 버그 — 라벨 제거·subject 폴백·kind 우선으로 주제별 차별화 복구 | 2026-06-05 | 0a76f5a | [260605-ck1-cardnews-keyword-fix](./quick/260605-ck1-cardnews-keyword-fix/) |
+| 260605-ll7 | 카드뉴스 브랜드 로고 — 검증 결과 이미 완전 구현·배선됨(코드 0줄), 로고 있음→슬라이드 마스트헤드/IG아바타 로고, 없음→워드마크 폴백 스크린샷 확인 | 2026-06-05 | (docs-only) | [260605-ll7-brand-logo-cardnews](./quick/260605-ll7-brand-logo-cardnews/) |
 
 ## Deferred Items
 
