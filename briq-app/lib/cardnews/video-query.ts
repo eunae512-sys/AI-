@@ -105,6 +105,33 @@ const INGREDIENT_KO_EN: Record<string, string> = {
   도넛: "donut bakery",
   빙수: "shaved ice bingsu",
   마카롱: "macaron",
+  // 음료 — 에이드·스무디·셰이크·과일차 계열
+  레몬에이드: "lemonade",
+  레모네이드: "lemonade",
+  에이드: "fruit ade sparkling drink",
+  자몽에이드: "grapefruit ade",
+  자몽: "grapefruit",
+  청귤: "green tangerine citrus",
+  한라봉: "hallabong citrus",
+  라임: "lime",
+  모히토: "mojito mint lime",
+  스무디: "fruit smoothie",
+  셰이크: "milkshake",
+  밀크쉐이크: "milkshake",
+  프라페: "frappe iced blended",
+  망고: "mango",
+  딸기라떼: "strawberry latte",
+  아인슈페너: "einspanner cream coffee",
+  복숭아아이스티: "peach iced tea",
+  자몽차: "grapefruit tea",
+  유자차: "yuzu citron tea",
+  아이스티: "iced tea",
+  콜라: "cola soda",
+  사이다: "lemon lime soda",
+  과일: "fresh fruit",
+  청포도: "green grape",
+  블루베리: "blueberry",
+  레몬: "lemon",
 };
 
 // 메뉴/요리 형식
@@ -156,6 +183,14 @@ const MOOD_KO_EN: Record<string, string> = {
   따뜻: "warm amber light",
   차분: "calm meditative",
   활기: "lively bright",
+  // 주제 형용사 — 음료/디저트 카드뉴스에서 자주 등장
+  상큼한: "fresh citrus bright",
+  시원한: "cold refreshing icy",
+  달콤한: "sweet",
+  새콤한: "tangy sour fresh",
+  청량한: "refreshing crisp",
+  진한: "rich deep",
+  고소한: "nutty savory",
 };
 
 // 가입 시 정한 브랜드 무드(Brand["mood"]) → 영상 비주얼 키워드.
@@ -335,6 +370,9 @@ export function buildVideoQueryDetailed(opts: {
   // 3. 시즌/시간 — 매칭 있으면 짧게 추가
   if (tokens.season.length > 0) parts.push(tokens.season[0]);
   if (tokens.time.length > 0 && tokens.season.length === 0) parts.push(tokens.time[0]);
+
+  // 3.2 주제 형용사 무드 — "상큼한" "시원한" 등 토픽 형용사 → 검색어 반영
+  if (tokens.mood.length > 0) parts.push(tokens.mood[0]);
 
   // 3.5 브랜드 무드 — 가입 시 정한 결을 라이팅/채도로 반영 (10단어 한도 전에 우선 배치)
   if (opts.mood && MOOD_VIDEO_EN[opts.mood]) parts.push(MOOD_VIDEO_EN[opts.mood]);
