@@ -46,13 +46,75 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // graceful 폴백 응답 헬퍼 — Pexels(페르소나 사진) → 일반 demo 풀 순.
+  // 게이트 거절(한도/플랜)·프로바이더 전멸 모두 이 경로로 우아하게 끝낸다(하드 실패 금지).
+  async function gracefulFallback(opts: {
+    notice: string;
+    fallbackReason: string;
+    startedAt?: number;
+  }): Promise<NextResponse> {
+    const startedAt = opts.startedAt ?? Date.now();
+    const portrait = await fetchPortraitFromPexels({ industry, gender, seed: personaSeed });
+    if (portrait) {
+      return NextResponse.json({
+        ok: true,
+        image: portrait.url,
+        meta: {
+          source: "pexels-portrait-fallback",
+          demoMode: true,
+          model: "pexels",
+          size,
+          quality,
+          latencyMs: Date.now() - startedAt,
+          costUsd: 0,
+          costKrw: 0,
+          photographer: portrait.photographer,
+          photographerUrl: portrait.photographerUrl,
+          pexelsUrl: portrait.pexelsUrl,
+          industry,
+          notice: opts.notice,
+          fallbackReason: opts.fallbackReason,
+        },
+      });
+    }
+    const demo = pickDemoImage(prompt, slideId);
+    return NextResponse.json({
+      ok: true,
+      image: demo.url,
+      meta: {
+        source: "demo-fallback",
+        demoMode: true,
+        model: "demo",
+        size,
+        quality,
+        latencyMs: Date.now() - startedAt,
+        costUsd: 0,
+        costKrw: 0,
+        notice: opts.notice,
+        fallbackReason: opts.fallbackReason,
+      },
+    });
+  }
+
   // ── 플랜·한도 enforcement (로그인 사용자만). 비로그인은 데모 모드로 통과. ──
+  // 한도 소진/플랜 미포함은 하드 403/402 대신 demo 폴백으로 우아하게 안내한다.
+  // (한도 추적은 게이트가 이미 집계했으므로 그대로 유지 — 여기선 bumpUsage 안 함.)
   const gate = await ensurePlanAndQuota({
     feature: "ai-image:generate",
     usage: { kind: "aiImage" },
   });
   if (!gate.ok && gate.reason !== "unauthorized") {
-    return NextResponse.json(gate, { status: gate.status });
+    if (gate.reason === "limit_exceeded") {
+      return gracefulFallback({
+        notice: `이번 달 AI 이미지 한도 소진(${gate.used}/${gate.limit}) — 데모 이미지로 대체`,
+        fallbackReason: "quota-exceeded",
+      });
+    }
+    // feature_locked — 현재 플랜에 AI 이미지 미포함.
+    return gracefulFallback({
+      notice: "현재 플랜은 AI 이미지 생성 미포함 — 데모 이미지로 대체",
+      fallbackReason: "plan-locked",
+    });
   }
   const userId = gate.ok ? gate.userId : null;
   const planId: PlanId | undefined = gate.ok ? gate.planId : undefined;
@@ -158,46 +220,9 @@ export async function POST(req: NextRequest) {
   const fallbackReason =
     lastErr?.isBilling ? "billing-limit" : status === 429 ? "rate-limit" : "payment-required";
 
-  // 1순위: persona 컨텍스트(industry + gender) 기반 Pexels 실시간 검색
-  const portrait = await fetchPortraitFromPexels({ industry, gender, seed: personaSeed });
-  if (portrait) {
-    return NextResponse.json({
-      ok: true,
-      image: portrait.url,
-      meta: {
-        source: "pexels-portrait-fallback",
-        demoMode: true,
-        model: "pexels",
-        size,
-        quality,
-        latencyMs: Date.now() - startedAt,
-        costUsd: 0,
-        costKrw: 0,
-        photographer: portrait.photographer,
-        photographerUrl: portrait.photographerUrl,
-        pexelsUrl: portrait.pexelsUrl,
-        industry,
-        notice: `${lastProviderId} ${status}: ${message.slice(0, 100)} — ${industry ?? "general"} 업종 사진으로 대체`,
-        fallbackReason,
-      },
-    });
-  }
-  // 2순위: Pexels 도 안 되면 일반 demo 풀
-  const demo = pickDemoImage(prompt, slideId);
-  return NextResponse.json({
-    ok: true,
-    image: demo.url,
-    meta: {
-      source: "demo-fallback",
-      demoMode: true,
-      model: "demo",
-      size,
-      quality,
-      latencyMs: Date.now() - startedAt,
-      costUsd: 0,
-      costKrw: 0,
-      notice: `${lastProviderId} ${status}: ${message.slice(0, 120)} — 큐레이션된 데모 이미지로 대체`,
-      fallbackReason,
-    },
+  return gracefulFallback({
+    notice: `${lastProviderId} ${status}: ${message.slice(0, 120)} — ${industry ?? "큐레이션된"} 데모 이미지로 대체`,
+    fallbackReason,
+    startedAt,
   });
 }

@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 Phase: 1 of 6 (Foundation & Multi-Tenant Data Model)
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-06-05 — 카드뉴스 주제 키워드 유실 수정 (라벨 제거·subject 폴백·kind 우선) (260605-ck1)
+Last activity: 2026-06-05 — 카드뉴스 AI 이미지 한도/플랜 거절도 우아한 데모 폴백으로 (하드 403 제거) (260605-ci1)
 
 Progress: [░░░░░░░░░░] 0%
 
