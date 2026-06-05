@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Upload, Play, Heart, MessageCircle, Bookmark, Share2, Sparkles, RefreshCw, Music, Type, Pencil, X, Film, Download, Loader2, UserCircle2 } from "lucide-react";
+import { Upload, Play, Heart, MessageCircle, Bookmark, Share2, Sparkles, RefreshCw, Music, Type, Pencil, X, Film, Download, Loader2, UserCircle2, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { compileReelsVideo, isCompileSupported, parseTrendStyle, describeTrendStyle } from "@/lib/reels/compile-video";
 import { buildVideoQueryDetailed } from "@/lib/cardnews/video-query";
 import { Card } from "@/components/ui/card";
@@ -956,32 +956,32 @@ export function ReelsScreen() {
 
       {/* 참고 릴스 포맷 그리드 제거 — 핵심 흐름(업로드→자막→BGM→영상) 집중 */}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
         {/* Left - controls (mobile: order-2 so preview is shown first) */}
-        <div className="lg:col-span-3 space-y-3 order-2 lg:order-1">
-          {/* ★ 첫 3초 viral 훅 추천 — voice-bank reels grammar 기반 */}
-          <Card className="p-4 border-violet-200 dark:border-violet-900/40 bg-gradient-to-br from-violet-50/40 to-white dark:from-violet-500/[0.05] dark:to-zinc-950">
-            <div className="flex items-center justify-between mb-2 gap-2">
-              <div className="text-[11px] uppercase tracking-widest font-semibold text-violet-700 dark:text-violet-300 flex items-center gap-1.5">
-                <Sparkles className="h-3 w-3" />첫 3초 — 손가락 멈추는 훅
-              </div>
+        <div className="lg:col-span-3 space-y-6 order-2 lg:order-1">
+          {/* 첫 3초 viral 훅 추천 — voice-bank reels grammar 기반 */}
+          <div className="p-5" style={{ border: `0.5px solid ${RULE}`, borderTop: `2px solid ${SAGE}`, background: "#FFFFFF" }}>
+            <div className="flex items-center justify-between mb-2.5 gap-2">
+              <SectionLabel icon={Sparkles}>첫 3초 — 손가락 멈추는 훅</SectionLabel>
               <button
                 type="button"
                 onClick={rerollViralHooks}
-                className="text-[10px] text-violet-600 dark:text-violet-400 hover:underline inline-flex items-center gap-0.5"
+                className="text-[11px] inline-flex items-center gap-1 transition-colors hover:underline underline-offset-4"
+                style={{ color: SAGE, fontFamily: SERIF_HANGUL }}
               >
-                <RefreshCw className="h-3 w-3" /> 다른 거
+                <RefreshCw className="h-3 w-3" strokeWidth={1.75} /> 다른 거
               </button>
             </div>
-            <p className="text-[10px] text-zinc-500 mb-2.5">
-              인스타 릴스 첫 1초에 손가락이 멈춰야 합니다. 아래 중 마음에 드는 거 클릭 → 컷 1의 자막으로
+            <p className="text-[11.5px] leading-[1.6] mb-3.5" style={{ color: INK_MUTE, fontFamily: SERIF_HANGUL, wordBreak: "keep-all" }}>
+              인스타 릴스 첫 1초에 손가락이 멈춰야 합니다. 아래 중 마음에 드는 거 클릭 → 컷 1의 자막으로.
             </p>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               {!mounted &&
                 [0, 1, 2].map((i) => (
                   <div
                     key={`hook-skel-${i}`}
-                    className="w-full h-[42px] rounded-md border border-violet-200/40 dark:border-violet-900/30 bg-violet-50/30 dark:bg-violet-500/5 animate-pulse"
+                    className="w-full h-[44px] animate-pulse"
+                    style={{ border: `0.5px solid ${RULE_SOFT}`, background: PAPER_HOVER }}
                   />
                 ))}
               {viralHooks.map((h, i) => (
@@ -1004,44 +1004,43 @@ export function ReelsScreen() {
                     }
                     toast.success(`첫 컷 자막: "${h.slice(0, 24)}${h.length > 24 ? "…" : ""}"`);
                   }}
-                  className="w-full text-left text-[12.5px] px-3 py-2.5 rounded-md border border-violet-200/60 dark:border-violet-900/40 bg-white dark:bg-zinc-950 hover:border-violet-500 dark:hover:border-violet-500 hover:bg-violet-50/40 dark:hover:bg-violet-500/10 transition-colors leading-snug"
+                  className="w-full text-left text-[13px] px-3.5 py-3 leading-[1.5] transition-colors"
+                  style={{ border: `0.5px solid ${RULE}`, background: PAPER, color: INK, fontFamily: SERIF_HANGUL, wordBreak: "keep-all" }}
                 >
-                  <span className="text-violet-500 mr-1.5 tabular-nums">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="mr-2 tabular-nums text-[11px] italic" style={{ color: SAGE, fontFamily: SERIF_LATIN }}>{String(i + 1).padStart(2, "0")}</span>
                   {h}
                 </button>
               ))}
             </div>
-            <div className="mt-2.5 text-[10px] text-zinc-500">
-              실제 SNS에서 자주 보이는 패턴 기반 · 클리셰 X
+            <div className="mt-3 text-[11px]" style={{ color: INK_MUTE, fontFamily: SERIF_HANGUL }}>
+              실제 SNS에서 자주 보이는 패턴 기반 · 클리셰 없음
             </div>
-          </Card>
+          </div>
 
-          <Card className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold flex items-center gap-2">
-                <Music className="h-3 w-3" />BGM
-              </div>
+          <div className="p-5" style={cardStyle}>
+            <div className="flex items-center justify-between mb-4">
+              <SectionLabel icon={Music}>BGM</SectionLabel>
               <button
                 onClick={() => setAiMusicOpen((v) => !v)}
-                className={cn(
-                  "text-[10px] inline-flex items-center gap-1 px-2 py-1 rounded-md border transition-colors",
+                className="text-[11px] inline-flex items-center gap-1.5 px-2.5 py-1 transition-colors"
+                style={
                   aiMusicOpen
-                    ? "border-violet-500 bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300"
-                    : "border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-violet-300",
-                )}
+                    ? { border: `0.5px solid ${INK}`, background: INK, color: PAPER, fontFamily: SERIF_HANGUL }
+                    : { border: `0.5px solid ${RULE}`, color: INK_SOFT, fontFamily: SERIF_HANGUL }
+                }
               >
-                <Sparkles className="h-3 w-3 text-violet-500" />
+                <Sparkles className="h-3 w-3" strokeWidth={1.75} />
                 {aiMusicOpen ? "닫기" : "내 가사로"}
               </button>
             </div>
 
             {/* 적용된 커스텀 BGM 표시 */}
             {customBgm && customBgm.lyrics !== "" && (
-              <div className="mb-3 rounded-lg border border-violet-300 dark:border-violet-700 bg-violet-50/60 dark:bg-violet-500/10 p-2.5">
-                <div className="flex items-center justify-between gap-2 mb-1">
+              <div className="mb-4 p-3" style={{ border: `0.5px solid ${RULE}`, borderLeft: `2px solid ${SAGE}`, background: PAPER_HOVER }}>
+                <div className="flex items-center justify-between gap-2 mb-1.5">
                   <div className="flex items-center gap-1.5 min-w-0">
-                    <Sparkles className="h-3 w-3 text-violet-500 shrink-0" />
-                    <div className="text-[11px] font-semibold text-violet-700 dark:text-violet-300 truncate">
+                    <Sparkles className="h-3 w-3 shrink-0" strokeWidth={1.75} style={{ color: SAGE }} />
+                    <div className="text-[12px] truncate" style={{ color: INK, fontFamily: SERIF_HANGUL, fontWeight: 600 }}>
                       내 가사 BGM · {customBgm.moodLabel}
                     </div>
                   </div>
@@ -1051,14 +1050,15 @@ export function ReelsScreen() {
                       setCustomBgm(null);
                       toast.info("커스텀 BGM 제거");
                     }}
-                    className="shrink-0 text-zinc-400 hover:text-rose-600"
+                    className="shrink-0 transition-colors"
+                    style={{ color: INK_MUTE }}
                     aria-label="제거"
                   >
                     <X className="h-3 w-3" />
                   </button>
                 </div>
                 <audio src={customBgm.audioUrl} controls className="w-full h-7" />
-                <div className="text-[10px] text-zinc-500 mt-1 truncate">
+                <div className="text-[10.5px] mt-1.5 truncate" style={{ color: INK_MUTE }}>
                   {customBgm.lyrics.split("\n")[0]} · {customBgm.durationSec}초
                   {customBgm.isDemo && " · 데모"}
                 </div>
@@ -1072,9 +1072,9 @@ export function ReelsScreen() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="overflow-hidden mb-3"
+                  className="overflow-hidden mb-4"
                 >
-                  <div className="pb-3 border-b border-zinc-200 dark:border-zinc-800">
+                  <div className="pb-4" style={{ borderBottom: `0.5px solid ${RULE}` }}>
                     <AiMusicGenerator
                       compact
                       industry={brand.industry}
@@ -1098,44 +1098,50 @@ export function ReelsScreen() {
               )}
             </AnimatePresence>
 
-            <div className="text-[10px] text-zinc-500 mb-1.5">추천 트랙 ({BGM.length})</div>
-            <div className="space-y-1.5">
+            <div className="text-[11px] mb-2.5" style={{ color: INK_MUTE, fontFamily: SERIF_HANGUL }}>추천 트랙 ({BGM.length})</div>
+            <div className="space-y-2">
               {BGM.map((b, i) => {
                 const lyricMusic = !!customBgm && customBgm.lyrics !== ""; // AI 가사 음악 사용 중
                 const presetActive = !lyricMusic && activeBgm === i && !!customBgm;
+                const selected = activeBgm === i && !lyricMusic;
                 return (
                 <button
                   key={b.name}
                   onClick={() => applyPresetBgm(i)}
-                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-md border text-left transition ${
-                    presetActive
-                      ? "border-emerald-500 bg-emerald-50/60 dark:bg-emerald-500/10"
-                      : activeBgm === i && !lyricMusic
-                      ? "border-zinc-900 dark:border-zinc-100 bg-zinc-50 dark:bg-zinc-900"
-                      : "border-zinc-100 dark:border-zinc-800"
-                  } ${lyricMusic ? "opacity-60" : ""}`}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition"
+                  style={{
+                    border: presetActive
+                      ? `0.5px solid ${SAGE}`
+                      : selected
+                      ? `0.5px solid ${INK}`
+                      : `0.5px solid ${RULE}`,
+                    background: presetActive ? PAPER_HOVER : selected ? PAPER_HOVER : "#FFFFFF",
+                    opacity: lyricMusic ? 0.5 : 1,
+                  }}
                   disabled={lyricMusic || bgmLoadingIdx !== null}
                   title={lyricMusic ? "내 가사 BGM 사용 중 — 위에서 제거하면 추천 트랙 선택 가능" : "클릭하면 음악을 만들어 영상에 넣습니다"}
                 >
                   {bgmLoadingIdx === i ? (
-                    <Loader2 className="h-3 w-3 shrink-0 animate-spin" />
+                    <Loader2 className="h-3 w-3 shrink-0 animate-spin" style={{ color: INK_MUTE }} />
                   ) : (
-                    <Play className="h-3 w-3 shrink-0" />
+                    <Play className="h-3 w-3 shrink-0" style={{ color: INK_MUTE }} />
                   )}
                   <div className="flex-1 min-w-0">
-                    <div className="text-xs font-medium truncate">{b.name}</div>
-                    <div className="text-[10px] text-zinc-500 truncate">
+                    <div className="text-[12.5px] truncate" style={{ color: INK, fontFamily: SERIF_HANGUL, fontWeight: 500 }}>{b.name}</div>
+                    <div className="text-[10.5px] truncate" style={{ color: INK_MUTE }}>
                       {bgmLoadingIdx === i ? "음악 생성 중…" : b.mood}
                     </div>
                   </div>
                   {presetActive && (
-                    <span className="text-[9px] font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">✓ 영상에 적용</span>
+                    <span className="text-[10px] shrink-0 inline-flex items-center gap-1" style={{ color: SAGE, fontFamily: SERIF_HANGUL }}>
+                      <Check className="h-3 w-3" strokeWidth={2} />영상에 적용
+                    </span>
                   )}
                 </button>
                 );
               })}
             </div>
-          </Card>
+          </div>
         </div>
 
         {/* Center - Phone preview */}
