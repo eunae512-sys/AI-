@@ -451,6 +451,9 @@ export function ReelsPreview({ clip: initial, title, handle, industry, campaignH
                   <p
                     onClick={(e) => {
                       e.stopPropagation();
+                      // 먼저 정지 → currentSubIdx 가 고정돼 편집 textarea 가 안정적으로 뜬다.
+                      // (재생 중 클릭하면 t 가 흘러 currentSubIdx 가 바뀌며 textarea 가 즉시 언마운트되던 버그)
+                      setPlaying(false);
                       setEditingIdx(currentSubIdx);
                     }}
                     title="클릭해서 자막 수정"
@@ -613,12 +616,13 @@ export function ReelsPreview({ clip: initial, title, handle, industry, campaignH
                   <button
                     type="button"
                     onClick={() => {
-                      // 영상 위치도 그 자리로
+                      // 영상 위치도 그 자리로 + 정지 (편집 중 영상이 흐르지 않게)
                       const v = videoRef.current;
                       if (v) {
                         v.currentTime = s.at;
                         setT(s.at);
                       }
+                      setPlaying(false);
                       setEditingIdx(idx);
                     }}
                     className={`flex-1 text-left px-1.5 py-0.5 rounded-sm hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors ${

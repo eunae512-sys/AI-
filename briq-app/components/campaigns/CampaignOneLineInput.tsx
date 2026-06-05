@@ -194,12 +194,9 @@ export function buildDraftFromTopic(topic: string, kindOverride?: string, brand?
           durationSec: 30,
           cuts: 5,
           bgmMood: "조용한 어쿠스틱 · 92BPM",
-          subtitles: [
-            { t: topic + ", 이렇게 시작합니다.", at: 0 },
-            { t: "재료부터 다릅니다.", at: 7 },
-            { t: "한 컷, 그대로.", at: 15 },
-            { t: "저장 → 다음에 오실 때.", at: 24 },
-          ],
+          // 주제별로 달라지는 자막 — 카드뉴스 후킹 슬라이드(hook·value·proof·cta)에서
+          // 추출. 더는 모든 캠페인에 같은 문구가 반복되지 않는다.
+          subtitles: reelSubtitlesFromGen(gen, topic),
         },
       },
       {
@@ -211,6 +208,59 @@ export function buildDraftFromTopic(topic: string, kindOverride?: string, brand?
       },
     ],
   };
+}
+
+// 릴스 자막을 카드뉴스 후킹 슬라이드에서 뽑아 주제별로 다르게 만든다.
+// gen 이 있으면 hook → value → value/proof → cta 캡션을, 없으면 토픽 기반 폴백.
+function reelSubtitlesFromGen(
+  gen: ReturnType<typeof generateCardnewsCampaign> | null,
+  topic: string,
+): { t: string; at: number }[] {
+  const times = [0, 7, 15, 24];
+  const clip = (s?: string) => {
+    const line = (s ?? "").split("\n")[0].trim();
+    return line.length > 34 ? line.slice(0, 33).trimEnd() + "…" : line;
+  };
+
+  if (!gen) {
+    return [
+      { t: clip(`${topic}, 이렇게 시작합니다.`), at: 0 },
+      { t: "재료부터 다릅니다.", at: 7 },
+      { t: "한 컷, 그대로.", at: 15 },
+      { t: "저장 → 다음에 오실 때.", at: 24 },
+    ];
+  }
+
+  const capByRole = (role: string) => {
+    const sl = gen.slides.find((s) => s.role === role);
+    return sl ? clip(sl.caption) : "";
+  };
+  const values = gen.slides
+    .filter((s) => s.role === "value")
+    .map((s) => clip(s.caption))
+    .filter(Boolean);
+
+  const raw = [
+    capByRole("hook") || clip(gen.headline) || `${topic}, 이렇게 시작합니다.`,
+    values[0] || capByRole("problem") || "재료부터 다릅니다.",
+    values[1] || capByRole("proof") || "한 컷, 그대로.",
+    capByRole("cta") || "저장 → 다음에 오실 때.",
+  ];
+
+  // 같은 줄이 두 번 나오면 다른 후보로 교체 (변형 보장)
+  const pool = gen.slides.map((s) => clip(s.caption)).filter(Boolean);
+  const seen = new Set<string>();
+  const lines = raw.map((line) => {
+    let v = line;
+    if (!v || seen.has(v)) {
+      const alt = [...values, ...pool].find((x) => x && !seen.has(x));
+      if (alt) v = alt;
+    }
+    seen.add(v);
+    return v;
+  });
+
+  return lines.map((t, i) => ({ t, at: times[i] }));
 }
 
 function hookPatternLabel(kind: CardnewsCampaignKind): string {
