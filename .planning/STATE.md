@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 Phase: 1 of 6 (Foundation & Multi-Tenant Data Model)
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-06-05 — /cardnews letterhead 로고 위치 토글(좌상/중앙/우상) 반영 (CardnewsScreen 정렬이 justify-start 고정이라 픽커 위치값 미반영이었음 — letterheadAlign() 헬퍼 + 마크그룹 flex-1 정렬, 페이지카운터는 우측 고정 유지, 폴백 이니셜도 동일 정렬, CardnewsCarousel 의 alignFor 패턴 미러, tsc 0, 좌/우 CDP 스크린샷 육안 확인) (260605-cnp). 직전: letterhead 에 로고 실제 배선 (260605-lzm)
+Last activity: 2026-06-05 — /blog "샘플 검증 모드(QA 샌드박스)" 완전 제거 (옵션 A). BlogScreen.tsx 에서 sampleBrand state·applySample/clearSample·UI 패널(샘플 픽커·검증 사실 카드)·생성 분기(ctxBrandName 등 sampleBrand 우선 로직)·knownFacts 주입·sample-real-brands import 제거, 헤더/analyzeKeyword/analyzeAndGenerate 의 sampleBrand 참조도 정리. 일반 brand 컨텍스트 생성 경로·autosave·SERP 분석·발행 흐름 보존. lib/dummy/sample-real-brands.ts 는 타 사용처 없어 파일째 git rm. tsc 0, /blog 헤드리스 스크린샷으로 패널 사라짐·레이아웃 정상 육안 확인 (260605-blqa). 직전: /cardnews letterhead 로고 위치 토글 (260605-cnp)
 
 Progress: [░░░░░░░░░░] 0%
 

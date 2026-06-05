@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion } from "motion/react";
-import { Sparkles, Loader2, Copy, Check, FileText, MapPin, Image as ImageIcon, Wand2, Search, TrendingUp, X, FlaskConical, Info, ExternalLink, Send } from "lucide-react";
+import { Sparkles, Loader2, Copy, Check, FileText, MapPin, Image as ImageIcon, Wand2, Search, TrendingUp, X, Send } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,8 +10,7 @@ import { useBrand } from "@/components/brand/BrandProvider";
 import { useToast } from "@/components/ui/toast";
 import { getBrandDetail } from "@/lib/dummy/brand-detail";
 import { cn } from "@/lib/utils";
-import { useAutoSaveDraft, formatSavedAt, loadDraft } from "@/lib/drafts/auto-save";
-import { SAMPLE_REAL_BRANDS, type SampleRealBrand } from "@/lib/dummy/sample-real-brands";
+import { useAutoSaveDraft, formatSavedAt } from "@/lib/drafts/auto-save";
 
 // 업종별 네이버 블로그 SEO 후보 (사장님이 빠르게 선택)
 const TOPIC_PRESETS: Record<string, { title: string; keywords: string[]; intent: string }[]> = {
@@ -178,42 +177,10 @@ export function BlogScreen() {
   const [analyzing, setAnalyzing] = React.useState(false);
   const [phase, setPhase] = React.useState<"idle" | "analyzing" | "generating">("idle");
 
-  // 샘플 검증 모드 — 실제 운영 가게 공개 자료로 본문 검증 (sandbox, 영속화 X)
-  const [sampleBrand, setSampleBrand] = React.useState<SampleRealBrand | null>(null);
-  const applySample = (b: SampleRealBrand) => {
-    setSampleBrand(b);
-    setTopic(b.suggestedTopic);
-    setBody("");
-    setSerp(null);
-    setActivePreset(0); // 활성 브랜드 preset 강조와 섞이지 않게 0 으로 정렬
-    toast.info(`샘플 검증: ${b.name} · 공개 자료 기반 — 생성 결과는 발행물 아님`);
-  };
-  const clearSample = () => {
-    setSampleBrand(null);
-    // 샘플 종료 — 활성 브랜드의 저장된 작업물(있으면)을 복원, 없으면 preset 0 로 초기화.
-    const saved = loadDraft<{ topic?: string; body?: string; activePreset?: number }>(
-      "blog",
-      brand.id,
-    );
-    if (saved) {
-      setActivePreset(typeof saved.activePreset === "number" ? saved.activePreset : 0);
-      setTopic(typeof saved.topic === "string" ? saved.topic : presets[0]?.title ?? "");
-      setBody(typeof saved.body === "string" ? saved.body : "");
-    } else {
-      setActivePreset(0);
-      setTopic(presets[0]?.title ?? "");
-      setBody("");
-    }
-    setSerp(null);
-    toast.info(saved ? "샘플 해제 — 작업 중이던 활성 브랜드 글로 복귀" : "샘플 해제 — 활성 브랜드로 복귀");
-  };
-
-  // 자동 저장 — 활성 브랜드 작업만 영속화 (샘플은 sandbox 라 비활성).
-  // 이렇게 분리하지 않으면 샘플 본문이 다음 새로고침 시 활성 브랜드 화면에 떠올라 섞인다.
+  // 자동 저장 — 활성 브랜드 작업 영속화.
   const { lastSavedAt } = useAutoSaveDraft({
     scope: "blog",
     brandId: brand.id,
-    enabled: !sampleBrand,
     value: { topic, body, activePreset },
     onRestore: (draft) => {
       if (typeof draft.topic === "string") setTopic(draft.topic);
@@ -223,21 +190,17 @@ export function BlogScreen() {
   });
 
   React.useEffect(() => {
-    // 브랜드 전환 시: preset·주제·본문·분석·샘플 모두 리셋.
-    // sampleBrand 가 남으면 새 브랜드 화면에서도 헤더는 옛 샘플 이름, ctxBrandName
-    // 도 sample 로 가버려 API 가 잘못된 가게로 본문을 만든다.
+    // 브랜드 전환 시: preset·주제·본문·분석 리셋.
     setActivePreset(0);
     setTopic(presets[0]?.title ?? "");
     setBody("");
     setSerp(null);
-    setSampleBrand(null);
   }, [brand.id, presets]);
 
   // 1) 키워드 분석 — 상위 노출 글 패턴 추출
   const analyzeKeyword = async (rawKeyword?: string): Promise<SerpResult | null> => {
     const preset = presets[activePreset];
-    const sampleKeyword = sampleBrand?.suggestedKeywords?.[0];
-    const keyword = (rawKeyword ?? sampleKeyword ?? preset?.keywords?.[0] ?? topic).trim();
+    const keyword = (rawKeyword ?? preset?.keywords?.[0] ?? topic).trim();
     if (!keyword) {
       toast.warn("분석할 키워드가 없습니다");
       return null;
@@ -288,21 +251,18 @@ export function BlogScreen() {
     setPhase("generating");
     try {
       const preset = presets[activePreset];
-      const keywords = sampleBrand?.suggestedKeywords ?? preset?.keywords ?? [];
+      const keywords = preset?.keywords ?? [];
       const userMenu = isUserBrand && userBrand?.signatureMenu
         ? userBrand.signatureMenu.filter(Boolean)
         : [];
       const userTagline = isUserBrand && userBrand?.tagline ? userBrand.tagline : "";
       const analysisToSend = analysisOverride ?? serp;
 
-      // 샘플 검증 모드 활성화 시 → 샘플 가게 정보를 우선 사용
-      const ctxBrandName = sampleBrand?.name ?? brand.name;
-      const ctxIndustry = sampleBrand?.industryLabel ?? brand.industryLabel;
-      const ctxLocation = sampleBrand
-        ? `${sampleBrand.city} ${sampleBrand.district}`
-        : brand.city;
-      const ctxTagline = sampleBrand?.tagline ?? userTagline;
-      const ctxSignature = sampleBrand?.signatureMenu.join(", ") ?? userMenu.join(", ");
+      const ctxBrandName = brand.name;
+      const ctxIndustry = brand.industryLabel;
+      const ctxLocation = brand.city;
+      const ctxTagline = userTagline;
+      const ctxSignature = userMenu.join(", ");
 
       const res = await fetch("/api/generate-blog", {
         method: "POST",
@@ -318,8 +278,6 @@ export function BlogScreen() {
           tone: `${tone}${detail?.toneSummary ? ` · ${detail.toneSummary}` : ""}`,
           perspective,
           forbidden: "100% 보장, 무조건, 만병통치, 완치, 부작용 없음, 최고, 대박, JMT",
-          // 샘플 검증 시: 가게에 대해 확정된 공개 사실 — 이 외엔 추정 금지
-          knownFacts: sampleBrand?.knownFacts ?? undefined,
           // targetChars 는 생략 — analysis 가 있으면 서버가 추정 분량 자동 채택
           serpAnalysis: analysisToSend
             ? {
@@ -379,9 +337,8 @@ export function BlogScreen() {
 
   // 통합 핸들러 — "분석 후 본문 생성" 1클릭
   const analyzeAndGenerate = async () => {
-    const sampleKw = sampleBrand?.suggestedKeywords?.[0];
     const preset = presets[activePreset];
-    const result = await analyzeKeyword(sampleKw ?? preset?.keywords?.[0]);
+    const result = await analyzeKeyword(preset?.keywords?.[0]);
     await generateBody(result);
   };
 
@@ -432,7 +389,7 @@ export function BlogScreen() {
       <div className="flex items-end justify-between gap-4 flex-wrap mb-5">
         <div className="min-w-0">
           <div className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] text-emerald-600 dark:text-emerald-400 font-semibold">
-            NAVER BLOG STUDIO · {sampleBrand ? sampleBrand.name : brand.name}
+            NAVER BLOG STUDIO · {brand.name}
           </div>
           <h1 className="mt-2 text-[22px] sm:text-2xl md:text-3xl font-semibold tracking-tight leading-[1.15]">
             네이버 블로그 본문 자동 작성
@@ -442,113 +399,6 @@ export function BlogScreen() {
           </p>
         </div>
       </div>
-
-      {/* 샘플 검증 모드 — 실제 운영 가게 공개 자료로 본문 검증 */}
-      <Card className={cn(
-        "p-4 mb-4 transition-colors",
-        sampleBrand
-          ? "border-amber-300 dark:border-amber-700 bg-amber-50/60 dark:bg-amber-500/5"
-          : "border-zinc-200 dark:border-zinc-800",
-      )}>
-        <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
-              <FlaskConical className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-              <span className="text-[11px] uppercase tracking-wider font-semibold text-amber-700 dark:text-amber-300">
-                샘플 검증 모드 (실제 운영 가게)
-              </span>
-              {sampleBrand && (
-                <Badge tone="amber">{sampleBrand.name}</Badge>
-              )}
-            </div>
-            <p className="text-[12px] text-zinc-600 dark:text-zinc-400 mt-1">
-              공개 자료로 알려진 실제 가게 정보를 입력해 본문이 가게 사실과 일치하는지 직접 검증해 보세요.
-              <b className="ml-1 text-amber-700 dark:text-amber-300">생성 결과는 발행물·가게 공식 자료 아닙니다.</b>
-            </p>
-          </div>
-          {sampleBrand && (
-            <button
-              onClick={clearSample}
-              className="text-[11px] inline-flex items-center gap-1 px-2 py-1 rounded-md border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-rose-600"
-            >
-              <X className="h-3 w-3" /> 해제
-            </button>
-          )}
-        </div>
-
-        {/* 샘플 픽커 — 5개 카드 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
-          {SAMPLE_REAL_BRANDS.map((b) => {
-            const active = sampleBrand?.id === b.id;
-            return (
-              <button
-                key={b.id}
-                onClick={() => applySample(b)}
-                className={cn(
-                  "rounded-lg border p-2.5 text-left transition-all",
-                  active
-                    ? "border-amber-500 bg-white dark:bg-zinc-950 shadow-sm"
-                    : "border-zinc-200 dark:border-zinc-800 bg-white/40 dark:bg-zinc-950/40 hover:border-amber-400",
-                )}
-              >
-                <div className="text-[10px] text-zinc-500 font-medium">
-                  {b.industryLabel}
-                </div>
-                <div className="mt-0.5 text-[12px] font-semibold tracking-tight leading-tight line-clamp-2">
-                  {b.name}
-                </div>
-                <div className="mt-1 text-[10px] text-zinc-500">
-                  {b.city} · {b.district}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* 활성 샘플의 검증용 사실 카드 — 본문이 이걸 지키는지 직접 비교 */}
-        {sampleBrand && (
-          <div className="mt-3 rounded-lg border border-amber-200 dark:border-amber-900/40 bg-white dark:bg-zinc-950 p-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <div className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">
-                  검증 기준 — 가게 공개 사실
-                </div>
-                <ul className="mt-1.5 space-y-1">
-                  {sampleBrand.knownFacts.map((f, i) => (
-                    <li key={i} className="text-[11.5px] text-zinc-700 dark:text-zinc-300 leading-snug">
-                      · {f}
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-2 text-[10px] text-zinc-500 inline-flex items-center gap-1">
-                  <Info className="h-3 w-3" />
-                  생성된 본문이 위 사실과 어긋나거나 가격·시간을 만들어내면 가드 실패.
-                </div>
-              </div>
-              <div>
-                <div className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">
-                  주입된 컨텍스트
-                </div>
-                <div className="mt-1.5 space-y-0.5 text-[11.5px] text-zinc-700 dark:text-zinc-300 leading-snug">
-                  <div>상호: <b>{sampleBrand.name}</b></div>
-                  <div>한 줄 소개: "{sampleBrand.tagline}"</div>
-                  <div>대표 메뉴: {sampleBrand.signatureMenu.join(", ")}</div>
-                  <div>분석 키워드: {sampleBrand.suggestedKeywords.join(", ")}</div>
-                </div>
-                <a
-                  href="#"
-                  onClick={(e) => e.preventDefault()}
-                  className="mt-2 inline-flex items-center gap-1 text-[10px] text-zinc-500"
-                  title={sampleBrand.publicSource}
-                >
-                  <ExternalLink className="h-3 w-3" />
-                  출처: {sampleBrand.publicSource}
-                </a>
-              </div>
-            </div>
-          </div>
-        )}
-      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         {/* Left: Topic presets + input */}
