@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 Phase: 1 of 6 (Foundation & Multi-Tenant Data Model)
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-06-05 — /blog "샘플 검증 모드(QA 샌드박스)" 완전 제거 (옵션 A). BlogScreen.tsx 에서 sampleBrand state·applySample/clearSample·UI 패널(샘플 픽커·검증 사실 카드)·생성 분기(ctxBrandName 등 sampleBrand 우선 로직)·knownFacts 주입·sample-real-brands import 제거, 헤더/analyzeKeyword/analyzeAndGenerate 의 sampleBrand 참조도 정리. 일반 brand 컨텍스트 생성 경로·autosave·SERP 분석·발행 흐름 보존. lib/dummy/sample-real-brands.ts 는 타 사용처 없어 파일째 git rm. tsc 0, /blog 헤드리스 스크린샷으로 패널 사라짐·레이아웃 정상 육안 확인 (260605-blqa). 직전: /cardnews letterhead 로고 위치 토글 (260605-cnp)
+Last activity: 2026-06-05 — /reels (ReelsScreen.tsx) 죽은/무의미 요소 정리 (260605-n83). 직전 감사로 확정된 5건: ①데드 TEMPLATES 배열 삭제(참조 0) ②DEFAULT_PHOTOS 죽은 grad 문자열 제거 — gradient 시드 칸은 빈 PAPER 사각형으로만 렌더되므로 grad 값 미사용, 6개 시드는 SEED_SLOT_COUNT 상수로 유지·Photo 타입 `{kind:"gradient"}` 로 단순화 ③activeTpl/defaultTpl/INDUSTRY_DEFAULT_TPL 체인 삭제(UI에 템플릿 선택 없음, AnimatePresence key 폴백→상수 "empty", 브랜드전환 activeHook 초기화 effect 는 보존) ④no-op 팔로우 버튼→비인터랙티브 span(pointer-events-none, IG목업 균형 유지·하단 장식 아이콘과 통일) ⑤빈 상태(사진 0장) 자막 겹침 — HOOKS 샘플 자막이 "예시 화면" 안내문 위에 겹쳐 가독성 해침을 스크린샷으로 확정, 자막 캡션 오버레이를 `!compiled && currentCut` 으로 게이트해 해소. tsc --noEmit 0, /reels 헤드리스 스크린샷 전후 비교로 정상 렌더+겹침 해소 육안 확인, grep 으로 TEMPLATES/activeTpl/INDUSTRY_DEFAULT_TPL/죽은 grad 잔재 0. BGM·AI음악·트렌드·컴파일·발행·컷스트립·자막트랙 핸들러 전부 보존. 커밋 9db5e49. 직전: /blog "샘플 검증 모드(QA 샌드박스)" 완전 제거 (옵션 A). BlogScreen.tsx 에서 sampleBrand state·applySample/clearSample·UI 패널(샘플 픽커·검증 사실 카드)·생성 분기(ctxBrandName 등 sampleBrand 우선 로직)·knownFacts 주입·sample-real-brands import 제거, 헤더/analyzeKeyword/analyzeAndGenerate 의 sampleBrand 참조도 정리. 일반 brand 컨텍스트 생성 경로·autosave·SERP 분석·발행 흐름 보존. lib/dummy/sample-real-brands.ts 는 타 사용처 없어 파일째 git rm. tsc 0, /blog 헤드리스 스크린샷으로 패널 사라짐·레이아웃 정상 육안 확인 (260605-blqa). 직전: /cardnews letterhead 로고 위치 토글 (260605-cnp)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -91,6 +91,7 @@ None yet. (Use `/gsd-add-todo` to capture ideas during sessions.)
 | 260605-i6k | /reels 에디토리얼 디자인 시스템 전면 이관 (SaaS 색·그라데이션·이모지·다크모드 제거 → 종이+잉크·세리프·헤어라인·SAGE) + 밀도 완화로 공간 확보, 로직 무손상 | 2026-06-05 | 96c7e94 | [260605-i6k-reels-editorial-rework](./quick/260605-i6k-reels-editorial-rework/) |
 | 260605-ck1 | 카드뉴스 주제 키워드 유실 버그 — 라벨 제거·subject 폴백·kind 우선으로 주제별 차별화 복구 | 2026-06-05 | 0a76f5a | [260605-ck1-cardnews-keyword-fix](./quick/260605-ck1-cardnews-keyword-fix/) |
 | 260605-ll7 | 카드뉴스 브랜드 로고 — 검증 결과 이미 완전 구현·배선됨(코드 0줄), 로고 있음→슬라이드 마스트헤드/IG아바타 로고, 없음→워드마크 폴백 스크린샷 확인 | 2026-06-05 | (docs-only) | [260605-ll7-brand-logo-cardnews](./quick/260605-ll7-brand-logo-cardnews/) |
+| 260605-n83 | /reels 죽은 요소 정리 — 데드 TEMPLATES·INDUSTRY_DEFAULT_TPL·activeTpl 체인 삭제(key 폴백→"empty"), DEFAULT_PHOTOS 죽은 grad 문자열 제거(시드 6개는 SEED_SLOT_COUNT 상수 유지), no-op 팔로우 버튼→비인터랙티브 span, 빈 상태 자막 겹침 수정(currentCut 있을 때만 자막 오버레이). tsc 0·스크린샷 확인, 기능 무손상 | 2026-06-05 | 9db5e49 | [260605-n83-clean-up-dead-no-op-elements-in-reels-re](./quick/260605-n83-clean-up-dead-no-op-elements-in-reels-re/) |
 
 ## Deferred Items
 
