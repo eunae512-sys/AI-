@@ -6,6 +6,7 @@ date: 2026-06-05
 status: complete
 commits:
   - ffb8d36  # fix(preview): SmartTextOverlay 안 보이던 버그들 수정
+  - 6ea0ea9  # fix(preview): 자막 겹침 — 캡션 블록 스택
 ---
 
 # SUMMARY — 인스타 모바일 미리보기 빈 화면 수정
@@ -36,7 +37,13 @@ commits:
 - 자막: `shop.today.slideLabel/slideTitle/slideHint`, 스토리는 brand.name + CTA.
 - `SmartTextOverlay` 가 사진 피사체(세일리언시)·인스타 UI 안전영역을 피해 자동 배치.
 
+## 후속 — 자막 겹침 (`6ea0ea9`)
+빈 화면 수정 후, 라벨·제목·부제가 서로 겹쳐 보임. 원인: 세 항목을 각각 독립적으로
+'best region' 배치 → 모두 상단 밴드를 골라 충돌. → 제목(앵커)의 세일리언시 결과를
+따르되 모든 항목을 단일 flex-col 캡션 블록에 순서대로 스택(항목별 폰트·스타일 유지).
+
 ## 검증
 - tsc exit 0
 - 단독 테스트 라우트(대조군 비교)로 글자·배경 렌더 확인 → 삭제
-- 실제 `/dashboard` Feed/Reels/Story 3프레임에 사진 + 자동배치 자막 표시 확인
+- 실제 `/dashboard` Feed/Reels/Story 3프레임에 사진 + 자동배치 자막이 라벨→제목→
+  부제로 깔끔히 스택(겹침 없음) 확인

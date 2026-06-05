@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 Phase: 1 of 6 (Foundation & Multi-Tenant Data Model)
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-06-05 — Completed quick task 260605-mp1: 인스타 미리보기 빈 화면 수정
+Last activity: 2026-06-05 — 인스타 미리보기 자막 겹침까지 수정 (260605-mp1)
 
 Progress: [░░░░░░░░░░] 0%
 
