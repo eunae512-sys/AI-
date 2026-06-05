@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 Phase: 1 of 6 (Foundation & Multi-Tenant Data Model)
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-06-05 — /reels 에디토리얼 디자인 시스템 전면 이관 + 공간 확보 (260605-i6k)
+Last activity: 2026-06-05 — 카드뉴스 주제 키워드 유실 수정 (라벨 제거·subject 폴백·kind 우선) (260605-ck1)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -88,6 +88,7 @@ None yet. (Use `/gsd-add-todo` to capture ideas during sessions.)
 | 260605-cp1 | 카드뉴스·릴스 자동 문구 휴먼 톤 + 문맥 정합성 (AI 클리셰·DM트리거·저장강박·조각자막 제거) | 2026-06-05 | f9aed4b | [260605-cp1-copy-human-coherence](./quick/260605-cp1-copy-human-coherence/) |
 | 260605-mp1 | 인스타 모바일 미리보기 빈 화면 수정 (SmartTextOverlay position 충돌 붕괴·cqh 폰트·CORS) | 2026-06-05 | ffb8d36 | [260605-mp1-mobile-preview-empty](./quick/260605-mp1-mobile-preview-empty/) |
 | 260605-i6k | /reels 에디토리얼 디자인 시스템 전면 이관 (SaaS 색·그라데이션·이모지·다크모드 제거 → 종이+잉크·세리프·헤어라인·SAGE) + 밀도 완화로 공간 확보, 로직 무손상 | 2026-06-05 | 96c7e94 | [260605-i6k-reels-editorial-rework](./quick/260605-i6k-reels-editorial-rework/) |
+| 260605-ck1 | 카드뉴스 주제 키워드 유실 버그 — 라벨 제거·subject 폴백·kind 우선으로 주제별 차별화 복구 | 2026-06-05 | 0a76f5a | [260605-ck1-cardnews-keyword-fix](./quick/260605-ck1-cardnews-keyword-fix/) |
 
 ## Deferred Items
 
