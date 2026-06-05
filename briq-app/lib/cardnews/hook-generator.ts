@@ -241,7 +241,7 @@ type Ctx = {
 const HOOK_NEW_MENU: ((c: Ctx) => string)[] = [
   // 숫자 후킹
   (c) => `${c.v.city} ${c.v.catShort} 100곳 중,\n${을(c.t.subject || c.v.signature)} 이렇게 하는 곳은 1곳.`,
-  (c) => `${c.t.subject || c.v.signature}.\n${c.v.city}에서 한 번도 안 드셔봤다면 저장각.`,
+  (c) => `${c.t.subject || c.v.signature}.\n${c.v.city}에서 아직 안 드셔보셨다면 오늘 한 번.`,
   // 시간 한정
   (c) => `${c.t.timeWord ?? "이번 시즌"} 한정,\n${c.t.subject || c.v.signature}.`,
   (c) => `1년에 60일,\n그 60일이 시작됐습니다. ${c.t.subject || c.v.signature}.`,
@@ -262,7 +262,7 @@ const HOOK_NEW_MENU: ((c: Ctx) => string)[] = [
 const HOOK_SEASON: ((c: Ctx) => string)[] = [
   // D-N 카운트다운
   (c) => `${c.t.timeWord ?? "이번 시즌"} ${c.t.subject || c.v.signature},\n${c.v.slot} 곧 마감입니다.`,
-  (c) => `${c.t.timeWord ?? "올해"} ${c.t.subject || c.v.signature},\n작년에 놓치셨다면 저장.`,
+  (c) => `${c.t.timeWord ?? "올해"} ${c.t.subject || c.v.signature},\n작년에 놓치셨다면 올해는 미리.`,
   // 시간 한정성
   (c) => `${c.t.timeWord ?? "이번 시즌"} 한 번뿐인 ${c.t.subject || c.v.unit}.\n자리 ${c.t.limitWord ?? "한정"}, 빠르게.`,
   (c) => `${c.t.timeWord ?? "5월"}이라\n가능한 ${c.t.subject || c.v.unit}. 다음은 1년 뒤.`,
@@ -277,18 +277,18 @@ const HOOK_SEASON: ((c: Ctx) => string)[] = [
 
 const HOOK_RETURNING: ((c: Ctx) => string)[] = [
   // 단골 비밀 후킹
-  (c) => `${c.v.customerWord}만 아는\n${c.t.subject || c.v.signature}, 5월에만 나옵니다.`,
-  (c) => `오래된 ${c.v.customerWord}께\n먼저 안내드립니다. 저장하세요.`,
+  (c) => `${c.v.customerWord}만 아는\n${c.t.subject || c.v.signature}, ${c.t.timeWord ?? "이맘때"}에만 나와요.`,
+  (c) => `오래된 ${c.v.customerWord}께\n먼저 살짝 알려드려요.`,
   // 1년 만에
-  (c) => `1년 만에 다시 ${c.v.visitWord} 분,\nDM 'BACK' 한 글자만.`,
+  (c) => `1년 만에 다시 오시는 분,\n자리 미리 비워둘게요.`,
   // 한 번 와본 분만
-  (c) => `한 번 다녀가신 분만\n읽어주세요. 단골 가격 안내.`,
+  (c) => `한 번 다녀가신 분께만\n조용히 드리는 안내예요.`,
   // 다시 오시는 이유
   (c) => `${c.v.city} ${c.v.catShort} 중,\n다시 ${c.v.visitWord} 분이 많은 한 곳.`,
   // 단골 가격
-  (c) => `${c.v.customerWord} 가격으로\n이번 시즌 한정 안내.`,
+  (c) => `오래 와주신 분께 드리는\n${c.t.timeWord ?? "이번"} 안내예요.`,
   // 안 잊는 가게
-  (c) => `1년에 한 번이라도 다녀가셨다면,\n이 게시물은 저장 필수.`,
+  (c) => `1년에 한 번이라도 들르셨다면,\n이번 소식도 한 번 보세요.`,
 ];
 
 const HOOK_REVIEW: ((c: Ctx) => string)[] = [
@@ -318,9 +318,9 @@ const HOOK_TREND: ((c: Ctx) => string)[] = [
 ];
 
 const HOOK_EVENT: ((c: Ctx) => string)[] = [
-  (c) => `${c.t.subject || "이벤트"} 선착순 ${c.t.number ?? "10"}명,\n${c.t.timeWord ?? "오늘"} 마감 임박.`,
-  (c) => `오늘만 ${c.t.limitWord ?? "한정"},\n${c.t.subject || "이벤트"} 놓치지 마세요.`,
-  (c) => `${c.v.customerWord} 한정 이벤트,\nDM 'EVENT' 한 글자만.`,
+  (c) => `${c.t.subject || "이벤트"}, 선착순 ${c.t.number ?? "10"}분.\n${c.t.timeWord ?? "오늘"}까지만 받아요.`,
+  (c) => `오늘만 여는 ${c.t.subject || "이벤트"},\n생각 있으시면 미리 연락 주세요.`,
+  (c) => `${c.v.customerWord}께 드리는 이벤트,\n댓글이나 디엠으로 알려주세요.`,
 ];
 
 // 동사 활용 헬퍼 — process(어간) → "process는" 동작 어구로
@@ -371,7 +371,7 @@ const PROBLEM_POOL: ((c: Ctx) => string)[] = [
   (c) => `비싸다고 망설이셨던 ${c.v.cat},\n이번엔 부담 없이 안내드릴게요.`,
   (c) => `검색만 하다 발걸음\n돌리셨던 분만 읽어주세요.`,
   (c) => `${c.t.timeWord ?? "이번 시즌"}에만 나오는 ${c.v.signature},\n매년 놓치셨다면 이번엔 미리.`,
-  (c) => `${c.v.slotBusyPhrase}.\n늘 한 발 늦으셨다면 이 게시물 저장.`,
+  (c) => `${c.v.slotBusyPhrase}.\n늘 한 발 늦으셨다면 이번엔 미리.`,
   (c) => `${c.v.city}에서 ${c.v.signature},\n어디서 제대로 받을지 모르셨다면.`,
   (c) => `${c.v.cat}, 처음이라\n어디부터 봐야 할지 막막하셨다면.`,
 ];
@@ -395,7 +395,7 @@ const VALUE_POOL: ((c: Ctx) => string)[] = [
   // 결과 — 산업별 구체 감각(outcomePhrase)
   (c) => `${c.v.experienceWord} ${c.v.process}\n시간만큼 ${c.v.outcomePhrase}.`,
   // 고집 — 클리셰 대신 단정한 한 줄
-  (c) => `남들 하는 방식 말고,\n여기 결대로 합니다.`,
+  (c) => `요란하게는 안 해도,\n오던 분들은 다 아세요.`,
   (c) => `사장님이 직접 챙기는 ${c.v.signature},\n중간에 대충이 없습니다.`,
   // 시그니처
   (c) => `${c.v.customerWord}들이 매번 다시 찾는 건\n따로 있습니다.`,
@@ -406,8 +406,8 @@ const VALUE_POOL: ((c: Ctx) => string)[] = [
   // 시간대 — 산업별 분기
   (c) => `${c.v.slotBusyPhrase} —\n${c.t.timeWord ?? defaultBusyTime(c.brand.industry)}.`,
   (c) => `붐비는 게 싫으면\n${defaultQuietTime(c.brand.industry)} 좋아요.`,
-  // 시즌 한정
-  (c) => `${c.t.timeWord ?? "이번 시즌"} 한정이라\n지금 아니면 만나기 어려워요.`,
+  // 환대 — 시즌 한정 표현은 VALUE_SEASON_POOL 로 분리(비시즌 캠페인 문맥 보호)
+  (c) => `처음 오신 분도 단골처럼\n편하게 계시다 가세요.`,
 ];
 
 // 산업별 시간대 기본값 — 모든 산업에 "주말 점심" 박는 식당-편향 제거
@@ -438,7 +438,7 @@ function defaultQuietTime(industry: Brand["industry"]): string {
 const VALUE_SEASON_POOL: ((c: Ctx) => string)[] = [
   (c) => `남은 ${c.v.slot},\n생각보다 빠르게 마감되는 ${c.t.timeWord ?? "시즌"}입니다.`,
   (c) => `${c.t.timeWord ?? "이번 시즌"}에만 여는 구성,\n지나면 다음 시즌에 다시 만나요.`,
-  (c) => `${은(c.v.purchaseAction)} DM 'OPEN' 한 글자,\n또는 댓글로 인원만.`,
+  (c) => `${은(c.v.purchaseAction)} 디엠이나\n댓글로 편하게 남겨주세요.`,
   (c) => `매년 다시 ${c.v.visitWord} 분부터\n먼저 모십니다.`,
   (c) => `이번 ${c.t.timeWord ?? "시즌"}만 가능한\n${c.v.unitPlural} 조합 ${c.t.number ?? "4"}가지.`,
   (c) => `작년 ${c.t.timeWord ?? "이맘때"} 다녀가신 분,\n올해도 먼저 ${c.v.purchaseWord} 분이 많아요.`,
@@ -461,84 +461,84 @@ type CtaVariant = { slide: string; ctaText: string };
 // CTA — 단 하나의 행동 (저장 / DM / 공유 / 팔로우+알림). 마케팅 트리거 단어 강제.
 const CTA_NEW_MENU: ((c: Ctx) => CtaVariant)[] = [
   (c) => ({
-    slide: `이번 ${c.t.timeWord ?? "시즌"} 끝나기 전 저장.\n다음 ${c.v.purchaseAction} 때 도움돼요.`,
-    ctaText: `꼭 저장하세요. 다음 시즌엔 다른 ${이(c.v.unit)} 나옵니다. ${c.v.purchaseAction}은 프로필 링크 또는 댓글로.`,
+    slide: `또 생각나실 것 같으면\n저장해두셔도 좋아요.`,
+    ctaText: `다음 시즌엔 다른 ${이(c.v.unit)} 나와요. 오실 땐 프로필 링크나 댓글로 편하게 ${c.v.purchaseAction}하세요.`,
   }),
   (c) => ({
-    slide: `저장 → 친구와 같이.\n공유하면 같이 갈 사람 생깁니다.`,
-    ctaText: `저장 + 공유. ${c.v.city} 같이 갈 친구한테 보내면 다음 ${c.v.purchaseAction} 때 같이 올 수 있어요.`,
+    slide: `같이 가면 좋을 분,\n한 명쯤 떠오르시죠.`,
+    ctaText: `${c.v.city} 같이 갈 분한테 슬쩍 보내보세요. 다음에 같이 오시면 더 좋아요.`,
   }),
   (c) => ({
-    slide: `팔로우 + 알림 ON.\n다음 ${c.v.signature} 가장 먼저.`,
-    ctaText: `팔로우 + 게시물 알림 켜두시면 다음 시즌 ${c.v.signature} 가장 먼저 안내드립니다.`,
+    slide: `다음 ${c.v.signature} 준비되면\n먼저 알려드릴게요.`,
+    ctaText: `팔로우만 해두시면 다음 ${c.v.signature} 나올 때 먼저 알려드릴게요.`,
   }),
   (c) => ({
-    slide: `${c.v.purchaseAction}은 DM 한 글자.\n${c.v.slot} 빠르게 잡습니다.`,
-    ctaText: `${c.v.purchaseAction}은 DM 'BOOK' 한 글자만 보내주세요. ${c.v.slot} 빠르게 잡아드립니다.`,
+    slide: `${c.v.purchaseAction}은 디엠으로\n편하게 남겨주세요.`,
+    ctaText: `${c.v.purchaseAction}은 디엠 한 줄이면 돼요. ${c.v.slot} 빠르게 잡아드릴게요.`,
   }),
 ];
 
 const CTA_SEASON: ((c: Ctx) => CtaVariant)[] = [
   (c) => ({
-    slide: `DM 'OPEN' 한 글자만.\n${c.v.slot} 바로 안내해 드려요.`,
-    ctaText: `DM 'OPEN' 한 글자 보내주시면 ${c.v.slot} 바로 안내해 드려요. 저장 → ${c.t.timeWord ?? "이 시즌"} 안 잊게.`,
+    slide: `자리 궁금하시면\n디엠으로 편하게 물어보세요.`,
+    ctaText: `디엠 주시면 ${c.v.slot} 바로 안내해 드릴게요.`,
   }),
   (c) => ({
-    slide: `${c.t.timeWord ?? "이번 시즌"} 지나면 다음은 한참 뒤.\n저장 + DM 'OPEN'.`,
-    ctaText: `${c.t.timeWord ?? "이번 시즌"} 안에 ${c.v.purchaseAction} 부탁드려요. ${c.v.slot} 한정이라 DM 'OPEN' 빠르게.`,
+    slide: `${c.t.timeWord ?? "이번 시즌"} 지나면\n또 한참 뒤예요.`,
+    ctaText: `${c.t.timeWord ?? "이번 시즌"} 안에 오시는 게 좋아요. ${c.v.slot} 한정이라 디엠으로 미리 ${c.v.purchaseAction} 부탁드려요.`,
   }),
   (c) => ({
-    slide: `${c.v.slot} 한정 —\n저장 + 친구에게 공유.`,
-    ctaText: `${c.v.slot} 한정이라 빨리 차요. 저장해두시고 친구한테 공유하면 같이 올 사람 생깁니다.`,
+    slide: `자리 많지 않아요.\n생각 있으시면 미리.`,
+    ctaText: `${c.v.slot} 한정이라 일찍 차요. 같이 오실 분 있으면 같이 챙겨 오세요.`,
   }),
   (c) => ({
-    slide: `댓글로 인원만 남겨주세요.\n${c.v.slot} 잡아둡니다.`,
-    ctaText: `댓글로 인원만 알려주세요. ${c.v.slot} 잡아둡니다. ${c.t.timeWord ?? "이 시즌"} 안 잊게 저장 필수.`,
+    slide: `댓글로 인원만\n남겨주시면 돼요.`,
+    ctaText: `댓글로 인원만 알려주시면 ${c.v.slot} 잡아둘게요.`,
   }),
 ];
 
 const CTA_RETURNING: ((c: Ctx) => CtaVariant)[] = [
   (c) => ({
-    slide: `DM 'BACK' 한 글자만.\n${c.v.customerWord} 자리 따로 잡아드려요.`,
-    ctaText: `DM 'BACK' 한 글자만 보내주시면 ${c.v.customerWord} 자리 따로 잡아드려요. 저장해두시면 안 잊혀요.`,
+    slide: `오시기 전에 한마디만\n주시면 자리 비워둘게요.`,
+    ctaText: `오시기 전에 디엠 한 줄 주시면 ${c.v.customerWord} 자리 따로 비워둘게요.`,
   }),
   (c) => ({
-    slide: `팔로우 + 알림 ON.\n다음 시즌 가장 먼저.`,
-    ctaText: `팔로우 + 게시물 알림 켜두시면 다음 시즌 ${c.v.signature} 가장 먼저 안내드립니다.`,
+    slide: `팔로우해두시면\n다음 소식 먼저 챙겨드려요.`,
+    ctaText: `팔로우만 해두시면 다음 ${c.v.signature} 나올 때 먼저 알려드릴게요.`,
   }),
   (c) => ({
-    slide: `단골 가격 안내.\n카카오 채널로 연결됩니다.`,
-    ctaText: `단골 가격 안내는 카카오 채널로 보냅니다. 프로필 링크 → 카카오 채널 추가하시면 그달 안에 안내드립니다.`,
+    slide: `단골 안내는\n카카오로 보내드려요.`,
+    ctaText: `단골 안내는 카카오 채널로 보내드려요. 프로필 링크에서 채널 추가해두시면 그때그때 챙겨드릴게요.`,
   }),
 ];
 
 const CTA_REVIEW: ((c: Ctx) => CtaVariant)[] = [
   (c) => ({
-    slide: `이 게시물 저장,\n다음 ${c.v.city} 갈 때 보세요.`,
-    ctaText: `저장해두시면 다음 ${c.v.city} 가실 때 바로 찾을 수 있어요. 친구한테 공유하면 같이 갈 사람 생깁니다.`,
+    slide: `${c.v.city} 가실 일 있으면\n한 번 떠올려 주세요.`,
+    ctaText: `다음에 ${c.v.city} 가실 때 생각나시면 들러주세요. 같이 갈 분한테 보내주셔도 좋아요.`,
   }),
   (c) => ({
-    slide: `후기 더 보고 싶다면\n프로필 → 하이라이트.`,
-    ctaText: `다녀가신 분들 후기 더 보고 싶으면 프로필 하이라이트 '리뷰' 확인. ${c.v.purchaseAction}은 링크에서.`,
+    slide: `후기 더 궁금하시면\n프로필에 모아뒀어요.`,
+    ctaText: `다녀가신 분들 후기는 프로필 하이라이트 '리뷰'에 모아뒀어요. ${c.v.purchaseAction}은 링크에서.`,
   }),
   (c) => ({
-    slide: `공유 → 같이 갈 친구.\n비싸다고 고민 중인 친구한테.`,
-    ctaText: `비싸다고 망설이는 친구한테 이 게시물 공유해 주세요. 다녀가면 그 가격에 그 결, 그대로입니다.`,
+    slide: `망설이는 분 있으면\n슬쩍 보여주세요.`,
+    ctaText: `가볼까 말까 하는 분한테 보여주세요. 한 번 다녀가면 왜 그러는지 아실 거예요.`,
   }),
 ];
 
 const CTA_TREND: ((c: Ctx) => CtaVariant)[] = [
   (c) => ({
-    slide: `댓글로 한 줄.\n"우리 동네는 어때요?"`,
-    ctaText: `여러분 동네 ${c.v.catShort} 추천도 댓글로 한 줄 부탁드려요. 저장해두시면 ${c.v.city} 갈 때 도움됩니다.`,
+    slide: `${c.v.city} 단골집,\n댓글로 한 곳만 알려주세요.`,
+    ctaText: `여러분 동네 ${c.v.catShort}도 댓글로 한 줄 부탁드려요. ${c.v.city} 가실 때 서로 도움돼요.`,
   }),
   (c) => ({
-    slide: `저장 + ${c.v.city} 친구한테 공유.\n진짜 ${c.v.catShort} 같이.`,
-    ctaText: `${c.v.city} ${c.v.catShort} 더 모아두려면 저장. ${c.v.city} 같이 갈 친구한테 공유하면 다음 약속 때 도움됩니다.`,
+    slide: `${c.v.city} 같이 다닐 분,\n한 명쯤 있으시죠.`,
+    ctaText: `${c.v.city} ${c.v.catShort} 같이 다니는 분한테 보내보세요. 다음 약속 정할 때 편해요.`,
   }),
   (c) => ({
-    slide: `팔로우 + 알림 ON.\n${c.v.city} ${c.v.catShort} 정보 가장 먼저.`,
-    ctaText: `팔로우 + 알림 ON 해두시면 ${c.v.city} ${c.v.catShort} 새 콘텐츠 가장 먼저 받아보실 수 있어요.`,
+    slide: `팔로우해두시면\n${c.v.city} 이야기 종종 전해드려요.`,
+    ctaText: `팔로우만 해두시면 ${c.v.city} ${c.v.catShort} 이야기 종종 전해드릴게요.`,
   }),
 ];
 

@@ -217,9 +217,11 @@ function reelSubtitlesFromGen(
   topic: string,
 ): { t: string; at: number }[] {
   const times = [0, 7, 15, 24];
+  // 슬라이드 캡션은 보통 2줄(\n) — 첫 줄만 떼면 "매번 예약을" 같은 조각이 된다.
+  // 두 줄을 한 문장으로 이어 자막이 문맥 그대로 들어가게.
   const clip = (s?: string) => {
-    const line = (s ?? "").split("\n")[0].trim();
-    return line.length > 34 ? line.slice(0, 33).trimEnd() + "…" : line;
+    const line = (s ?? "").replace(/\s*\n\s*/g, " ").replace(/\s+/g, " ").trim();
+    return line.length > 38 ? line.slice(0, 37).trimEnd() + "…" : line;
   };
 
   if (!gen) {
