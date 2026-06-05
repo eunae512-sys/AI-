@@ -100,22 +100,36 @@ function realizedTopic(rawTopic: string, brand: Brand): string {
   return rawTopic;
 }
 
+// 캠페인 종류 라벨 단어 — 주제에 "신메뉴 봄나물 코스" 처럼 붙어도 subject 에선 뺀다
+// (subject = 진짜 키워드 "봄나물 코스" 가 되도록). 단, 단독으로만 적었으면(=다른 단어
+// 없음) subject 를 비우지 않도록 한 단어는 남긴다.
+const KIND_LABEL_WORDS = /^(신메뉴|신상품|신상|시즌|단골|리뷰|후기|예약|트렌드|이벤트|홍보|프로모션|행사)$/;
+
 function extractTopicTokens(topic: string): TopicTokens {
-  const cleaned = topic.replace(/[—–-]/g, " ").replace(/\s+/g, " ").trim();
+  const cleaned = topic.replace(/[—–·]/g, " ").replace(/\s+/g, " ").trim();
 
   const timeMatch = cleaned.match(TIME_PATTERN);
   const limitMatch = cleaned.match(LIMIT_PATTERN);
   const numMatch = cleaned.match(NUM_PATTERN);
 
-  // 첫 명사구 = 시간/한정/숫자 표현 제외하고 남는 첫 의미 단어들
-  const withoutMeta = cleaned
-    .replace(TIME_PATTERN, "")
-    .replace(LIMIT_PATTERN, "")
-    .replace(NUM_PATTERN, "")
-    .replace(/\s+/g, " ")
-    .trim();
-  // 첫 4 단어까지를 subject 로
-  const subject = withoutMeta.split(" ").filter(Boolean).slice(0, 4).join(" ") || cleaned;
+  // 의미 토큰만 추리기 — 시간/한정/숫자 메타 표현 제거. 단, "봄나물" 처럼 시간 단어가
+  // 다른 글자와 붙은 복합 명사는 보존하기 위해 '띄어쓰기로 분리된 토큰' 단위로만 메타 제거.
+  const metaToken = new RegExp(
+    `^(?:${TIME_PATTERN.source}|${LIMIT_PATTERN.source}|${NUM_PATTERN.source})$`,
+  );
+  const meaningful = cleaned
+    .split(" ")
+    .filter(Boolean)
+    // 캠페인 종류 라벨 단어 제거 ("신메뉴" "신상" 등) — 진짜 키워드만 남게
+    .filter((w) => !KIND_LABEL_WORDS.test(w))
+    // 단독 메타 토큰(=정확히 "봄" "5월" "한정" "3개") 제거. "봄나물" 은 부분일치라 살아남음.
+    .filter((w) => !metaToken.test(w));
+
+  // 첫 4 단어까지를 subject 로. 메타·라벨만 있는 입력이면 정제 전 토큰으로 폴백.
+  const subject =
+    meaningful.slice(0, 4).join(" ") ||
+    cleaned.split(" ").filter((w) => !KIND_LABEL_WORDS.test(w)).slice(0, 4).join(" ") ||
+    cleaned;
 
   return {
     subject,
@@ -361,6 +375,37 @@ function hookPoolFor(kind: CardnewsCampaignKind): ((c: Ctx) => string)[] {
     case "이벤트":
       return [...HOOK_EVENT, ...HOOK_PATTERNS_BY_TYPE.numeric];
   }
+}
+
+// 주제 키워드가 충분히 의미 있는지 — 브랜드 기본 signature 로 폴백된 게 아니라
+// 사장님이 친 실제 키워드인지 판단 (2글자 이상 + 한글 포함 + signature 와 다름).
+function hasRealSubject(c: Ctx): boolean {
+  const s = c.t.subject?.trim() ?? "";
+  return s.length >= 2 && /[가-힣]/.test(s) && s !== c.v.signature;
+}
+
+// 후크 픽 — 시드로 한 번 고르되, 그게 주제 키워드를 안 담고 있고 주제가 진짜 키워드면
+// 풀에서 'subject 를 실제로 출력하는' 템플릿만 추려 시드로 다시 고른다.
+// (키워드가 슬라이드 1장 헤드라인에서 사라지는 게 증상의 핵심이었음.)
+function pickHookWithSubject(
+  pool: ((c: Ctx) => string)[],
+  ctx: Ctx,
+  seed: number,
+  offset: number,
+): string {
+  const first = pick(pool, seed, offset)(ctx);
+  if (!hasRealSubject(ctx)) return first;
+  if (first.includes(ctx.t.subject)) return first;
+  // subject 를 실제로 렌더에 포함하는 템플릿만 (signature 폴백이 아닌 것)
+  const subjectBearing = pool.filter((fn) => {
+    try {
+      return fn(ctx).includes(ctx.t.subject);
+    } catch {
+      return false;
+    }
+  });
+  if (subjectBearing.length === 0) return first;
+  return pick(subjectBearing, seed, offset)(ctx);
 }
 
 // PROBLEM — 페인포인트. 자연스러운 한국어 완성형, 검색 행동 인용.
@@ -818,7 +863,9 @@ export function generateCardnewsCampaign(
   const hookPool = hookPoolFor(kind);
   // 같은 캠페인 후크 풀에서 무드별로 다른 후크를 골라 카드 헤드라인도 무드를 탄다
   const moodOffset = MOOD_HOOK_OFFSET[brand.mood ?? "warm"] ?? 0;
-  const hook = pick(hookPool, seed, moodOffset)(ctx);
+  // 주제 키워드가 반드시 후크에 박히도록 — 시드가 주제 무관 템플릿을 골랐고
+  // subject 가 브랜드 기본(signature) 과 다른 진짜 키워드면, subject 를 쓰는 후크로 교체.
+  const hook = pickHookWithSubject(hookPool, ctx, seed, moodOffset);
 
   const problem = pick(PROBLEM_POOL, seed, 3)(ctx);
 
@@ -922,12 +969,16 @@ export function generateCardnewsCampaign(
 }
 
 export function inferKindFromTopic(topic: string): CardnewsCampaignKind {
+  // 사장님이 캠페인 종류를 명시했으면("신메뉴 봄나물 코스") 그 의도를 시즌 단어보다 우선.
+  // (안 그러면 "봄" 한 글자가 신메뉴 의도를 덮어써 시즌 풀로 잘못 라우팅됨.)
+  if (/신메뉴/.test(topic)) return "신메뉴";
+  if (/신상품|신상|컬렉션|룩북/.test(topic)) return "신상품";
   if (/시즌|봄|여름|가을|겨울|장마|연말|연초|새해|어버이|크리스마스|발렌타인|화이트데이|추석|설|가정의\s*달/i.test(topic)) return "시즌";
   if (/단골|재방문|리텐션/i.test(topic)) return "단골";
   if (/리뷰|후기/i.test(topic)) return "리뷰";
   if (/예약|자리|빈\s*시간/i.test(topic)) return "예약";
   if (/트렌드|동네|로컬|키워드/i.test(topic)) return "트렌드";
   if (/이벤트|한정|기간/i.test(topic)) return "이벤트";
-  if (/신상품|상품|컬렉션|룩북/i.test(topic)) return "신상품";
+  if (/상품|컬렉션|룩북/i.test(topic)) return "신상품";
   return "신메뉴";
 }
