@@ -249,7 +249,42 @@
 <!-- GSD:conventions-start source:CONVENTIONS.md -->
 ## Conventions
 
-Conventions not yet established. Will populate as patterns emerge during development.
+### 디자인 시스템 — 매거진 에디토리얼 (전 화면 단일 결)
+
+**진리의 원천:** `briq-app/lib/landing/tokens.ts`. 모든 화면(랜딩·온보딩·가격·결제·대시보드·앱 내부)은 이 토큰을 따라 **하나의 결**로 통일한다. 라이트 전용(다크모드 없음).
+
+| 토큰 | 값 | 용도 |
+|------|-----|------|
+| `INK` | `#14130F` | 본문/표제 (warm black) |
+| `INK_SOFT` | `#4A4742` | 보조 본문 |
+| `INK_MUTE` | `#767268` | 메타·캡션 (AA 가독) |
+| `RULE` / `RULE_SOFT` | `rgba(20,19,15,0.12)` / `0.06` | 0.5px 헤어라인 |
+| `PAPER` / `PAPER_HOVER` | `#FAF7EE` / `rgba(20,19,15,0.025)` | 종이 배경 / hover |
+| `SAGE` | `#4F5F4B` | **단일 컬러 액센트** (긍정·강조). 그 외 색 금지 |
+| `HL` | `#E6DDC8` | 한글 강조용 크림 하이라이트 |
+| `SERIF_LATIN` / `SERIF_HANGUL` | Cormorant / Nanum Myeongjo | 라틴 / 한글 세리프 |
+
+오류 상태만 따뜻한 테라코타 `#A1473D`.
+
+### 철칙 (위반 금지 — 이번 세션에서 전 화면에 적용됨)
+
+1. **한글 가짜 이탤릭 금지.** 나눔명조/산세 한글에 `italic`/`fontStyle:"italic"` 절대 금지(합성 기울임=싸구려). 강조는 **색·무게·크림 하이라이트(`HL`)**. 진짜 이탤릭은 **라틴(Cormorant)에만** (eyebrow·STEP 라벨·타임스탬프·폴리오 등 영문 액센트).
+2. **한글 CTA/라벨:** `tracking 0.01~0.02em`, `uppercase` 금지. `uppercase`+넓은 자간은 영문에만.
+3. **단일 액센트 SAGE.** `emerald/indigo/violet/fuchsia/amber` 등 SaaS 색 금지 → 긍정·체크·절약·추천은 SAGE.
+4. **SaaS 시그널 제거.** 그라데이션(브랜드 무드보드 제외)·다색·큰 그림자·`rounded-xl/2xl`·`gradient-text`·이모지 금지. 카드는 **헤어라인(RULE) 사각** 또는 상단 룰. 이모지 → lucide 아이콘.
+5. **버튼:** 솔리드 잉크(`INK` bg + `PAPER` 텍스트), disabled `rgba(20,19,15,0.10)`+`INK_MUTE`. 사각.
+6. **`word-break: keep-all`** — 한글 표제·본문 중간 줄바꿈 방지.
+7. **정직성.** 미검증 수치·가짜 고객/후기 금지. 시연 데이터는 "예시 화면" 라벨 명시.
+8. 표제=세리프, 큰 여백, 절제된 모션(opacity+1~6px nudge).
+
+### 카피 톤 (자동 생성 — `briq-app/lib/cardnews/hook-generator.ts`)
+
+- **AI 클리셰 금지:** `팔로우+알림 ON`, 영문 DM 트리거(`DM 'OPEN' 한 글자`), `저장각/저장 필수`, FOMO(`놓치지 마세요`). → 사장님 **구어체**(디엠 한 줄·댓글로·먼저 챙겨드릴게요).
+- **문맥 정합:** 캠페인 종류별 풀이 어긋나지 않게(시즌 문구는 시즌 캠페인만). 릴스 자막은 슬라이드 2줄을 한 문장으로 이어 조각 방지.
+
+### 검증 루틴
+
+`./node_modules/.bin/tsc --noEmit -p tsconfig.json` → 헤드리스 Chrome 스크린샷(`--headless=new --screenshot`)으로 육안 확인 → 원자 커밋. 디자인/카피 변경은 반드시 스크린샷 또는 임시 디버그 라우트로 실제 출력 확인.
 <!-- GSD:conventions-end -->
 
 <!-- GSD:architecture-start source:ARCHITECTURE.md -->

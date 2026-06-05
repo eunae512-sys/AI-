@@ -100,13 +100,14 @@ Items acknowledged and carried forward from previous milestone close:
 
 **Active goal:** 소상공인 자동화 마케팅 플랫폼 — 전세계 1등 사이트 (디테일 고도화 모드)
 
-**다음 작업 (NEXT): 랜딩 페이지를 1등 수준으로 고도화**
-- 대상: `briq-app/app/page.tsx` → `components/landing/{Nav,Hero,Sections}.tsx`
-- 목표: "전세계 1등 *사이트*"의 첫인상·전환. 히어로 카피/비주얼 위계, 신뢰요소(소셜프루프·실데이터), CTA 명확성, 반응형·모션 절제, 카피 톤(전문가 마케터·AI클리셰 0).
-- 방식: GSD quick — 한 섹션씩 감사→개선→tsc/빌드→스크린샷 검증→원자 커밋.
-- 재개 명령 예: "랜딩 Hero부터 1등 수준으로 고도화"
+**다음 작업 (NEXT): /reels 페이지 전면 리워크 → `.planning/HANDOFF-reels-rework.md` 참조**
+- 대상: `briq-app/components/reels/ReelsScreen.tsx` (~1688줄)
+- 목표: 에디토리얼 디자인 시스템 전면 이관 + "공간 확보"(밀도 완화·여백·위계). 로직 100% 보존.
+- 새 세션 시작 시: **먼저 `CLAUDE.md` Conventions + `.planning/HANDOFF-reels-rework.md` 읽기.**
+- 재개 명령 예: "/reels 페이지 에디토리얼 이관 + 공간 확보 — HANDOFF 참조"
 
-**고도화 우선순위(랜딩 다음):** 온보딩(활성화) → 결제/요금제(신뢰) → 대시보드(운영 효율) → /cardnews·/reels 편집 디테일.
+**완료된 1등 고도화(이번 사이클):** 랜딩(Hero/Sections) · 온보딩 · 가격 · 결제(start/success/fail) · 대시보드 · 카드뉴스·릴스 카피 톤 · 인스타 미리보기(빈화면·겹침). 디자인 시스템·철칙은 `CLAUDE.md` Conventions 에 박제됨.
+**남은 후보:** /reels(다음) → /cardnews 편집 디테일 → 쿨 zinc 중립색 INK 토큰화(가격·대시보드).
 
 **환경 메모:** dev 서버는 `pnpm dev` 가 의존성 검증서 실패 → `cd briq-app && ./node_modules/.bin/next dev -p 3000` 로 직접 띄울 것. OpenAI 쿼터·fal 잔액 소진 상태(텍스트/이미지/영상/음악은 Gemini 폴백으로 동작, 보컬음악·AI영상은 결제 충전 필요).
 
