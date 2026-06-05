@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 Phase: 1 of 6 (Foundation & Multi-Tenant Data Model)
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-06-05 — 카드뉴스 브랜드 로고 검증: 이미 완전 구현·배선됨(로고/워드마크 폴백 스크린샷 확인, 코드 0줄) (260605-ll7)
+Last activity: 2026-06-05 — /cardnews 슬라이드 letterhead 에 브랜드 로고 실제 배선 (CardnewsScreen 은 자체 렌더라 캠페인 카루셀과 달리 로고 누락이었음 — BrandMarkPicker 인라인 + logoDataUrl 렌더 분기, 폴백=이니셜, tsc 0, 양쪽 스크린샷) (260605-lzm)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -82,6 +82,7 @@ None yet. (Use `/gsd-add-todo` to capture ideas during sessions.)
 | 260604-tx1 | OpenAI 쿼터 소진 시 텍스트 생성 Gemini 자동 폴백 | 2026-06-04 | f1b99a6 | [260604-tx1-gemini-fallback](./quick/260604-tx1-gemini-fallback/) |
 | 260604-pi2 | 랜딩 Hero+Sections 1등 고도화 (이탤릭 제거·CTA 한글화·정직화·페르소나 플레이트·keep-all) | 2026-06-04 | 864e9a3 | [260604-pi2-landing-hero-uplift](./quick/260604-pi2-landing-hero-uplift/) |
 | 260605-ob1 | 온보딩 매거진 에디토리얼 디자인 시스템 전면 이관 (랜딩과 한 결) | 2026-06-05 | 35919bb | [260605-ob1-onboarding-editorial](./quick/260605-ob1-onboarding-editorial/) |
+| 260605-lzm | /cardnews 슬라이드 letterhead 에 브랜드 로고 배선 (기존 brand-mark 인프라 재사용, 폴백=이니셜) | 2026-06-05 | 2734830 | [260605-lzm-cardnews-brand-logo](./quick/260605-lzm-cardnews-brand-logo/) |
 | 260605-pr1 | 결제/요금제 1등 고도화 (가격 한글 이탤릭·emerald→SAGE + 결제 플로우 에디토리얼 이관) | 2026-06-05 | 413c188 | [260605-pr1-pricing-billing-editorial](./quick/260605-pr1-pricing-billing-editorial/) |
 | 260605-rl2 | 자동 릴스 버그 — 자막 주제별 생성(반복 해결) + 자막 트랙 편집 안정화 | 2026-06-05 | d831a0b | [260605-rl2-reels-subtitle-fix](./quick/260605-rl2-reels-subtitle-fix/) |
 | 260605-db1 | 대시보드 1등 고도화 (한글 가짜 이탤릭 제거 — 이미 에디토리얼) | 2026-06-05 | e13ba3e | [260605-db1-dashboard-italic](./quick/260605-db1-dashboard-italic/) |
