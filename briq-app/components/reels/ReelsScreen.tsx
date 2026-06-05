@@ -5,8 +5,6 @@ import { motion, AnimatePresence } from "motion/react";
 import { Upload, Play, Heart, MessageCircle, Bookmark, Share2, Sparkles, RefreshCw, Music, Type, Pencil, X, Film, Download, Loader2, UserCircle2, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { compileReelsVideo, isCompileSupported, parseTrendStyle, describeTrendStyle } from "@/lib/reels/compile-video";
 import { buildVideoQueryDetailed } from "@/lib/cardnews/video-query";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useBrand } from "@/components/brand/BrandProvider";
 import { useToast } from "@/components/ui/toast";
 import { getBrandDetail } from "@/lib/dummy/brand-detail";
@@ -1376,15 +1374,13 @@ export function ReelsScreen() {
         </div>
 
         {/* Right - Output assets */}
-        <div className="lg:col-span-4 space-y-3 order-3">
+        <div className="lg:col-span-4 space-y-6 order-3">
           {/* 사진 → 영상 변환 카드 */}
-          <Card id="reels-compile" className="p-4 scroll-mt-4 ring-violet-400 transition-shadow">
-            <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
+          <div id="reels-compile" className="p-5 scroll-mt-4 transition-shadow" style={{ border: `0.5px solid ${RULE}`, borderTop: `2px solid ${SAGE}`, background: "#FFFFFF" }}>
+            <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
               <div>
-                <div className="text-[11px] uppercase tracking-[0.15em] text-violet-600 dark:text-violet-400 font-semibold flex items-center gap-1.5">
-                  <Film className="h-3 w-3" />영상 만들기
-                </div>
-                <p className="text-[11px] text-zinc-500 mt-0.5">
+                <SectionLabel icon={Film}>영상 만들기</SectionLabel>
+                <p className="text-[11.5px] mt-1.5" style={{ color: INK_MUTE, fontFamily: SERIF_HANGUL }}>
                   {videoMode === "photo"
                     ? uploadedPhotos.length > 0
                       ? `내 사진 ${uploadedPhotos.length}장 합성 · 무료 · 720×1280`
@@ -1395,7 +1391,8 @@ export function ReelsScreen() {
               {compiled && videoMode === "photo" && (
                 <button
                   onClick={clearCompiled}
-                  className="text-[10px] text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 inline-flex items-center gap-1"
+                  className="text-[11px] inline-flex items-center gap-1 transition-colors"
+                  style={{ color: INK_MUTE, fontFamily: SERIF_HANGUL }}
                 >
                   <X className="h-3 w-3" />
                   초기화
@@ -1404,7 +1401,7 @@ export function ReelsScreen() {
             </div>
 
             {/* 모드 토글 — 사진 합성 / AI 영상 하나로 */}
-            <div className="inline-flex w-full rounded-lg border border-zinc-200 dark:border-zinc-800 p-1 bg-zinc-50 dark:bg-zinc-900/40 mb-3">
+            <div className="inline-flex w-full p-1 mb-4" style={{ border: `0.5px solid ${RULE}`, background: PAPER_HOVER }}>
               {([
                 ["photo", "내 사진으로", Film] as const,
                 ["ai", "AI 영상", Sparkles] as const,
@@ -1413,15 +1410,18 @@ export function ReelsScreen() {
                   key={m}
                   type="button"
                   onClick={() => setVideoMode(m)}
-                  className={`flex-1 inline-flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 px-2 py-2 text-[12.5px] font-medium transition-colors"
+                  style={
                     videoMode === m
-                      ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm"
-                      : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
-                  }`}
+                      ? { background: INK, color: PAPER, fontFamily: SERIF_HANGUL }
+                      : { background: "transparent", color: INK_MUTE, fontFamily: SERIF_HANGUL }
+                  }
                 >
-                  <Icon className="h-3.5 w-3.5" />
+                  <Icon className="h-3.5 w-3.5" strokeWidth={1.75} />
                   {label}
-                  {m === "ai" && <span className="text-[9px] text-amber-500 font-semibold">PRO</span>}
+                  {m === "ai" && (
+                    <span className="text-[9px] tracking-[0.08em] italic" style={{ color: videoMode === m ? PAPER : SAGE, fontFamily: SERIF_LATIN }}>Pro</span>
+                  )}
                 </button>
               ))}
             </div>
@@ -1429,11 +1429,15 @@ export function ReelsScreen() {
             {videoMode === "photo" ? (
               !compiled ? (
               <>
-                <Button
-                  className="w-full"
-                  size="sm"
+                <button
+                  className="w-full inline-flex items-center justify-center gap-2 h-[44px] text-[13px] tracking-[0.01em] font-medium transition-colors"
                   onClick={compileVideo}
                   disabled={compiling || uploadedPhotos.length === 0 || !compileSupported}
+                  style={
+                    compiling || uploadedPhotos.length === 0 || !compileSupported
+                      ? { background: "rgba(20,19,15,0.10)", color: INK_MUTE, fontFamily: SERIF_HANGUL }
+                      : { background: INK, color: PAPER, fontFamily: SERIF_HANGUL }
+                  }
                 >
                   {compiling ? (
                     <>
@@ -1442,68 +1446,76 @@ export function ReelsScreen() {
                     </>
                   ) : (
                     <>
-                      <Film className="h-3.5 w-3.5" />
+                      <Film className="h-3.5 w-3.5" strokeWidth={1.75} />
                       영상으로 변환
                     </>
                   )}
-                </Button>
+                </button>
                 {compiling && (
-                  <div className="mt-2 h-1.5 rounded-full bg-zinc-100 dark:bg-zinc-900 overflow-hidden">
+                  <div className="mt-2.5 h-[3px] overflow-hidden" style={{ background: RULE_SOFT }}>
                     <motion.div
-                      className="h-full bg-gradient-to-r from-violet-500 to-pink-500"
+                      className="h-full"
+                      style={{ background: INK }}
                       animate={{ width: `${compileProgress * 100}%` }}
                       transition={{ duration: 0.2 }}
                     />
                   </div>
                 )}
                 {!compileSupported && (
-                  <p className="mt-2 text-[10px] text-amber-600 dark:text-amber-400">
+                  <p className="mt-2.5 text-[11px]" style={{ color: TERRA, fontFamily: SERIF_HANGUL }}>
                     이 브라우저는 합성을 지원하지 않습니다 (Chrome / Firefox 권장)
                   </p>
                 )}
               </>
             ) : (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 p-2 rounded-md bg-violet-50/60 dark:bg-violet-500/10 border border-violet-200 dark:border-violet-900/40">
-                  <span className="h-7 w-7 rounded bg-violet-600 text-white grid place-items-center text-[10px] font-bold shrink-0">
-                    ✓
+              <div className="space-y-3">
+                <div className="flex items-center gap-2.5 p-3" style={{ border: `0.5px solid ${RULE}`, borderLeft: `2px solid ${SAGE}`, background: PAPER_HOVER }}>
+                  <span className="h-7 w-7 grid place-items-center shrink-0" style={{ background: SAGE, color: PAPER }}>
+                    <Check className="h-3.5 w-3.5" strokeWidth={2.25} />
                   </span>
                   <div className="flex-1 min-w-0">
-                    <div className="text-xs font-semibold text-violet-900 dark:text-violet-100">
+                    <div className="text-[12.5px]" style={{ color: INK, fontFamily: SERIF_HANGUL, fontWeight: 600 }}>
                       합성 완료 · 프리뷰 재생 중
                     </div>
-                    <div className="text-[10px] text-violet-700/80 dark:text-violet-300/70 tabular-nums">
+                    <div className="text-[10.5px] tabular-nums" style={{ color: INK_MUTE }}>
                       {(compiled.durationMs / 1000).toFixed(1)}s · {(compiled.size / 1024 / 1024).toFixed(1)} MB ·{" "}
                       {compiled.mimeType.startsWith("video/mp4") ? "MP4" : "WebM"}
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={compileVideo} disabled={compiling} className="flex-1">
-                    <RefreshCw className="h-3.5 w-3.5" />다시 합성
-                  </Button>
-                  <Button size="sm" onClick={downloadCompiled} className="flex-1">
-                    <Download className="h-3.5 w-3.5" />.{compiled.mimeType.startsWith("video/mp4") ? "mp4" : "webm"} 저장
-                  </Button>
+                  <button
+                    onClick={compileVideo}
+                    disabled={compiling}
+                    className="flex-1 inline-flex items-center justify-center gap-2 h-[40px] text-[12.5px] transition-colors"
+                    style={{ border: `0.5px solid ${RULE}`, color: INK, fontFamily: SERIF_HANGUL }}
+                  >
+                    <RefreshCw className="h-3.5 w-3.5" strokeWidth={1.75} />다시 합성
+                  </button>
+                  <button
+                    onClick={downloadCompiled}
+                    className="flex-1 inline-flex items-center justify-center gap-2 h-[40px] text-[12.5px] font-medium transition-colors"
+                    style={{ background: INK, color: PAPER, fontFamily: SERIF_HANGUL }}
+                  >
+                    <Download className="h-3.5 w-3.5" strokeWidth={1.75} />.{compiled.mimeType.startsWith("video/mp4") ? "mp4" : "webm"} 저장
+                  </button>
                 </div>
 
                 {/* 발행 1-2-3 가이드 — 사용자가 다음에 뭐 할지 명확히 */}
-                <div className="mt-2 rounded-lg border border-zinc-100 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-900/40 p-3">
-                  <div className="text-[10px] uppercase tracking-widest text-zinc-500 font-semibold mb-2">
-                    이렇게 발행하세요
-                  </div>
-                  <ol className="space-y-1.5 text-[11px] text-zinc-700 dark:text-zinc-300">
-                    <li className="flex gap-2">
-                      <span className="h-4 w-4 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 grid place-items-center text-[9px] font-bold tabular-nums shrink-0">1</span>
-                      <span><b>.{compiled.mimeType.startsWith("video/mp4") ? "mp4" : "webm"} 다운로드</b> — 사장님 폰/PC에 저장</span>
+                <div className="mt-1 p-3.5" style={{ border: `0.5px solid ${RULE}`, background: PAPER_HOVER }}>
+                  <SectionLabel>이렇게 발행하세요</SectionLabel>
+                  <ol className="mt-2.5 space-y-2 text-[12px]" style={{ color: INK_SOFT, fontFamily: SERIF_HANGUL }}>
+                    <li className="flex gap-2.5">
+                      <span className="h-[18px] w-[18px] grid place-items-center text-[10px] font-bold tabular-nums shrink-0" style={{ background: INK, color: PAPER }}>1</span>
+                      <span><b style={{ color: INK }}>.{compiled.mimeType.startsWith("video/mp4") ? "mp4" : "webm"} 다운로드</b> — 사장님 폰/PC에 저장</span>
                     </li>
-                    <li className="flex gap-2">
-                      <span className="h-4 w-4 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 grid place-items-center text-[9px] font-bold tabular-nums shrink-0">2</span>
-                      <span>인스타·틱톡에 업로드 후 아래 <b>캡션·해시태그 복사</b> 붙여넣기</span>
+                    <li className="flex gap-2.5">
+                      <span className="h-[18px] w-[18px] grid place-items-center text-[10px] font-bold tabular-nums shrink-0" style={{ background: INK, color: PAPER }}>2</span>
+                      <span>인스타·틱톡에 업로드 후 아래 <b style={{ color: INK }}>캡션·해시태그 복사</b> 붙여넣기</span>
                     </li>
-                    <li className="flex gap-2">
-                      <span className="h-4 w-4 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 grid place-items-center text-[9px] font-bold tabular-nums shrink-0">3</span>
-                      <span>혹은 <b>예약 발행 큐</b>에 올려 두면 추천 시간에 자동 알림 (데모)</span>
+                    <li className="flex gap-2.5">
+                      <span className="h-[18px] w-[18px] grid place-items-center text-[10px] font-bold tabular-nums shrink-0" style={{ background: INK, color: PAPER }}>3</span>
+                      <span>혹은 <b style={{ color: INK }}>예약 발행 큐</b>에 올려 두면 추천 시간에 자동 알림 (데모)</span>
                     </li>
                   </ol>
                 </div>
@@ -1512,12 +1524,15 @@ export function ReelsScreen() {
             ) : (
               <div className="pt-1">
               {!aiVideoUrl ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
+                <button
+                  className="w-full inline-flex items-center justify-center gap-2 h-[44px] text-[13px] tracking-[0.01em] transition-colors"
                   onClick={generateAiVideo}
                   disabled={aiVideoStatus === "working"}
+                  style={
+                    aiVideoStatus === "working"
+                      ? { border: `0.5px solid ${RULE}`, color: INK_MUTE, fontFamily: SERIF_HANGUL }
+                      : { border: `0.5px solid ${INK}`, color: INK, fontFamily: SERIF_HANGUL }
+                  }
                 >
                   {aiVideoStatus === "working" ? (
                     <>
@@ -1526,46 +1541,53 @@ export function ReelsScreen() {
                     </>
                   ) : (
                     <>
-                      <Sparkles className="h-3.5 w-3.5" />
+                      <Sparkles className="h-3.5 w-3.5" strokeWidth={1.75} />
                       AI 영상 생성
                     </>
                   )}
-                </Button>
+                </button>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   <video
                     src={aiVideoUrl}
                     controls
                     playsInline
-                    className="w-full rounded-md bg-black aspect-[9/16] max-h-[360px] object-contain"
+                    className="w-full bg-black aspect-[9/16] max-h-[360px] object-contain"
+                    style={{ border: `0.5px solid ${RULE}` }}
                   />
                   <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
+                    <button
                       onClick={generateAiVideo}
                       disabled={aiVideoStatus === "working"}
-                      className="flex-1"
+                      className="flex-1 inline-flex items-center justify-center gap-2 h-[40px] text-[12.5px] transition-colors"
+                      style={{ border: `0.5px solid ${RULE}`, color: INK, fontFamily: SERIF_HANGUL }}
                     >
-                      <RefreshCw className="h-3.5 w-3.5" />
+                      <RefreshCw className="h-3.5 w-3.5" strokeWidth={1.75} />
                       다시 생성
-                    </Button>
-                    <Button size="sm" onClick={downloadAiVideo} className="flex-1">
-                      <Download className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={downloadAiVideo}
+                      className="flex-1 inline-flex items-center justify-center gap-2 h-[40px] text-[12.5px] font-medium transition-colors"
+                      style={{ background: INK, color: PAPER, fontFamily: SERIF_HANGUL }}
+                    >
+                      <Download className="h-3.5 w-3.5" strokeWidth={1.75} />
                       .mp4 저장
-                    </Button>
+                    </button>
                   </div>
                 </div>
               )}
               {aiVideoNotice && (
                 <div
-                  className={`mt-2 text-[10.5px] leading-snug ${
-                    aiVideoStatus === "error"
-                      ? "text-rose-500"
-                      : aiVideoStatus === "done"
-                      ? "text-emerald-600 dark:text-emerald-400"
-                      : "text-amber-600 dark:text-amber-400"
-                  }`}
+                  className="mt-2.5 text-[11px] leading-[1.6]"
+                  style={{
+                    color:
+                      aiVideoStatus === "error"
+                        ? TERRA
+                        : aiVideoStatus === "done"
+                        ? SAGE
+                        : INK_SOFT,
+                    fontFamily: SERIF_HANGUL,
+                  }}
                 >
                   {aiVideoStatus === "working" && (
                     <Loader2 className="inline h-3 w-3 mr-1 animate-spin align-[-1px]" />
@@ -1575,14 +1597,14 @@ export function ReelsScreen() {
               )}
               </div>
             )}
-          </Card>
+          </div>
 
-          <Card className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold">업로드 사진</div>
-              <span className="text-[10px] text-zinc-500">{photos.filter((p) => p.kind === "upload").length} 업로드 · {photos.length} 총</span>
+          <div className="p-5" style={cardStyle}>
+            <div className="flex items-center justify-between mb-4">
+              <SectionLabel icon={Upload}>업로드 사진</SectionLabel>
+              <span className="text-[11px]" style={{ color: INK_MUTE, fontFamily: SERIF_HANGUL }}>{photos.filter((p) => p.kind === "upload").length} 업로드 · {photos.length} 총</span>
             </div>
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-2">
               {photos.map((p, i) => {
                 if (p.kind === "upload") {
                   const uploadOnlyIdx = uploadedPhotos.findIndex((u) => u.url === p.url);
@@ -1590,9 +1612,8 @@ export function ReelsScreen() {
                   return (
                     <div
                       key={`u-${i}`}
-                      className={`relative aspect-square rounded-md overflow-hidden group cursor-pointer ring-2 transition-all ${
-                        isActive ? "ring-violet-500" : "ring-transparent hover:ring-zinc-300 dark:hover:ring-zinc-700"
-                      }`}
+                      className="relative aspect-square overflow-hidden group cursor-pointer transition-all"
+                      style={{ outline: isActive ? `1.5px solid ${INK}` : `0.5px solid ${RULE}`, outlineOffset: isActive ? "1px" : "0px" }}
                       onClick={() => {
                         if (uploadOnlyIdx >= 0) setCutIdx(uploadOnlyIdx);
                       }}
@@ -1601,7 +1622,7 @@ export function ReelsScreen() {
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={p.url} alt={p.name} className="absolute inset-0 h-full w-full object-cover" />
                       {isActive && (
-                        <span className="absolute bottom-1 left-1 text-[8px] font-bold uppercase tracking-widest text-white bg-violet-600/90 backdrop-blur px-1 py-0.5 rounded">
+                        <span className="absolute bottom-1 left-1 text-[8px] font-bold tracking-[0.08em] text-white px-1.5 py-0.5" style={{ background: INK }}>
                           NOW
                         </span>
                       )}
@@ -1611,7 +1632,7 @@ export function ReelsScreen() {
                           e.stopPropagation();
                           removePhoto(i);
                         }}
-                        className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity text-white bg-black/60 hover:bg-rose-600 rounded-full p-0.5"
+                        className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity text-white bg-black/60 hover:bg-black rounded-full p-0.5"
                         title="삭제"
                       >
                         <svg className="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
@@ -1621,26 +1642,30 @@ export function ReelsScreen() {
                     </div>
                   );
                 }
-                return <div key={`g-${i}`} className={`aspect-square rounded-md bg-gradient-to-br ${p.grad}`} />;
+                // 시드 플레이스홀더 — 업로드 전 빈 칸(예시), 종이 톤 헤어라인 사각
+                return <div key={`g-${i}`} className="aspect-square" style={{ border: `0.5px solid ${RULE_SOFT}`, background: PAPER }} />;
               })}
             </div>
-            <div className="grid grid-cols-2 gap-2 mt-3">
-              <Button variant="outline" size="sm" onClick={uploadMore}>
-                <Upload className="h-3 w-3" />사진 업로드
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setAiPanelOpen((v) => !v)}
-                className={cn(
-                  aiPanelOpen
-                    ? "border-violet-500 bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300"
-                    : "",
-                )}
+            <div className="grid grid-cols-2 gap-2 mt-4">
+              <button
+                onClick={uploadMore}
+                className="inline-flex items-center justify-center gap-2 h-[38px] text-[12.5px] transition-colors"
+                style={{ border: `0.5px solid ${RULE}`, color: INK, fontFamily: SERIF_HANGUL }}
               >
-                <UserCircle2 className="h-3 w-3 text-violet-500" />
+                <Upload className="h-3 w-3" strokeWidth={1.75} />사진 업로드
+              </button>
+              <button
+                onClick={() => setAiPanelOpen((v) => !v)}
+                className="inline-flex items-center justify-center gap-2 h-[38px] text-[12.5px] transition-colors"
+                style={
+                  aiPanelOpen
+                    ? { border: `0.5px solid ${INK}`, background: INK, color: PAPER, fontFamily: SERIF_HANGUL }
+                    : { border: `0.5px solid ${RULE}`, color: INK, fontFamily: SERIF_HANGUL }
+                }
+              >
+                <UserCircle2 className="h-3 w-3" strokeWidth={1.75} />
                 {aiPanelOpen ? "닫기" : "AI 출연자"}
-              </Button>
+              </button>
             </div>
             <input
               ref={photoInputRef}
@@ -1659,7 +1684,7 @@ export function ReelsScreen() {
                   exit={{ opacity: 0, height: 0 }}
                   className="mt-4 overflow-hidden"
                 >
-                  <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800">
+                  <div className="pt-4" style={{ borderTop: `0.5px solid ${RULE}` }}>
                     <AiModelGenerator
                       compact
                       industry={brand.industry as Industry}
@@ -1674,14 +1699,12 @@ export function ReelsScreen() {
                 </motion.div>
               )}
             </AnimatePresence>
-          </Card>
+          </div>
 
           {uploadedPhotos.length > 0 && (
-            <Card className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="text-[11px] uppercase tracking-widest text-zinc-400 font-semibold flex items-center gap-1.5">
-                  <Type className="h-3 w-3" />컷별 자막
-                </div>
+            <div className="p-5" style={cardStyle}>
+              <div className="flex items-center justify-between mb-4">
+                <SectionLabel icon={Type}>컷별 자막</SectionLabel>
                 <button
                   onClick={() => {
                     setPhotos((prev) => {
@@ -1694,61 +1717,73 @@ export function ReelsScreen() {
                     });
                     toast.info("자막 후크로 리셋");
                   }}
-                  className="text-[10px] text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 inline-flex items-center gap-1"
+                  className="text-[11px] inline-flex items-center gap-1 transition-colors"
+                  style={{ color: INK_MUTE, fontFamily: SERIF_HANGUL }}
                 >
-                  <RefreshCw className="h-2.5 w-2.5" />리셋
+                  <RefreshCw className="h-2.5 w-2.5" strokeWidth={1.75} />리셋
                 </button>
               </div>
-              <ul className="space-y-2">
+              <ul className="space-y-2.5">
                 {uploadedPhotos.map((u, i) => (
                   <li
                     key={u.url.slice(-32)}
-                    className={`flex items-start gap-2 p-2 rounded-md border transition-colors ${
+                    className="flex items-start gap-2.5 p-2.5 transition-colors"
+                    style={
                       i === cutIdx
-                        ? "border-violet-300 dark:border-violet-700 bg-violet-50/40 dark:bg-violet-500/10"
-                        : "border-zinc-100 dark:border-zinc-800"
-                    }`}
+                        ? { border: `0.5px solid ${INK}`, background: PAPER_HOVER }
+                        : { border: `0.5px solid ${RULE}` }
+                    }
                   >
                     <button
                       onClick={() => setCutIdx(i)}
-                      className="shrink-0 h-10 w-10 rounded overflow-hidden ring-1 ring-zinc-200 dark:ring-zinc-800"
+                      className="shrink-0 h-10 w-10 overflow-hidden"
+                      style={{ border: `0.5px solid ${RULE}` }}
                       title={`컷 ${i + 1} 프리뷰`}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={u.url} alt={u.name} className="h-full w-full object-cover" />
                     </button>
                     <div className="flex-1 min-w-0">
-                      <div className="text-[10px] text-zinc-500 mb-0.5">컷 {i + 1}</div>
+                      <div className="text-[10.5px] mb-1" style={{ color: INK_MUTE, fontFamily: SERIF_HANGUL }}>컷 {i + 1}</div>
                       <textarea
                         value={u.caption}
                         onChange={(e) => updateCaption(i, e.target.value)}
                         rows={2}
                         placeholder="이 컷에 들어갈 자막"
-                        className="w-full text-xs leading-snug px-2 py-1.5 rounded border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 outline-none focus:border-zinc-400 resize-none"
+                        className="w-full text-[12.5px] leading-[1.5] px-2.5 py-1.5 outline-none resize-none"
+                        style={{ border: `0.5px solid ${RULE}`, background: "#FFFFFF", color: INK, fontFamily: SERIF_HANGUL }}
                       />
                     </div>
                   </li>
                 ))}
               </ul>
-              <p className="mt-2 text-[10px] text-zinc-500">
-                컷 클릭 → 프리뷰 동기화 · 자막은 핸드폰 위에서도 클릭해서 인라인 편집 가능
+              <p className="mt-3 text-[11px] leading-[1.6]" style={{ color: INK_MUTE, fontFamily: SERIF_HANGUL, wordBreak: "keep-all" }}>
+                컷 클릭 → 프리뷰 동기화 · 자막은 핸드폰 위에서도 클릭해서 인라인 편집 가능.
               </p>
-            </Card>
+            </div>
           )}
 
-          <Card className="p-4">
-            <Button className="w-full" size="lg" onClick={publish}>
+          <div className="p-5" style={cardStyle}>
+            <button
+              onClick={publish}
+              className="w-full inline-flex items-center justify-center gap-2 h-[48px] text-[14px] tracking-[0.01em] font-medium transition-colors"
+              style={{ background: INK, color: PAPER, fontFamily: SERIF_HANGUL }}
+            >
               인스타에 발행 →
-            </Button>
-            <Button variant="outline" className="w-full mt-2" size="sm" onClick={addToQueue}>
+            </button>
+            <button
+              onClick={addToQueue}
+              className="w-full mt-2.5 inline-flex items-center justify-center gap-2 h-[40px] text-[12.5px] transition-colors"
+              style={{ border: `0.5px solid ${RULE}`, color: INK, fontFamily: SERIF_HANGUL }}
+            >
               예약 큐에 추가
-            </Button>
-          </Card>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* 다음 단계 — 발행 예약 */}
-      <div className="px-4 sm:px-6 pb-6">
+      <div className="pt-12 pb-2">
         <NextStepCard />
       </div>
     </div>
