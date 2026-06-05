@@ -22,6 +22,51 @@ import { synthesizeDemoMusic } from "@/lib/ai-gen/music-demo";
 import { HOOK_BANK, fillSlots, isClean } from "@/lib/viral/voice-bank";
 import { pickFreshHookSeeded } from "@/lib/viral/recent-hooks";
 import { cn } from "@/lib/utils";
+import {
+  INK,
+  INK_SOFT,
+  INK_MUTE,
+  RULE,
+  RULE_SOFT,
+  PAPER,
+  PAPER_HOVER,
+  SAGE,
+  HL,
+  SERIF_LATIN,
+  SERIF_HANGUL,
+} from "@/lib/landing/tokens";
+
+// 오류/경고 상태 전용 — 따뜻한 테라코타 (Conventions)
+const TERRA = "#A1473D";
+
+// ── 매거진 결 공통 부속 (랜딩 tokens 와 한 결) ───────────────────────────
+/** 영문 eyebrow — small caps italic 라틴 (한글 이탤릭 금지) */
+function Eyebrow({ children, accent = false }: { children: React.ReactNode; accent?: boolean }) {
+  return (
+    <div
+      className="text-[10px] tracking-[0.2em] uppercase italic"
+      style={{ color: accent ? SAGE : INK_MUTE, fontFamily: SERIF_LATIN }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** 섹션 라벨 — 카드 머리. 아이콘 + 한글 라벨(정자, 좁은 자간) */
+function SectionLabel({ icon: Icon, children }: { icon?: React.ElementType; children: React.ReactNode }) {
+  return (
+    <div
+      className="text-[11px] tracking-[0.02em] flex items-center gap-1.5"
+      style={{ color: INK_MUTE, fontFamily: SERIF_HANGUL }}
+    >
+      {Icon ? <Icon className="h-3 w-3" strokeWidth={1.75} /> : null}
+      {children}
+    </div>
+  );
+}
+
+// 헤어라인 사각 카드 — SaaS Card 대체. 큰 여백.
+const cardStyle: React.CSSProperties = { border: `0.5px solid ${RULE}`, background: "#FFFFFF" };
 
 const TEMPLATES = [
   { id: "morning", name: "새벽 시간순 다큐", desc: "한정식 · 카페 · 베이커리", saveDelta: "+312%", grad: "from-amber-200 via-rose-300 to-amber-400" },
@@ -713,43 +758,54 @@ export function ReelsScreen() {
   }, [cutIdx]);
 
   return (
-    <div className="px-4 sm:px-6 py-4 sm:py-6">
-      {/* Hero */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-5 sm:mb-6">
+    <div className="px-4 sm:px-8 py-8 sm:py-12" style={{ background: PAPER }}>
+      {/* Hero — 매거진 매스트헤드 결 */}
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-10 sm:mb-12 pb-8" style={{ borderBottom: `0.5px solid ${RULE}` }}>
         <div className="min-w-0">
-          <div className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] text-violet-600 dark:text-violet-400 font-semibold">
-            AI REELS · {brand.name} · 톤 v{brand.toneVersion}
-          </div>
-          <h1 className="mt-2 text-[22px] sm:text-2xl md:text-3xl font-semibold tracking-tight leading-[1.15]">
-            사진 5~10장이면 30초 릴스가 자동 완성
+          <Eyebrow>AI Reels · {brand.name} · Tone v{brand.toneVersion}</Eyebrow>
+          <h1
+            className="mt-4 text-[26px] sm:text-[34px] md:text-[42px] leading-[1.1] tracking-[-0.02em]"
+            style={{ fontFamily: SERIF_HANGUL, color: INK, fontWeight: 500, wordBreak: "keep-all" }}
+          >
+            사진 5~10장이면<br className="hidden sm:block" /> 30초 릴스가 자동 완성
           </h1>
-          <p className="mt-1.5 text-[13px] sm:text-sm text-zinc-500 max-w-2xl leading-relaxed">
+          <p
+            className="mt-4 text-[14px] sm:text-[15px] leading-[1.7] max-w-2xl"
+            style={{ fontFamily: SERIF_HANGUL, color: INK_SOFT, wordBreak: "keep-all" }}
+          >
             {brand.industryLabel} 업종 템플릿 · 컷 분할 · 자막 · BGM · 9:16
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
+        <div className="flex items-center gap-3 shrink-0">
+          <button
             onClick={variation}
             disabled={status !== "done" || compiling}
-            className="flex-1 sm:flex-initial"
+            className="inline-flex items-center justify-center gap-2 h-[42px] px-5 text-[13px] tracking-[0.01em] transition-colors"
+            style={
+              status !== "done" || compiling
+                ? { border: `0.5px solid ${RULE}`, color: INK_MUTE, fontFamily: SERIF_HANGUL }
+                : { border: `0.5px solid ${RULE}`, color: INK, fontFamily: SERIF_HANGUL }
+            }
           >
-            <RefreshCw className="h-3.5 w-3.5" />자막 새로 추천
-          </Button>
-          <Button
-            size="sm"
+            <RefreshCw className="h-3.5 w-3.5" strokeWidth={1.75} />자막 새로 추천
+          </button>
+          <button
             onClick={generate}
             disabled={status !== "done" || compiling}
-            className="flex-1 sm:flex-initial"
+            className="inline-flex items-center justify-center gap-2 h-[42px] px-6 text-[13px] tracking-[0.01em] font-medium transition-colors"
+            style={
+              status !== "done" || compiling
+                ? { background: "rgba(20,19,15,0.10)", color: INK_MUTE, fontFamily: SERIF_HANGUL }
+                : { background: INK, color: PAPER, fontFamily: SERIF_HANGUL }
+            }
           >
             {status !== "done" ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
             ) : (
-              <Sparkles className="h-3.5 w-3.5" />
+              <Sparkles className="h-3.5 w-3.5" strokeWidth={1.75} />
             )}
-            {status !== "done" ? "생성 중..." : "다시 생성"}
-          </Button>
+            {status !== "done" ? "생성 중…" : "다시 생성"}
+          </button>
         </div>
       </div>
 
