@@ -117,6 +117,7 @@ export function AiMusicGenerator({
         mood,
         brandName,
         industry,
+        instrumental: false, // 가사 보컬 곡 — 보컬 허용(어쿠스틱 가드레일은 유지)
       });
       const durationSec = Math.max(length, estimatedDurationSec);
 
