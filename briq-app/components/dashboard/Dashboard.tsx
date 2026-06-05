@@ -644,7 +644,7 @@ function CoverStory({
             {t.slideTitle}
           </h2>
           {t.slideHint && (
-            <p className="mt-3 text-[13.5px] text-zinc-500 dark:text-zinc-500 leading-relaxed italic" style={{ fontFamily: "'Nanum Myeongjo', serif" }}>
+            <p className="mt-3 text-[13.5px] text-zinc-500 dark:text-zinc-500 leading-relaxed" style={{ fontFamily: "'Nanum Myeongjo', serif" }}>
               {t.slideHint}
             </p>
           )}
@@ -659,7 +659,7 @@ function CoverStory({
           {/* 매거진 colophon 결 — 직원 메모 작게 */}
           <div className="mt-8 pt-6 border-t border-zinc-200 dark:border-zinc-800">
             <div className="editorial-label mb-2">Editor's Note</div>
-            <div className="text-[12px] text-zinc-500 dark:text-zinc-500 leading-relaxed italic" style={{ fontFamily: "'Nanum Myeongjo', serif" }}>
+            <div className="text-[12px] text-zinc-500 dark:text-zinc-500 leading-relaxed" style={{ fontFamily: "'Nanum Myeongjo', serif" }}>
               {shop.today.reasoning}
             </div>
           </div>
@@ -770,7 +770,7 @@ function Readings({ shop }: { shop: ShopHand }) {
                 {r.hint}
               </div>
               {r.quote && (
-                <div className="mt-2 text-[11px] text-zinc-400 dark:text-zinc-600 italic">{r.quote}</div>
+                <div className="mt-2 text-[11px] text-zinc-400 dark:text-zinc-600" style={{ fontFamily: "'Nanum Myeongjo', serif" }}>{r.quote}</div>
               )}
             </div>
           ))}
