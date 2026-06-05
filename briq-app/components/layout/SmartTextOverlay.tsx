@@ -116,6 +116,18 @@ export function SmartTextOverlay({
     );
   }, [items, target, aspectRatio, imgEl, imgReady]);
 
+  // 캡션 블록 앵커 — 제목(없으면 첫 항목)의 세일리언시 결과로 블록 전체의 가로·세로
+  // 위치·색·백드롭을 정한다. 모든 항목을 이 한 블록에 쌓아 겹침을 없앤다.
+  const anchorIdx = Math.max(0, items.findIndex((it) => it.role === "title"));
+  const anchor = placements[anchorIdx] ?? placements[0];
+  const anchorBand = anchor?.meta?.preferred;
+  const anchorBottom = anchorBand === "bottom" || anchorBand === "lower-center";
+  const groupColor = anchor?.textColor === "light" ? "text-white" : "text-zinc-900";
+  const groupJustify =
+    anchor?.alignment === "center" ? "items-center text-center"
+      : anchor?.alignment === "right" ? "items-end text-right"
+        : "items-start text-left";
+
   return (
     // 위치 클래스 충돌 주의: 호출부가 className 으로 `absolute inset-0` 을 준다.
     // 여기에 `relative` 를 또 박으면 캐스케이드상 relative 가 이겨 inset-0 이 무시되고
@@ -135,10 +147,57 @@ export function SmartTextOverlay({
         <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #3a342c 0%, #211d17 100%)" }} />
       )}
 
-      {/* 각 텍스트 항목 — placement 결과로 절대 위치 */}
-      {placements.map((p, i) => (
-        <TextLayer key={`${items[i].role}-${i}`} item={items[i]} p={p} boxH={boxH} />
-      ))}
+      {/* 텍스트 — 라벨/제목/부제를 한 캡션 블록으로 '쌓아서' 배치(독립 배치 시 겹침).
+          위치·색·백드롭은 앵커(제목) 결과를 따르고, 항목별 폰트/스타일은 유지. */}
+      {anchor && (
+        <>
+          <Backdrop kind={anchor.backdrop} opacity={anchor.backdropOpacity} region={anchor.region} />
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: [0.2, 0.7, 0.2, 1] }}
+            className={`absolute flex flex-col gap-1.5 ${groupJustify} ${groupColor}`}
+            style={{
+              left: `${anchor.region.x * 100}%`,
+              width: `${anchor.region.width * 100}%`,
+              ...(anchorBottom
+                ? { bottom: `${Math.max(0, 1 - anchor.region.y - anchor.region.height) * 100}%` }
+                : { top: `${anchor.region.y * 100}%` }),
+              lineHeight: 1.18,
+              letterSpacing: "-0.005em",
+              textShadow: anchor.textColor === "light" ? "0 1px 10px rgba(0,0,0,0.45)" : undefined,
+            }}
+          >
+            {items.map((it, i) => {
+              const p = placements[i];
+              const px = rolePx(it.role, p.fontSizePct, boxH);
+              return (
+                <span
+                  key={`${it.role}-${i}`}
+                  className={it.className}
+                  onClick={it.onClick}
+                  style={{
+                    fontSize: `${px}px`,
+                    ...(it.role === "label"
+                      ? { letterSpacing: "0.18em", textTransform: "uppercase" as const, fontWeight: 600 }
+                      : { fontWeight: it.role === "title" ? 600 : 400 }),
+                    ...it.style,
+                  }}
+                >
+                  {it.role === "label"
+                    ? p.lines.join(" ")
+                    : p.lines.map((line, li) => (
+                        <React.Fragment key={li}>
+                          {line}
+                          {li < p.lines.length - 1 && <br />}
+                        </React.Fragment>
+                      ))}
+                </span>
+              );
+            })}
+          </motion.div>
+        </>
+      )}
 
       {/* 디버그 — 안전영역 / region 가이드 */}
       {showSafeZoneGuide && <SafeZoneGuide target={target} placements={placements} />}
@@ -146,74 +205,22 @@ export function SmartTextOverlay({
   );
 }
 
-function TextLayer({ item, p, boxH }: { item: SmartTextItem; p: PlacementResult; boxH: number }) {
-  const colorClass = p.textColor === "light" ? "text-white" : "text-zinc-900";
-  // 모바일 가독성 — role 별 min/max 다르게.
-  // 작은 미리보기 컨테이너에서도 14px 이상은 보장.
+// 역할별 픽셀 폰트 크기 — fontSizePct 는 컨테이너 높이 대비 비율. boxH(측정값) 으로 환산.
+// 작은 미리보기에서도 최소 크기 보장, 큰 화면에선 최대 크기로 클램프.
+function rolePx(role: SmartTextItem["role"], fontSizePct: number, boxH: number): number {
   const minPx =
-    item.role === "title" ? 16
-      : item.role === "body-quote" ? 14
-        : item.role === "cta" ? 13
-          : item.role === "subtitle" ? 12
+    role === "title" ? 16
+      : role === "body-quote" ? 14
+        : role === "cta" ? 13
+          : role === "subtitle" ? 12
             : 10; // label / footer
   const maxPx =
-    item.role === "title" ? 96
-      : item.role === "body-quote" ? 56
-        : item.role === "cta" ? 28
-          : item.role === "subtitle" ? 22
+    role === "title" ? 96
+      : role === "body-quote" ? 56
+        : role === "cta" ? 28
+          : role === "subtitle" ? 22
             : 14;
-  // 측정 높이 기반 픽셀 폰트 — fontSizePct 는 컨테이너 높이 대비 비율.
-  // 측정 전(boxH=0)엔 minPx 로 안전 폴백.
-  const fontSize = boxH > 0
-    ? `${Math.max(minPx, Math.min(maxPx, p.fontSizePct * boxH))}px`
-    : `${minPx}px`;
-  const justify =
-    p.alignment === "center" ? "items-center text-center"
-      : p.alignment === "right" ? "items-end text-right"
-        : "items-start text-left";
-
-  return (
-    <>
-      <Backdrop kind={p.backdrop} opacity={p.backdropOpacity} region={p.region} />
-      <motion.div
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: [0.2, 0.7, 0.2, 1] }}
-        className={`absolute flex flex-col ${justify} ${colorClass} ${item.className ?? ""}`}
-        style={{
-          left: `${p.region.x * 100}%`,
-          top: `${p.region.y * 100}%`,
-          width: `${p.region.width * 100}%`,
-          height: `${p.region.height * 100}%`,
-          fontSize,
-          lineHeight: 1.18,
-          letterSpacing: "-0.005em",
-          textShadow:
-            p.backdrop === "none" && p.textColor === "light"
-              ? "0 1px 12px rgba(0,0,0,0.35)"
-              : undefined,
-          ...item.style,
-        }}
-        onClick={item.onClick}
-      >
-        {/* 라벨은 작게 한 줄 + uppercase tracking */}
-        {item.role === "label" ? (
-          <span style={{ letterSpacing: "0.18em", textTransform: "uppercase", fontWeight: 600 }}>
-            {p.lines.join(" ")}
-          </span>
-        ) : (
-          <span style={{ fontWeight: item.role === "title" ? 600 : 400 }}>
-            {p.lines.map((line, li) => (
-              <React.Fragment key={li}>
-                {line}
-                {li < p.lines.length - 1 && <br />}
-              </React.Fragment>
-            ))}
-          </span>
-        )}
-      </motion.div>
-    </>
-  );
+  return boxH > 0 ? Math.max(minPx, Math.min(maxPx, fontSizePct * boxH)) : minPx;
 }
 
 function Backdrop({
