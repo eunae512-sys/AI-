@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-05-10)
 Phase: 1 of 6 (Foundation & Multi-Tenant Data Model)
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-06-05 — Completed quick task 260605-cp1: 카드뉴스·릴스 문구 휴먼 톤 + 문맥 정합
+Last activity: 2026-06-05 — Completed quick task 260605-mp1: 인스타 미리보기 빈 화면 수정
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -86,6 +86,7 @@ None yet. (Use `/gsd-add-todo` to capture ideas during sessions.)
 | 260605-rl2 | 자동 릴스 버그 — 자막 주제별 생성(반복 해결) + 자막 트랙 편집 안정화 | 2026-06-05 | d831a0b | [260605-rl2-reels-subtitle-fix](./quick/260605-rl2-reels-subtitle-fix/) |
 | 260605-db1 | 대시보드 1등 고도화 (한글 가짜 이탤릭 제거 — 이미 에디토리얼) | 2026-06-05 | e13ba3e | [260605-db1-dashboard-italic](./quick/260605-db1-dashboard-italic/) |
 | 260605-cp1 | 카드뉴스·릴스 자동 문구 휴먼 톤 + 문맥 정합성 (AI 클리셰·DM트리거·저장강박·조각자막 제거) | 2026-06-05 | f9aed4b | [260605-cp1-copy-human-coherence](./quick/260605-cp1-copy-human-coherence/) |
+| 260605-mp1 | 인스타 모바일 미리보기 빈 화면 수정 (SmartTextOverlay position 충돌 붕괴·cqh 폰트·CORS) | 2026-06-05 | ffb8d36 | [260605-mp1-mobile-preview-empty](./quick/260605-mp1-mobile-preview-empty/) |
 
 ## Deferred Items
 
