@@ -93,6 +93,7 @@ None yet. (Use `/gsd-add-todo` to capture ideas during sessions.)
 | 260605-ll7 | 카드뉴스 브랜드 로고 — 검증 결과 이미 완전 구현·배선됨(코드 0줄), 로고 있음→슬라이드 마스트헤드/IG아바타 로고, 없음→워드마크 폴백 스크린샷 확인 | 2026-06-05 | (docs-only) | [260605-ll7-brand-logo-cardnews](./quick/260605-ll7-brand-logo-cardnews/) |
 | 260605-n83 | /reels 죽은 요소 정리 — 데드 TEMPLATES·INDUSTRY_DEFAULT_TPL·activeTpl 체인 삭제(key 폴백→"empty"), DEFAULT_PHOTOS 죽은 grad 문자열 제거(시드 6개는 SEED_SLOT_COUNT 상수 유지), no-op 팔로우 버튼→비인터랙티브 span, 빈 상태 자막 겹침 수정(currentCut 있을 때만 자막 오버레이). tsc 0·스크린샷 확인, 기능 무손상 | 2026-06-05 | 9db5e49 | [260605-n83-clean-up-dead-no-op-elements-in-reels-re](./quick/260605-n83-clean-up-dead-no-op-elements-in-reels-re/) |
 | 260605-vea | 키워드→자동 릴스/카드뉴스 이미지 매칭 버그 — 한국어 음료 주제(레몬에이드·에이드·자몽·청귤·스무디 등)가 Pexels 영문 검색어에 반영되도록 video-query 사전 보강(음료 26+형용사 7) + mood 토큰 push, imageQueryFor 주제 드롭 방지(translateSubject 실패 시 translateTopicToEN 폴백). tsc 0·jiti 프로브 확인, 회귀 없음 | 2026-06-05 | 81be619 | [260605-vea-pexels](./quick/260605-vea-pexels/) |
+| (fast) | 카드뉴스 슬라이드 문장·사진 어색함 정리 — VALUE 카피 "중간에 대충이 없습니다"→"어디 하나 대충이 없습니다", 메타 subtext "…주문하는 결" 조각문→"손님이 가장 많이 찾는 {signature}", value 이미지쿼리에서 "hands texture" 제거(no people과 모순→손 사진 유발). tsc 0·jiti 프로브 확인 | 2026-06-05 | a57100d | (fast — no dir) |
 
 ## Deferred Items
 
