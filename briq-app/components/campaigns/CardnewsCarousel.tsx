@@ -189,7 +189,7 @@ export function CardnewsCarousel({ slides: initialSlides, industry, brandId, bra
   const total = initialSlides.length;
   const [mark, setMark] = React.useState<BrandMarkConfig>(DEFAULT_MARK);
   const [viewMode, setViewMode] = React.useState<ViewMode>("mobile");
-  const [presetId, setPresetId] = React.useState<LayoutPresetId>("editorial");
+  const [presetId, setPresetId] = React.useState<LayoutPresetId>("auto");
 
   // 인라인 편집 상태 — 5개 컴포지션이 공유
   const [editing, setEditing] = React.useState<EditState>(null);
@@ -212,12 +212,17 @@ export function CardnewsCarousel({ slides: initialSlides, industry, brandId, bra
         prev.length === initialSlides.length &&
         prev.every((s, i) => s.caption === initialSlides[i]?.caption);
       const base = sameContent ? prev : initialSlides;
+      // auto: 생성기가 이미 업종·시드로 변주한 composition 을 그대로 존중 (덮어쓰지 않음).
+      // 수동 프리셋: 프리셋 시퀀스로 composition 만 교체 (카피·이미지 유지).
+      if (presetId === "auto") {
+        return base.map((s) => ({ ...s }));
+      }
       return base.map((s, idx) => ({
         ...s,
         composition: sequence[idx] ?? s.composition,
       }));
     });
-  }, [sequence, initialSlides]);
+  }, [sequence, initialSlides, presetId]);
 
   const updateMark = (next: BrandMarkConfig) => {
     setMark(next);
