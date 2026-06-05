@@ -709,7 +709,7 @@ const MOOD_IMAGE_STYLE: Record<string, string> = {
 
 // 캡션 오프너 — 한 줄 인스타 본문 시작 (저장각·찐맛집·꿀팁 등 마케팅 키워드 직접 박힘)
 const CAPTION_OPENERS: ((c: Ctx) => string)[] = [
-  (c) => `${c.v.city} ${c.v.catShort} 다닐 일 있으면 저장각.\n${c.t.subject || c.v.signature}, ${c.t.timeWord ?? "이번 시즌"} 한정.`,
+  (c) => `${c.v.city} ${c.v.catShort} 다닐 일 있으면 한 번 떠올려 주세요.\n${c.t.subject || c.v.signature}, 요즘 자주들 찾으세요.`,
   (c) => `${c.v.city} 진짜 ${placeWord(c.brand.industry)} 한 곳.\n오늘 ${c.t.subject || c.v.signature} 그대로 보여드립니다.`,
   (c) => `${c.v.customerWord}만 알던 ${c.t.subject || c.v.signature},\n이번 ${c.t.timeWord ?? "시즌"}에만 공개합니다.`,
   (c) => `${c.v.city} ${c.v.catShort} 어디 갈지 막막했다면,\n이 한 ${c.v.unit}만 저장해두세요.`,
@@ -734,7 +734,7 @@ const MOOD_CAPTION_OPENER: Record<string, (c: Ctx) => string> = {
   // 무디 — 차분하고 절제된, 아는 사람만
   moody: (c) => `${c.v.city} ${c.v.catShort}, 아는 사람만 조용히 가요.\n${c.t.subject || c.v.signature}, 오늘 살짝 보여드려요.`,
   // 플레이풀 — 가볍고 신나는, 저장 유도
-  playful: (c) => `${c.v.city} ${c.v.catShort} 중에 이건 진짜예요!\n${c.t.subject || c.v.signature}, 저장 안 하면 손해예요.`,
+  playful: (c) => `${c.v.city} ${c.v.catShort} 중에 이건 진짜예요.\n${c.t.subject || c.v.signature}, 보면 또 생각나요.`,
   // 내추럴 — 꾸밈없이 솔직한
   natural: (c) => `${c.v.city} ${c.v.catShort}, 꾸밈없이 그대로 좋아요.\n${c.t.subject || c.v.signature}, 보시면 압니다.`,
   // 럭셔리 — 격조 있고 절제된
@@ -754,7 +754,7 @@ const CAPTION_BODY_LINES: ((c: Ctx) => string)[] = [
   (c) => `· 붐비는 게 싫으면 ${defaultQuietTime(c.brand.industry)} 좋아요.`,
   (c) => `· ${은(c.v.purchaseAction)} ${c.v.purchaseAction === "예약" ? "프로필 링크나 댓글" : "DM이나 카카오톡"}, 빠르면 그날 답해요.`,
   (c) => `· ${c.v.purchaseAction} 가격은 ${c.brand.name} 채널에 적어뒀어요.`,
-  (c) => `· ${c.t.timeWord ?? "이번 시즌"} 지나면 ${c.t.subject || c.v.signature}, 내년에야 다시 나와요.`,
+  (c) => `· ${c.t.subject || c.v.signature}, 생각날 때 한 번 들러주세요.`,
 ];
 
 function buildCaption(hook: string, ctaText: string, ctx: Ctx, seed: number): string {
