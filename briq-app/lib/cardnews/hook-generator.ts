@@ -658,7 +658,14 @@ function translateSubject(subject: string): string {
   return out;
 }
 
-function imageQueryFor(role: SlideRole, ctx: Ctx): string {
+// value 슬라이드(3·4·5) 전용 3구도 — 한 캠페인에서 같은 사진 반복 방지.
+const VALUE_COMPOSITIONS = [
+  "macro detail close up",
+  "overhead flat lay",
+  "side angle soft light",
+] as const;
+
+function imageQueryFor(role: SlideRole, ctx: Ctx, variant = 0): string {
   const industryScene: Record<Industry, string> = {
     restaurant: "korean fine dining table",
     cafe: "specialty cafe minimal still life",
@@ -679,18 +686,20 @@ function imageQueryFor(role: SlideRole, ctx: Ctx): string {
     ? `${translated}, ${industrySubject}`
     : industrySubject;
 
-  // 역할별 구도만 지정 — 톤/분위기는 mood(tail)가 결정하도록 고정 톤 단어 제거
+  // 역할별 "피사체 구도어"만 지정 — 장소어·모순어(candid vs no people) 제거.
+  // 톤/분위기는 mood(tail)가 결정. 음식·상품·시술·공간 6업종에 모두 자연스러운 구도 용어.
   switch (role) {
     case "hook":
       return `${subject} hero overhead composition, ${tail}`;
     case "problem":
-      return `${subject} quiet corner, ${tail}`;
+      return `${subject} moody side angle, soft shadow, ${tail}`;
     case "value":
-      return `${subject} detail close up, ${tail}`;
+      // 3·4·5 슬라이드를 위해 variant(0/1/2)로 3구도 분배.
+      return `${subject} ${VALUE_COMPOSITIONS[variant % VALUE_COMPOSITIONS.length]}, ${tail}`;
     case "proof":
-      return `${subject} intimate scene, candid, ${tail}`;
+      return `${subject} styled still life, ${tail}`;
     case "cta":
-      return `${subject} welcoming entrance, ${tail}`;
+      return `${subject} styled flat lay, ${tail}`;
   }
 }
 
@@ -953,18 +962,18 @@ export function generateCardnewsCampaign(
     { n: 3, role: "value", display: "inner", composition: comps[2], paperTone: toneFor(2, comps[2]),
       caption: values[0], subtext: pick(innerSubtexts, seed, 2),
       ink: "dark", textAt: "top-left",
-      imageQuery: imageQueryFor("value", ctx) },
+      imageQuery: imageQueryFor("value", ctx, 0) },
     // 4. VALUE — 중간 변주 슬롯
     { n: 4, role: "value", display: "inner", composition: comps[3], paperTone: toneFor(3, comps[3]),
       caption: values[1], subtext: pick(innerSubtexts, seed, 3),
       ink: "dark", textAt: "center",
-      imageQuery: imageQueryFor("value", ctx) },
+      imageQuery: imageQueryFor("value", ctx, 1) },
     // 5. VALUE — 중간 변주 슬롯
     { n: 5, role: "value", display: "inner", composition: comps[4], paperTone: toneFor(4, comps[4]),
       caption: values[2],
       subtext: pick(innerSubtexts, seed, 4),
       ink: "light", textAt: "bottom-left",
-      imageQuery: imageQueryFor("value", ctx) },
+      imageQuery: imageQueryFor("value", ctx, 2) },
     // 6. PROOF — 앵커 type-hero (페이퍼 톤 위)
     { n: 6, role: "proof", display: "inner", composition: comps[5], paperTone: toneFor(5, comps[5]),
       caption: proof, subtext: `${wordmark} · ${v.city}`,
