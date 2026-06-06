@@ -260,7 +260,7 @@ const HOOK_NEW_MENU: ((c: Ctx) => string)[] = [
   (c) => `${c.t.subject || c.v.signature}.\n${c.v.city}에서 아직 안 드셔보셨다면 오늘 한 번.`,
   // 시간 한정
   (c) => `${c.t.timeWord ?? "이번 시즌"} 한정,\n${c.t.subject || c.v.signature}.`,
-  (c) => `1년에 60일,\n그 60일이 시작됐습니다. ${c.t.subject || c.v.signature}.`,
+  (c) => `제철에만 잠깐 나오는,\n${c.t.subject || c.v.signature}.`,
   // 권위
   (c) => `${c.t.subject || c.v.signature},\n사장님이 직접 손대는 가게입니다.`,
   (c) => `${c.v.catShort} 톤을 오래 다듬어 온\n${c.v.city}의 한 가게, ${c.t.subject || c.v.signature}.`,
@@ -280,10 +280,10 @@ const HOOK_SEASON: ((c: Ctx) => string)[] = [
   (c) => `${c.t.timeWord ?? "이번 시즌"} ${c.t.subject || c.v.signature},\n${c.v.slot} 곧 마감입니다.`,
   (c) => `${c.t.timeWord ?? "올해"} ${c.t.subject || c.v.signature},\n작년에 놓치셨다면 올해는 미리.`,
   // 시간 한정성
-  (c) => `${c.t.timeWord ?? "이번 시즌"} 한 번뿐인 ${c.t.subject || c.v.unit}.\n자리 ${c.t.limitWord ?? "한정"}, 빠르게.`,
+  (c) => `지금 아니면 다음 시즌인 ${c.t.subject || c.v.unit},\n자리 미리 잡아두시면 좋아요.`,
   (c) => `${c.t.timeWord ?? "5월"}이라\n가능한 ${c.t.subject || c.v.unit}. 다음은 1년 뒤.`,
   // 작년 통계 인용 — 권위
-  (c) => `${c.t.timeWord ?? "어버이날"} 직전 주\n예약 평소 대비 +2.4배. 미리 잡으세요.`,
+  (c) => `${c.t.timeWord ?? "어버이날"} 가까워지면\n예약이 일찍 차요. 미리 잡아두세요.`,
   (c) => `작년 ${c.t.timeWord ?? "어버이날"} 다녀가신 분,\n올해도 같은 자리 비워둡니다.`,
   // 가족·관계 후킹
   (c) => `${c.t.timeWord ?? "어버이날"},\n${c.v.city}에서 부모님 챙겨드리기 좋은 곳.`,
@@ -324,7 +324,7 @@ const HOOK_REVIEW: ((c: Ctx) => string)[] = [
 const HOOK_TREND: ((c: Ctx) => string)[] = [
   // 검색 트렌드
   (c) => `요즘 ${c.v.city}에서 가장 많이\n검색되는 ${c.v.catShort} 패턴 공개.`,
-  (c) => `${c.v.city} ${c.v.catShort} 저장 상위 ${c.t.number ?? "3"}곳,\n오늘 알려드립니다.`,
+  (c) => `${c.v.city}에서 ${c.v.catShort} 찾으실 때\n참고하기 좋은 곳, 오늘 정리했어요.`,
   // 동네 질문
   (c) => `${c.v.city}에서 ${c.v.catShort},\n어디까지 가봐야 진가가 보일까요?`,
   // 동네 후킹

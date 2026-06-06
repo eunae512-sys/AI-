@@ -153,7 +153,7 @@ export const HOOK_PATTERNS_BY_TYPE: Record<HookPattern, ((c: HookCtx) => string)
   ],
   numeric: [
     // 구체 숫자 → 권위·희소성
-    (c) => `1년에 ${c.t.number ?? "60"}일,\n그 ${c.t.number ?? "60"}일이 시작됐습니다.`,
+    (c) => `1년 중 잠깐 나오는,\n${c.t.subject || c.v.signature}.`,
     (c) => `${c.v.city} ${c.v.catShort} 100곳 중,\n이 결을 갖춘 곳은 한 곳.`,
     (c) => `1년에 딱 한 시즌,\n다시 돌아온 ${c.t.subject || c.v.signature}.`,
   ],
