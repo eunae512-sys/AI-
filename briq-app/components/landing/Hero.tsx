@@ -124,7 +124,7 @@ export function Hero() {
             <span className="block mt-1 sm:mt-2">
               <Quiet>SNS 는{" "}</Quiet>
               {/* 한글 강조는 이탤릭(가짜 기울임) 대신 풀-잉크 + 무게로 — 주변 muted 와의 대비가 강조를 만든다 */}
-              <span style={{ color: INK, fontWeight: 500 }}>자동으로</span>
+              <span style={{ color: INK, fontWeight: 500 }}>검수 한 번으로</span>
               <Quiet>{" "}굴러갑니다.</Quiet>
             </span>
           </h1>
@@ -233,9 +233,9 @@ export function Hero() {
               {today ? `오늘 ${today.half}` : "오늘 오전"}{" "}
               <Stamp>{today?.timeHm ?? "10:18"}</Stamp> 기준,
               이번 주 <Stamp>12</Stamp> 건이 예약되어 있고
-              오늘 자동 발행은 <Stamp>2</Stamp> 건 완료되었습니다. 댓글·DM 자동
-              응답은 <em className="italic" style={{ fontFamily: SERIF_LATIN }}>ON</em>{" "}
-              — 평균 <Stamp>3분</Stamp> 안에 회신합니다. 이번 주 진행 중인
+              오늘 검수 후 발행은 <Stamp>2</Stamp> 건 완료되었습니다. 댓글·DM 답변
+              제안은 <em className="italic" style={{ fontFamily: SERIF_LATIN }}>ON</em>{" "}
+              — 보통 몇 분 안에 답변안을 띄워드립니다. 이번 주 진행 중인
               캠페인은 두 개, <span style={{ color: INK, fontWeight: 600, borderBottom: `0.5px solid ${RULE}`, paddingBottom: 1 }}>신메뉴</span>{" "}
               와 <span style={{ color: INK, fontWeight: 600, borderBottom: `0.5px solid ${RULE}`, paddingBottom: 1 }}>어버이날</span>.
             </p>
@@ -244,7 +244,7 @@ export function Hero() {
             <dl className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-x-0 gap-y-6 pt-6 border-t" style={{ borderColor: RULE }}>
               <Figure label="Today / posted" value="2" detail="10:18 · 19:12" />
               <Figure label="This week / scheduled" value="12" detail="인스타 9 · 블로그 3" />
-              <Figure label="Auto-reply" value="ON" italic detail="comments · DMs · 3 min" />
+              <Figure label="Reply drafts" value="ON" italic detail="comments · DMs · suggested" />
               <Figure label="Campaigns" value="2" detail="신메뉴 · 어버이날" />
             </dl>
           </div>
@@ -534,6 +534,6 @@ const WEEK = [
   { day: "수", time: "10:42", channel: "Instagram", title: "오늘 한 컷 · 시그니처 메뉴", status: "초안" },
   { day: "목", time: "12:08", channel: "Instagram", title: "주말 예약 안내 카드뉴스", status: "초안" },
   { day: "금", time: "18:30", channel: "Instagram", title: "릴스 — 시즌 한 컷", status: "대기" },
-  { day: "토", time: "09:00", channel: "Story", title: "토요일 영업 안내", status: "자동" },
+  { day: "토", time: "09:00", channel: "Story", title: "토요일 영업 안내", status: "예약" },
   { day: "일", time: "—",     channel: "—",         title: "쉼.",                       status: "쉼" },
 ];

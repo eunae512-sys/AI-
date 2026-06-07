@@ -214,7 +214,7 @@ function AutomationStatus() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-0 gap-y-6 border-y border-zinc-200 dark:border-zinc-800 py-7">
           <StatusBlock label="다음 발행 준비" value="완료" sub="오늘 오후 7:12" />
           <StatusBlock label="이번 주 예약" value="12" unit="건" sub="인스타 9 · 블로그 3" />
-          <StatusBlock label="댓글 자동 응답" value="ON" sub="평균 3분 회신" />
+          <StatusBlock label="댓글 답변 제안" value="ON" sub="검수 후 발송" />
           <StatusBlock label="진행 중 캠페인" value="2" unit="개" sub="신메뉴 · 어버이날" />
         </div>
       )}
