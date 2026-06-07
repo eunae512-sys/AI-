@@ -28,6 +28,7 @@ export type UserBrandData = {
 };
 
 const STORAGE_KEY = "briq:user-brand";
+const BRANDS_KEY = "briq:user-brands";
 
 export function saveUserBrand(data: UserBrandData): void {
   if (typeof window === "undefined") return;
@@ -43,6 +44,74 @@ export function saveUserBrand(data: UserBrandData): void {
       console.warn("user-brand 저장 실패", e);
     }
   }
+  // 다중 목록에도 upsert (단일키 저장 성공 후)
+  try {
+    const list = loadUserBrands().filter((b) => b.id !== data.id);
+    list.push(data);
+    saveUserBrands(list);
+  } catch {
+    // 무시
+  }
+}
+
+export function saveUserBrands(list: UserBrandData[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(BRANDS_KEY, JSON.stringify(list));
+  } catch (e) {
+    // QuotaExceededError — photos 슬림화 후 재시도
+    try {
+      const slim = list.map((b) => ({ ...b, photos: b.photos.slice(0, 3) }));
+      localStorage.setItem(BRANDS_KEY, JSON.stringify(slim));
+    } catch {
+      console.warn("user-brands 저장 실패", e);
+    }
+  }
+}
+
+export function loadUserBrands(): UserBrandData[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(BRANDS_KEY);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          return parsed.filter(
+            (b): b is UserBrandData =>
+              b && typeof b === "object" && !!b.id && !!b.industry && Array.isArray(b.palette),
+          );
+        }
+      } catch {
+        return [];
+      }
+    }
+    // BRANDS_KEY 없을 때: 단일키 마이그레이션
+    const single = loadUserBrand();
+    if (single) {
+      const migrated = [single];
+      saveUserBrands(migrated);
+      return migrated;
+    }
+    return [];
+  } catch {
+    return [];
+  }
+}
+
+export function addUserBrand(data: UserBrandData): void {
+  const list = loadUserBrands();
+  const i = list.findIndex((b) => b.id === data.id);
+  if (i >= 0) {
+    list[i] = data;
+  } else {
+    list.push(data);
+  }
+  saveUserBrands(list);
+}
+
+export function removeUserBrand(id: string): void {
+  saveUserBrands(loadUserBrands().filter((b) => b.id !== id));
 }
 
 export function loadUserBrand(): UserBrandData | null {
