@@ -102,21 +102,21 @@ export function portraitQueryForIndustry(opts: {
   const g = opts.gender === "male" ? "man" : opts.gender === "neutral" ? "person" : "woman";
   switch (opts.industry) {
     case "cafe":
-      return `cafe ${g} apron warm window light candid`;
+      return `korean cafe ${g} apron warm window light candid`;
     case "restaurant":
-      return `${g} chef kitchen warm light asian`;
+      return `korean ${g} chef kitchen warm light`;
     case "beauty":
-      return `${g} salon hair stylist mirror soft light`;
+      return `korean ${g} salon hair stylist mirror soft light`;
     case "fitness":
-      return `${g} athletic training gym natural`;
+      return `korean ${g} athletic training gym natural`;
     case "stay":
-      return `${g} traveler hanok wooden interior calm`;
+      return `korean ${g} traveler hanok wooden interior calm`;
     case "local":
-      return `${g} fashion editorial concept store minimal`;
+      return `korean ${g} fashion editorial concept store minimal`;
     case "dessert":
-      return `${g} pastry chef bakery warm light`;
+      return `korean ${g} pastry chef bakery warm light`;
     default:
-      return `${g} editorial portrait natural warm`;
+      return `korean ${g} editorial portrait natural warm`;
   }
 }
 

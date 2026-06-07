@@ -42,9 +42,9 @@ const ageDescriptor = (age?: ModelAge): string => {
 
 const genderDescriptor = (gender?: ModelGender): string => {
   switch (gender) {
-    case "female": return "a Korean woman";
-    case "male": return "a Korean man";
-    default: return "a Korean person";
+    case "female": return "a Korean woman with East Asian features";
+    case "male": return "a Korean man with East Asian features";
+    default: return "a Korean person with East Asian features";
   }
 };
 
