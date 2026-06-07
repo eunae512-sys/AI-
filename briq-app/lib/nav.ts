@@ -3,6 +3,7 @@ import {
   Target,
   Clock,
   Compass,
+  ClipboardCheck,
   Settings,
   Layers,
   Megaphone,
@@ -44,6 +45,7 @@ export const navGroups: NavGroup[] = [
       { label: "Campaigns", href: "/campaigns", icon: Target, badge: { count: 2, tone: "amber" } },
       { label: "Scheduler", href: "/scheduler", icon: Clock, badge: { count: 12, tone: "sky" } },
       { label: "Insights", href: "/insights", icon: Compass },
+      { label: "검수", href: "/review-queue", icon: ClipboardCheck, badge: { count: 3, tone: "amber" } },
     ],
   },
   {
@@ -70,18 +72,12 @@ export const SETTINGS_ITEM: NavItem = {
 //   - brand-kit / channels → Settings 하위로
 export const HIDDEN_ROUTES: NavItem[] = [
   { label: "Content Distribution", href: "/content-distribution", icon: Layers, hidden: true },
-  { label: "Content Pipeline", href: "/pipeline", icon: Layers, hidden: true },
   { label: "Automation rules", href: "/automation", icon: Layers, hidden: true },
-  { label: "Analytics", href: "/analytics", icon: Layers, hidden: true },
   { label: "Brand Assets", href: "/brand-kit", icon: Layers, hidden: true },
   { label: "Social Channels", href: "/channels", icon: Layers, hidden: true },
   { label: "Threads editor", href: "/threads", icon: Layers, hidden: true },
   { label: "Brand tone", href: "/brand-tone", icon: Layers, hidden: true },
-  { label: "Calendar", href: "/calendar", icon: Layers, hidden: true },
-  { label: "Schedule (legacy)", href: "/schedule", icon: Layers, hidden: true },
-  { label: "Review queue", href: "/review-queue", icon: Layers, hidden: true },
   { label: "Reviews", href: "/reviews", icon: Layers, hidden: true },
-  { label: "Trends", href: "/trends", icon: Layers, hidden: true },
   { label: "Discover", href: "/discover", icon: Layers, hidden: true },
   { label: "Clients", href: "/clients", icon: Layers, hidden: true },
 ];
