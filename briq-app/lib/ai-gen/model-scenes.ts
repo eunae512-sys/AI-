@@ -558,8 +558,8 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "공간 디테일 — 다탁",
     desc: "찻상과 햇살 (인물 없음)",
     frame: "closeup",
-    promptEN: () =>
-      `Close-up of a low wooden tea table with a ceramic tea set and a single dried flower, ` +
+    promptEN: ({ signatureMenu }) =>
+      `Close-up of a low wooden tea table with ${signatureMenu ? `${signatureMenu} and ` : ""}a ceramic tea set and a single dried flower, ` +
       `sunlight casting soft lattice shadows across a hanok floor, no people, ` + COMMON_TAIL,
   },
 
@@ -619,8 +619,8 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "제품 진열 — 케어 라인",
     desc: "헤어 제품만 (인물 없음)",
     frame: "overhead",
-    promptEN: () =>
-      `Overhead flat-lay of premium hair care products — bottles and a wooden comb — arranged on a clean marble counter, ` +
+    promptEN: ({ signatureMenu }) =>
+      `Overhead flat-lay of premium hair care products${signatureMenu ? ` featuring ${signatureMenu}` : ""} — bottles and a wooden comb — arranged on a clean marble counter, ` +
       `a folded linen towel and dried eucalyptus beside, soft daylight, no people, ` + COMMON_TAIL,
   },
 

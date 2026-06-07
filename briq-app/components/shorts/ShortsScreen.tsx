@@ -387,6 +387,7 @@ export function ShortsScreen() {
             industry={brand.industry as Industry}
             signatureMenu={isActiveUserBrand ? userBrand?.signatureMenu : undefined}
             topic={preset?.themeTitle ?? brand.campaign}
+            seed={brand.id}
             onGenerated={({ url, scene }) => {
               setFile({
                 url,
