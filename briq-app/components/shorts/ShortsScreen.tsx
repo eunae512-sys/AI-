@@ -510,7 +510,7 @@ export function ShortsScreen() {
                 {analyzing ? "작성 중..." : "전체 다시 작성"}
               </Button>
               <Button asChild size="sm">
-                <Link href="/schedule">
+                <Link href="/scheduler">
                   <Calendar className="h-3.5 w-3.5" /> 예약 발행
                 </Link>
               </Button>
@@ -738,7 +738,7 @@ function PlatformCard({
           {copiedKey === `${result.platform}-all` ? "복사됨" : "전체 복사"}
         </Button>
         <Button asChild size="sm" className="flex-1 min-h-[44px]">
-          <Link href="/schedule">
+          <Link href="/scheduler">
             예약 <ArrowRight className="h-4 w-4" />
           </Link>
         </Button>

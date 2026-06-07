@@ -219,7 +219,7 @@ export default async function BrandDetailPage({ params }: { params: Promise<Para
           <Card className="lg:col-span-2 p-5">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold">예약 발행 (다음 14일)</h3>
-              <Link href="/schedule" className="text-[11px] text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100">
+              <Link href="/scheduler" className="text-[11px] text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100">
                 전체 큐 →
               </Link>
             </div>

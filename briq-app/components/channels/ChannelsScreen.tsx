@@ -324,7 +324,7 @@ export function ChannelsScreen() {
           <StudioLink href="/cardnews" title="카드뉴스" sub="6-10장 캐러셀" />
           <StudioLink href="/threads" title="쓰레드" sub="500자 텍스트" />
           <StudioLink href="/blog" title="네이버 블로그" sub="SEO 본문" />
-          <StudioLink href="/calendar" title="콘텐츠 캘린더" sub="예약·발행 큐" />
+          <StudioLink href="/scheduler" title="발행 스케줄러" sub="예약·발행 큐" />
         </div>
       </Card>
 

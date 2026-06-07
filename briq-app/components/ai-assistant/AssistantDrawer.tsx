@@ -10,7 +10,7 @@ const QUICK_ACTIONS = [
   { icon: Film, label: "릴스 자동 생성", href: "/reels", tone: "violet" },
   { icon: Megaphone, label: "광고 문구 생성", href: "/cardnews", tone: "rose" },
   { icon: FileText, label: "블로그 작성", href: "/cardnews", tone: "emerald" },
-  { icon: Calendar, label: "이벤트 카피", href: "/calendar", tone: "amber" },
+  { icon: Calendar, label: "이벤트 카피", href: "/scheduler", tone: "amber" },
   { icon: FileImage, label: "카드뉴스 6장", href: "/cardnews", tone: "sky" },
   { icon: MessageSquareHeart, label: "리뷰 답변", href: "/reviews", tone: "fuchsia" },
 ] as const;

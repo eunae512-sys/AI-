@@ -254,7 +254,7 @@ export function SettingsScreen() {
               한도 초과 시 다음 결제일까지 기능 일시중지 — 알림으로 안내해 드려요
             </div>
             <Link
-              href="/analytics"
+              href="/insights"
               className="text-xs text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 inline-flex items-center gap-1"
             >
               <Receipt className="h-3.5 w-3.5" /> 사용 내역 자세히 <ArrowRight className="h-3 w-3" />

@@ -789,7 +789,7 @@ function ColophonLinks() {
     { href: "/cardnews", label: "Cardnews" },
     { href: "/reels", label: "Reels" },
     { href: "/blog", label: "Blog" },
-    { href: "/calendar", label: "Calendar" },
+    { href: "/scheduler", label: "Scheduler" },
   ];
   return (
     <section className="pt-10 sm:pt-14">
