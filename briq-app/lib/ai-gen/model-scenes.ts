@@ -358,6 +358,323 @@ export const MODEL_SCENES: ModelScene[] = [
       `Overhead flat-lay of a folded linen garment, a small leather accessory, and dried flowers, ` +
       `on a soft neutral surface, warm window light, ` + COMMON_TAIL,
   },
+
+  // ─────────── 음식점 (변형) ───────────
+  {
+    id: "rest-owner-cooking",
+    industry: "restaurant",
+    role: "owner",
+    title: "사장님 — 불 앞에서",
+    desc: "웍을 흔드는 진지한 표정",
+    frame: "lifestyle",
+    defaultGender: "male",
+    defaultAge: "40s",
+    promptEN: ({ gender, age, signatureMenu }) =>
+      `${genderDescriptor(gender)} ${ageDescriptor(age)} restaurant owner working at a hot stove, tossing ingredients in a wok with rising flame, ` +
+      `${signatureMenu ? `preparing ${signatureMenu}, ` : ""}focused expression, three-quarter angle, steam and warm kitchen light, ` + COMMON_TAIL,
+  },
+  {
+    id: "rest-staff-serving",
+    industry: "restaurant",
+    role: "staff",
+    title: "직원 — 음식 서빙",
+    desc: "접시를 테이블로 옮기는 손",
+    frame: "closeup",
+    defaultGender: "any",
+    defaultAge: "20s",
+    promptEN: ({ signatureMenu }) =>
+      `Close-up of a server's hands lowering a hot plate of ${signatureMenu ?? "a Korean main dish"} onto a wooden table, ` +
+      `gentle steam, other dishes softly blurred around, warm dinner light, ` + COMMON_TAIL,
+  },
+  {
+    id: "rest-customer-cheers",
+    industry: "restaurant",
+    role: "customer",
+    title: "손님 — 건배하는 순간",
+    desc: "잔 부딪히는 손과 분위기",
+    frame: "lifestyle",
+    defaultGender: "any",
+    defaultAge: "30s",
+    promptEN: ({ gender, age }) =>
+      `${genderDescriptor(gender)} ${ageDescriptor(age)} customers raising glasses for a toast at a lively Korean restaurant table, ` +
+      `focus on the clinking glasses and hands, faces softly out of focus, warm evening ambience, ` + COMMON_TAIL,
+  },
+  {
+    id: "rest-product-closeup",
+    industry: "restaurant",
+    role: "product",
+    title: "대표 메뉴 클로즈업",
+    desc: "김 오르는 한 그릇 (인물 없음)",
+    frame: "closeup",
+    promptEN: ({ signatureMenu }) =>
+      `Close-up of ${signatureMenu ?? "a signature Korean dish"} freshly served in a ceramic bowl, gentle steam rising, ` +
+      `rich texture and glistening surface, dark wooden table, dramatic warm side light, no people, ` + COMMON_TAIL,
+  },
+
+  // ─────────── 카페 (변형) ───────────
+  {
+    id: "cafe-owner-roasting",
+    industry: "cafe",
+    role: "owner",
+    title: "사장님 — 원두 고르는 손",
+    desc: "로스팅 원두를 살피는 모습",
+    frame: "closeup",
+    defaultGender: "male",
+    defaultAge: "30s",
+    promptEN: ({ gender, age }) =>
+      `${genderDescriptor(gender)} ${ageDescriptor(age)} cafe owner cupping freshly roasted coffee beans in both hands, inspecting them closely, ` +
+      `warm roastery light, burlap sack softly blurred behind, ` + COMMON_TAIL,
+  },
+  {
+    id: "cafe-staff-handoff",
+    industry: "cafe",
+    role: "staff",
+    title: "바리스타 — 음료 건네는 손",
+    desc: "완성 음료를 내미는 순간",
+    frame: "closeup",
+    defaultGender: "any",
+    defaultAge: "20s",
+    promptEN: ({ signatureMenu }) =>
+      `Close-up of a barista's hand offering a finished ${signatureMenu ?? "specialty drink"} across a wooden counter to a customer just out of frame, ` +
+      `soft morning light, condensation on the cup, ` + COMMON_TAIL,
+  },
+  {
+    id: "cafe-customer-laptop",
+    industry: "cafe",
+    role: "customer",
+    title: "손님 — 작업하는 오후",
+    desc: "노트북과 커피 한 잔",
+    frame: "lifestyle",
+    defaultGender: "any",
+    defaultAge: "20s",
+    promptEN: ({ gender, age }) =>
+      `${genderDescriptor(gender)} ${ageDescriptor(age)} customer working on a laptop at a quiet cafe table, a coffee cup beside, ` +
+      `face mostly in profile lit by window, calm focused mood, warm wood tones, ` + COMMON_TAIL,
+  },
+  {
+    id: "cafe-product-pour",
+    industry: "cafe",
+    role: "product",
+    title: "음료 클로즈업 — 따르는 순간",
+    desc: "잔에 부어지는 음료 (인물 없음)",
+    frame: "closeup",
+    promptEN: ({ signatureMenu }) =>
+      `Close-up of ${signatureMenu ?? "iced specialty coffee"} being poured into a glass with ice, splash and texture frozen in motion, ` +
+      `marble surface, bright clean side light, no people, ` + COMMON_TAIL,
+  },
+
+  // ─────────── 디저트 (변형) ───────────
+  {
+    id: "dessert-staff-decorate",
+    industry: "dessert",
+    role: "staff",
+    title: "데코레이션 손길",
+    desc: "베리·금박 올리는 순간",
+    frame: "closeup",
+    promptEN: ({ signatureMenu }) =>
+      `Close-up of pastry chef's hands arranging fresh berries and edible flowers on top of ${signatureMenu ?? "a delicate cake"}, ` +
+      `tweezers in hand, marble surface, soft daylight, ` + COMMON_TAIL,
+  },
+  {
+    id: "dessert-owner-counter",
+    industry: "dessert",
+    role: "owner",
+    title: "사장님 — 쇼케이스 앞",
+    desc: "디저트 진열장 정리하는 모습",
+    frame: "portrait",
+    defaultGender: "female",
+    defaultAge: "30s",
+    promptEN: ({ gender, age }) =>
+      `${genderDescriptor(gender)} ${ageDescriptor(age)} dessert shop owner standing beside a glass pastry showcase, gently arranging a plate, ` +
+      `warm pastel interior, apron, soft smile, three-quarter angle, ` + COMMON_TAIL,
+  },
+  {
+    id: "dessert-customer-share",
+    industry: "dessert",
+    role: "customer",
+    title: "손님 — 함께 나누는 순간",
+    desc: "두 손이 같은 접시로",
+    frame: "lifestyle",
+    defaultGender: "any",
+    defaultAge: "20s",
+    promptEN: ({ gender, age, signatureMenu }) =>
+      `Two ${genderDescriptor(gender).replace("a ", "")} ${ageDescriptor(age)} friends sharing ${signatureMenu ?? "a dessert"} with two forks reaching toward the same plate, ` +
+      `hands and dessert in focus, faces softly out of frame, cozy cafe light, ` + COMMON_TAIL,
+  },
+  {
+    id: "dessert-product-stack",
+    industry: "dessert",
+    role: "product",
+    title: "디저트 클로즈업 — 단면",
+    desc: "레이어가 보이는 한 컷 (인물 없음)",
+    frame: "closeup",
+    promptEN: ({ signatureMenu }) =>
+      `Close-up cross-section of ${signatureMenu ?? "a layered cake slice"} on a ceramic plate, showing rich layers and texture, ` +
+      `fresh fruit beside, soft natural light, marble surface, no people, ` + COMMON_TAIL,
+  },
+
+  // ─────────── 숙박/스테이 (변형) ───────────
+  {
+    id: "stay-host-checkin",
+    industry: "stay",
+    role: "owner",
+    title: "호스트 — 열쇠 건네는 손",
+    desc: "체크인 환영 순간",
+    frame: "closeup",
+    defaultGender: "female",
+    defaultAge: "40s",
+    promptEN: () =>
+      `Close-up of a stay host's hands offering a traditional brass key on a wooden tray to a guest, ` +
+      `hanok entrance softly blurred behind, warm afternoon light, ` + COMMON_TAIL,
+  },
+  {
+    id: "stay-staff-tea",
+    industry: "stay",
+    role: "staff",
+    title: "차 내어주는 손",
+    desc: "찻잔과 다과 준비",
+    frame: "closeup",
+    promptEN: () =>
+      `Close-up of hands placing a traditional Korean tea cup and small sweets on a low wooden tray, ` +
+      `hanok floor, dried flowers nearby, soft morning light, ` + COMMON_TAIL,
+  },
+  {
+    id: "stay-guest-window",
+    industry: "stay",
+    role: "customer",
+    title: "손님 — 창밖 바라보며",
+    desc: "한지창 앞 평화로운 순간",
+    frame: "lifestyle",
+    defaultGender: "any",
+    defaultAge: "30s",
+    promptEN: ({ gender, age }) =>
+      `${genderDescriptor(gender)} ${ageDescriptor(age)} guest sitting cross-legged by a traditional Korean paper window, gazing outside, ` +
+      `a tea cup beside, linen clothing, face in soft profile, serene morning light, ` + COMMON_TAIL,
+  },
+  {
+    id: "stay-product-detail",
+    industry: "stay",
+    role: "product",
+    title: "공간 디테일 — 다탁",
+    desc: "찻상과 햇살 (인물 없음)",
+    frame: "closeup",
+    promptEN: () =>
+      `Close-up of a low wooden tea table with a ceramic tea set and a single dried flower, ` +
+      `sunlight casting soft lattice shadows across a hanok floor, no people, ` + COMMON_TAIL,
+  },
+
+  // ─────────── 미용/뷰티 (변형) ───────────
+  {
+    id: "beauty-staff-color",
+    industry: "beauty",
+    role: "staff",
+    title: "컬러 바르는 손",
+    desc: "염색 브러시 작업 클로즈업",
+    frame: "closeup",
+    promptEN: () =>
+      `Close-up of a hair colorist's gloved hands applying color with a brush to sectioned hair, ` +
+      `foils softly blurred, clean salon light, focus on precise motion, ` + COMMON_TAIL,
+  },
+  {
+    id: "beauty-staff-blowdry",
+    industry: "beauty",
+    role: "staff",
+    title: "드라이 마무리",
+    desc: "브러시와 드라이어로 마무리",
+    frame: "closeup",
+    promptEN: () =>
+      `Close-up of a stylist's hands finishing a blow-dry with a round brush and hair dryer, ` +
+      `soft flowing hair, warm salon light, mirrors blurred behind, ` + COMMON_TAIL,
+  },
+  {
+    id: "beauty-owner-consult",
+    industry: "beauty",
+    role: "owner",
+    title: "원장님 — 상담 중",
+    desc: "거울 앞 스타일 상담",
+    frame: "lifestyle",
+    defaultGender: "female",
+    defaultAge: "40s",
+    promptEN: ({ gender, age }) =>
+      `${genderDescriptor(gender)} ${ageDescriptor(age)} salon director gently advising a client in front of a mirror, hand near the client's hair, ` +
+      `warm minimalist salon, client face out of frame, three-quarter angle on the director, ` + COMMON_TAIL,
+  },
+  {
+    id: "beauty-customer-relax",
+    industry: "beauty",
+    role: "customer",
+    title: "손님 — 샴푸 받는 순간",
+    desc: "눈 감고 이완된 표정",
+    frame: "closeup",
+    defaultGender: "any",
+    defaultAge: "20s",
+    promptEN: ({ gender, age }) =>
+      `${genderDescriptor(gender)} ${ageDescriptor(age)} salon customer lying back at a shampoo basin with eyes gently closed, relaxed expression, ` +
+      `soft warm salon light, water and lather softly suggested, face three-quarter, ` + COMMON_TAIL,
+  },
+  {
+    id: "beauty-product-shelf",
+    industry: "beauty",
+    role: "product",
+    title: "제품 진열 — 케어 라인",
+    desc: "헤어 제품만 (인물 없음)",
+    frame: "overhead",
+    promptEN: () =>
+      `Overhead flat-lay of premium hair care products — bottles and a wooden comb — arranged on a clean marble counter, ` +
+      `a folded linen towel and dried eucalyptus beside, soft daylight, no people, ` + COMMON_TAIL,
+  },
+
+  // ─────────── 로컬/패션/잡화 (변형, staff 제외) ───────────
+  {
+    id: "local-owner-wrapping",
+    industry: "local",
+    role: "owner",
+    title: "사장님 — 포장하는 손",
+    desc: "구매 상품을 정성껏 포장",
+    frame: "closeup",
+    defaultGender: "female",
+    defaultAge: "30s",
+    promptEN: ({ signatureMenu }) =>
+      `Close-up of a boutique owner's hands carefully wrapping ${signatureMenu ?? "a purchased item"} in kraft paper and twine, ` +
+      `warm store counter, dried flowers beside, soft afternoon light, ` + COMMON_TAIL,
+  },
+  {
+    id: "local-owner-display",
+    industry: "local",
+    role: "owner",
+    title: "사장님 — 진열 매만지는 모습",
+    desc: "선반 상품을 정돈",
+    frame: "lifestyle",
+    defaultGender: "female",
+    defaultAge: "40s",
+    promptEN: ({ gender, age }) =>
+      `${genderDescriptor(gender)} ${ageDescriptor(age)} boutique owner arranging items on a wooden shelf in a warm Korean lifestyle store, ` +
+      `gentle expression, three-quarter angle, soft natural light, ` + COMMON_TAIL,
+  },
+  {
+    id: "local-customer-browse",
+    industry: "local",
+    role: "customer",
+    title: "손님 — 제품 살펴보는 손",
+    desc: "물건을 들어 살피는 순간",
+    frame: "closeup",
+    defaultGender: "any",
+    defaultAge: "20s",
+    promptEN: ({ signatureMenu }) =>
+      `Close-up of a customer's hands gently lifting and examining ${signatureMenu ?? "a small handcrafted item"} in a quiet Korean boutique, ` +
+      `shelves softly blurred behind, warm afternoon light, ` + COMMON_TAIL,
+  },
+  {
+    id: "local-product-detail",
+    industry: "local",
+    role: "product",
+    title: "제품 디테일 클로즈업",
+    desc: "질감이 보이는 한 컷 (인물 없음)",
+    frame: "closeup",
+    promptEN: ({ signatureMenu }) =>
+      `Close-up of ${signatureMenu ?? "a handcrafted product"} showing rich material texture, resting on a soft neutral linen surface, ` +
+      `dried flower beside, warm directional window light, no people, ` + COMMON_TAIL,
+  },
 ];
 
 // 업종별 씬 필터
@@ -375,18 +692,34 @@ const RECOMMENDED_BY_INDUSTRY: Record<Industry, SceneRole[]> = {
   local: ["owner", "customer", "product"],
 };
 
-export function getRecommendedScenes(industry: Industry): ModelScene[] {
+// 문자열 → 32비트 양의 정수 (결정론, Math.random 금지). FNV-1a 변형.
+export function hashSeed(input: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < input.length; i++) {
+    h ^= input.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+// 추천 씬 — 역할별로 변형 중 seed로 결정론적 1개 선택.
+// seed 생략(=0) 시 각 역할의 첫 변형 → 기존 동작과 호환.
+export function getRecommendedScenes(industry: Industry, seed: number = 0): ModelScene[] {
   const all = getScenesForIndustry(industry);
   const order = RECOMMENDED_BY_INDUSTRY[industry] || ["staff", "customer", "owner", "product"];
   const seen = new Set<string>();
-  return order
-    .map((role) => all.find((s) => s.role === role))
-    .filter((s): s is ModelScene => {
-      if (!s) return false;
-      if (seen.has(s.id)) return false;
-      seen.add(s.id);
-      return true;
-    });
+  const out: ModelScene[] = [];
+  order.forEach((role, roleIndex) => {
+    const variants = all.filter((s) => s.role === role);
+    if (variants.length === 0) return;
+    // seed + roleIndex 로 역할마다 다른 변형이 뽑히게 한다.
+    const pick = variants[(seed + roleIndex) % variants.length];
+    if (!seen.has(pick.id)) {
+      seen.add(pick.id);
+      out.push(pick);
+    }
+  });
+  return out;
 }
 
 // 한국어 라벨 매핑
