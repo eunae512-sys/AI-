@@ -211,7 +211,7 @@ export function ReelsScreen() {
       // 즉시 발행 가정 — 11:30 다음 슬롯
       scheduledFor: nextSlot("11:30").toISOString(),
     });
-    toast.success(`${brand.name} · 릴스 예약 등록 — /schedule 에서 확인`);
+    toast.success(`${brand.name} · 릴스 예약 등록 — 스케줄러에서 확인`);
     return item;
   };
   const addToQueue = () => {
@@ -227,7 +227,7 @@ export function ReelsScreen() {
       channels: ["instagram"],
       status: "draft",
     });
-    toast.success(`${brand.name} 예약 큐에 저장됨 — /schedule 에서 발행 시간 지정`);
+    toast.success(`${brand.name} 예약 큐에 저장됨 — 스케줄러에서 발행 시간 지정`);
   };
   const uploadMore = () => photoInputRef.current?.click();
   const removePhoto = (idx: number) => {

@@ -1,5 +1,5 @@
 // 발행 큐 — localStorage 기반 영속화
-// 모든 "예약 큐에 추가" / "발행" 버튼이 이 모듈에 기록 → /schedule 에서 동일 데이터 표시
+// 모든 "예약 큐에 추가" / "발행" 버튼이 이 모듈에 기록 → 스케줄러에서 동일 데이터 표시
 // 브랜드별로 분리해서 저장 (multi-tenant 친화)
 
 export type QueueItemType = "reels" | "cardnews" | "blog" | "threads" | "shorts";
