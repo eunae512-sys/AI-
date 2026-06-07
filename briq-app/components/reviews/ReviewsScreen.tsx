@@ -8,7 +8,7 @@ import { useBrand } from "@/components/brand/BrandProvider";
 import { useToast } from "@/components/ui/toast";
 import { getBrandDetail } from "@/lib/dummy/brand-detail";
 
-// 브랜드별 BRIQ 자동 답변 톤
+// 브랜드별 BRIQ 답변 제안 톤
 const REPLY_TEMPLATES: Record<string, Record<"regular" | "new" | "difficult", string>> = {
   miokdang: {
     regular: "늘 어머님과 함께 찾아주셔서 감사합니다. 두릅무침은 양평 시장에서 새벽에 골라온 것이라 더 마음이 갑니다. 다음달엔 여름 정식이 시작되니, 그때 또 모시고 싶어요. — 미옥당 허은애 드림",
@@ -47,42 +47,42 @@ const PLATFORMS = ["네이버", "구글", "배민", "요기요", "카카오"];
 const KPIS_BY_BRAND: Record<string, { label: string; value: string; delta: string; danger?: boolean }[]> = {
   miokdang: [
     { label: "이번달 리뷰", value: "147", delta: "+34%" },
-    { label: "자동 답변", value: "132", delta: "90%" },
+    { label: "답변 제안", value: "132", delta: "90%" },
     { label: "평균 별점", value: "4.7", delta: "★★★★★" },
     { label: "검토 대기", value: "3", delta: "진상 의심", danger: true },
     { label: "평균 답변 시간", value: "2.4m", delta: "↓ 87%" },
   ],
   "roastery-1985": [
     { label: "이번달 리뷰", value: "84", delta: "+21%" },
-    { label: "자동 답변", value: "78", delta: "93%" },
+    { label: "답변 제안", value: "78", delta: "93%" },
     { label: "평균 별점", value: "4.8", delta: "★★★★★" },
     { label: "검토 대기", value: "1", delta: "주말 소음", danger: true },
     { label: "평균 답변 시간", value: "1.8m", delta: "↓ 91%" },
   ],
   "seochon-stay": [
     { label: "이번달 리뷰", value: "62", delta: "+18%" },
-    { label: "자동 답변", value: "58", delta: "94%" },
+    { label: "답변 제안", value: "58", delta: "94%" },
     { label: "평균 별점", value: "4.9", delta: "★★★★★" },
     { label: "검토 대기", value: "1", delta: "주차 문의" },
     { label: "평균 답변 시간", value: "3.1m", delta: "↓ 82%" },
   ],
   "dolce-dessert": [
     { label: "이번달 리뷰", value: "218", delta: "+47%" },
-    { label: "자동 답변", value: "196", delta: "90%" },
+    { label: "답변 제안", value: "196", delta: "90%" },
     { label: "평균 별점", value: "4.8", delta: "★★★★★" },
     { label: "검토 대기", value: "5", delta: "대기시간 컴플레인", danger: true },
     { label: "평균 답변 시간", value: "1.4m", delta: "↓ 93%" },
   ],
   "luna-hair": [
     { label: "이번달 리뷰", value: "112", delta: "+28%" },
-    { label: "자동 답변", value: "104", delta: "93%" },
+    { label: "답변 제안", value: "104", delta: "93%" },
     { label: "평균 별점", value: "4.6", delta: "★★★★☆" },
     { label: "검토 대기", value: "2", delta: "예약 지연" },
     { label: "평균 답변 시간", value: "2.1m", delta: "↓ 88%" },
   ],
   "forum-fashion": [
     { label: "이번달 리뷰", value: "58", delta: "+12%" },
-    { label: "자동 답변", value: "52", delta: "90%" },
+    { label: "답변 제안", value: "52", delta: "90%" },
     { label: "평균 별점", value: "4.7", delta: "★★★★★" },
     { label: "검토 대기", value: "0", delta: "정상" },
     { label: "평균 답변 시간", value: "2.8m", delta: "↓ 84%" },
@@ -114,7 +114,7 @@ export function ReviewsScreen() {
         <div className="text-[11px] uppercase tracking-[0.15em] text-zinc-400 font-semibold">
           REVIEW AUTO-RESPONSE · {brand.name}
         </div>
-        <h1 className="mt-2 text-[22px] sm:text-2xl md:text-3xl font-semibold tracking-tight leading-[1.15]">리뷰 자동 답변</h1>
+        <h1 className="mt-2 text-[22px] sm:text-2xl md:text-3xl font-semibold tracking-tight leading-[1.15]">고객 리뷰 응대</h1>
         <p className="mt-1 text-sm text-zinc-500 max-w-2xl">
           네이버 · 구글 · 배민 · 요기요 후기를 한 곳에서. {brand.name} 톤 메모리로 답변하고 진상/단골 자동 분류합니다.
         </p>
@@ -205,7 +205,7 @@ export function ReviewsScreen() {
                             : "text-rose-700 dark:text-rose-400"
                         }`}
                       >
-                        BRIQ 자동 답변 · {brand.name} 톤 v{brand.toneVersion}
+                        BRIQ 답변 제안 · {brand.name} 톤 v{brand.toneVersion}
                       </div>
                       <p className="text-xs leading-relaxed whitespace-pre-line">{replies[r.type]}</p>
                       <div className="mt-2 flex items-center gap-2">

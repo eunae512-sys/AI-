@@ -81,7 +81,7 @@ export const HIDDEN_ROUTES: NavItem[] = [
   { label: "Social Channels", href: "/channels", icon: Layers, hidden: true },
   { label: "Threads editor", href: "/threads", icon: Layers, hidden: true },
   { label: "Brand tone", href: "/brand-tone", icon: Layers, hidden: true },
-  { label: "Reviews", href: "/reviews", icon: Layers, hidden: true },
+  { label: "고객 리뷰", href: "/reviews", icon: Layers, hidden: true },
   { label: "Discover", href: "/discover", icon: Layers, hidden: true },
 ];
 
