@@ -31,6 +31,7 @@ import {
   AGE_LABELS,
   getRecommendedScenes,
   getScenesForIndustry,
+  hashSeed,
 } from "@/lib/ai-gen/model-scenes";
 import { translateTopicToEN } from "@/lib/cardnews/video-query";
 import { applyAiWatermark, buildAiMeta } from "@/lib/ai-gen/watermark";
@@ -40,6 +41,8 @@ type Props = {
   signatureMenu?: string[];
   /** 캠페인 주제/테마 (예: "여름 수박 케이크") — 출연자 씬을 주제에 맞게 연출 */
   topic?: string;
+  /** 추천 변주용 시드 — 보통 brand.id. 없으면 industry+signatureMenu+topic 로 합성 */
+  seed?: string;
   /** 생성 완료 시 호출 — workflow 로 결과 전달 */
   onGenerated: (result: { url: string; scene: ModelScene; meta: ReturnType<typeof buildAiMeta>; costKrw: number }) => void;
   /** 외부에서 닫기 (탭 전환 등) */
@@ -51,9 +54,13 @@ type Props = {
 const COST_USD_PER_IMAGE = 0.04; // gpt-image-1 medium
 const COST_KRW = Math.round(COST_USD_PER_IMAGE * 1400);
 
-export function AiModelGenerator({ industry, signatureMenu, topic, onGenerated, onClose, compact = false }: Props) {
+export function AiModelGenerator({ industry, signatureMenu, topic, seed, onGenerated, onClose, compact = false }: Props) {
   const toast = useToast();
-  const recommended = React.useMemo(() => getRecommendedScenes(industry), [industry]);
+  // 추천 변주: seed(brand.id) 우선, 없으면 업종+메뉴+주제로 합성 → 결정론 해시.
+  // 같은 브랜드/주제면 항상 같은 추천, 다르면 변형이 바뀜.
+  const seedStr = (seed ?? `${industry}|${signatureMenu?.join(",") ?? ""}|${topic ?? ""}`).trim();
+  const seedNum = React.useMemo(() => hashSeed(seedStr), [seedStr]);
+  const recommended = React.useMemo(() => getRecommendedScenes(industry, seedNum), [industry, seedNum]);
   const allScenes = React.useMemo(() => getScenesForIndustry(industry), [industry]);
 
   const [scene, setScene] = React.useState<ModelScene>(recommended[0] ?? allScenes[0]);
@@ -191,6 +198,13 @@ export function AiModelGenerator({ industry, signatureMenu, topic, onGenerated, 
         <div className="flex items-center justify-between mb-2">
           <div className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
             {showAll ? `모든 씬 (${allScenes.length})` : `추천 씬 (${recommended.length})`}
+            {!showAll && (
+              <span className="ml-1.5 font-normal text-[11px] text-zinc-400">
+                {topic?.trim()
+                  ? `· '${topic.trim()}' 맞춤 (업종·역할별 1컷)`
+                  : "· 업종·역할별 추천 1컷"}
+              </span>
+            )}
           </div>
           {allScenes.length > recommended.length && (
             <button
