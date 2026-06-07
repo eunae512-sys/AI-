@@ -29,15 +29,18 @@ export type BusinessInfo = {
  *     placeholder 가 그대로 노출되면 사용자 신뢰가 깨지므로 운영 배포 전 반드시 갱신.
  */
 export const BUSINESS_INFO: BusinessInfo = {
-  companyName: "(주)준비중",
-  representative: "—",
-  businessRegistrationNo: "000-00-00000",
-  ecommerceRegistrationNo: "제 0000-서울XX-0000호",
-  address: "서울특별시 ○○구 ○○로 ○○",
-  phone: "02-0000-0000",
+  companyName: "주식회사 어블러",
+  representative: "허은애",
+  businessRegistrationNo: "745-88-00998",
+  // TODO: 통신판매업 신고 후 신고번호 입력 (정기결제 운영 전 필수)
+  ecommerceRegistrationNo: "준비 중",
+  address: "울산광역시 중구 종가로 406-21, 838호",
+  // TODO: 고객센터 전화번호 확정 후 입력
+  phone: "준비 중",
+  // TODO: 도메인 단일화 확정 후 이메일 도메인 정정
   email: "support@briq.kr",
   hostingProvider: "Vercel Inc. + Supabase Inc.",
-  lastUpdated: "2026-05-29",
+  lastUpdated: "2026-06-08",
 };
 
 export const SERVICE_NAME = "BRIQ";
