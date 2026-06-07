@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { extractPaletteFromPhotos, type ExtractedColor } from "@/lib/colors/extract-palette";
 import { inferMoodFromPalette } from "@/lib/brand/mood-detect";
 import { saveUserBrand } from "@/lib/brand/user-brand";
+import { useBrand } from "@/components/brand/BrandProvider";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Industry as IndustryType, Mood as MoodIdType } from "@/types";
 import {
@@ -231,9 +232,12 @@ const labelStyle: React.CSSProperties = { color: INK, fontFamily: SERIF_HANGUL }
 export function Onboarding() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { addBrand } = useBrand();
   // /onboarding?plan=pro → selectedPlan = "pro"
   const planParam = searchParams?.get("plan") ?? null;
   const selectedPlan = (planParam && PLAN_LABEL[planParam]) ? planParam as "free" | "pro" | "studio" | "agency" : undefined;
+  // /onboarding?add=1 → 기존 브랜드 무손상 + 신규 추가·활성화
+  const addMode = searchParams?.get("add") === "1";
   const [step, setStep] = React.useState(1);
   const totalSteps = 7;
   const [industry, setIndustry] = React.useState<string>();
@@ -1082,7 +1086,7 @@ export function Onboarding() {
                       const brandId = `me-${Date.now().toString(36)}`;
                       const moodTag2 = (mood && MOODS.find((m) => m.id === mood)?.tag) || "My Brand";
                       const cleanMenu = signatureMenu.map((m) => m.trim()).filter(Boolean);
-                      saveUserBrand({
+                      const payload = {
                         id: brandId,
                         name: shopName.trim() || "내 브랜드",
                         industry: industry as IndustryType,
@@ -1102,9 +1106,15 @@ export function Onboarding() {
                         ownerEmail: ownerEmail.trim() || undefined,
                         selectedPlan,
                         createdAt: Date.now(),
-                      });
-                      if (typeof window !== "undefined") {
-                        window.dispatchEvent(new Event("briq:user-brand-updated"));
+                      };
+                      if (addMode) {
+                        // ?add=1: 기존 브랜드 무손상 + 신규 추가·활성화 (BrandProvider 가 dispatch 처리)
+                        addBrand(payload);
+                      } else {
+                        saveUserBrand(payload);
+                        if (typeof window !== "undefined") {
+                          window.dispatchEvent(new Event("briq:user-brand-updated"));
+                        }
                       }
                     }
 

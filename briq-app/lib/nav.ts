@@ -10,6 +10,7 @@ import {
   Film,
   FileImage,
   FileText,
+  Briefcase,
   type LucideIcon,
 } from "lucide-react";
 
@@ -29,6 +30,8 @@ export type NavItem = {
   badge?: { count: number; tone: "amber" | "rose" | "sky" | "emerald" };
   /** 메뉴 비공개, 라우트만 유지 */
   hidden?: boolean;
+  /** 대행사(실브랜드 2+)에서만 노출 */
+  agencyOnly?: boolean;
 };
 
 export type NavGroup = {
@@ -46,6 +49,7 @@ export const navGroups: NavGroup[] = [
       { label: "Scheduler", href: "/scheduler", icon: Clock, badge: { count: 12, tone: "sky" } },
       { label: "Insights", href: "/insights", icon: Compass },
       { label: "검수", href: "/review-queue", icon: ClipboardCheck, badge: { count: 3, tone: "amber" } },
+      { label: "클라이언트", href: "/clients", icon: Briefcase, agencyOnly: true },
     ],
   },
   {
@@ -79,7 +83,6 @@ export const HIDDEN_ROUTES: NavItem[] = [
   { label: "Brand tone", href: "/brand-tone", icon: Layers, hidden: true },
   { label: "Reviews", href: "/reviews", icon: Layers, hidden: true },
   { label: "Discover", href: "/discover", icon: Layers, hidden: true },
-  { label: "Clients", href: "/clients", icon: Layers, hidden: true },
 ];
 
 export const NAV_FLAT: NavItem[] = [

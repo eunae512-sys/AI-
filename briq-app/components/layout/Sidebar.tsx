@@ -27,7 +27,7 @@ type SidebarBodyProps = {
 function SidebarBody({ pathname, onNavigate, variant }: SidebarBodyProps) {
   const SettingsIcon = SETTINGS_ITEM.icon;
   const settingsActive = pathname.startsWith(SETTINGS_ITEM.href);
-  const { userBrand } = useBrand();
+  const { userBrand, allBrands, isAgency } = useBrand();
 
   // 실 사장님: 온보딩 마친 ownerName, 데모 사용자: 기본 이름
   const displayName = userBrand?.ownerName?.trim() || (userBrand ? "사장님" : "허은애");
@@ -60,7 +60,13 @@ function SidebarBody({ pathname, onNavigate, variant }: SidebarBodyProps) {
                 {group.title}
               </div>
             )}
-            {group.items.map((item) => {
+            {group.items
+              .filter(
+                (item) =>
+                  !item.hidden &&
+                  !(item.agencyOnly && !(isAgency || allBrands.length >= 2)),
+              )
+              .map((item) => {
               const Icon = item.icon;
               const active = pathname === item.href || pathname.startsWith(item.href + "/");
               return (

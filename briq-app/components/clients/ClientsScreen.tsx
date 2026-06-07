@@ -56,7 +56,7 @@ export function ClientsScreen() {
 
   const onAddBrand = () => {
     toast.info("새 브랜드 온보딩으로 이동합니다");
-    router.push("/onboarding");
+    router.push("/onboarding?add=1");
   };
 
   const onCardClick = (id: string, name: string) => {
