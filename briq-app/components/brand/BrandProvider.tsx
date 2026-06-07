@@ -51,9 +51,18 @@ export function BrandProvider({ children }: { children: React.ReactNode }) {
     const primary = list[0] ?? null;
     setUserBrand(primary); // 기존 단일 userBrand 호환 유지 (= 첫 브랜드)
 
+    if (typeof window === "undefined") return;
+
+    const savedActive = localStorage.getItem(STORAGE_KEY);
+
+    // 저장된 active 가 실브랜드 목록에 있으면 해당 브랜드로 활성화
+    if (savedActive && list.some((b) => b.id === savedActive)) {
+      setBrandIdState(savedActive);
+      return;
+    }
+
     // active 자동 활성화: 저장된 active 가 없거나 더미 기본이고 실브랜드가 있으면 첫 실브랜드로
-    if (primary && typeof window !== "undefined") {
-      const savedActive = localStorage.getItem(STORAGE_KEY);
+    if (primary) {
       if (
         !savedActive ||
         savedActive === DEFAULT_ID ||
