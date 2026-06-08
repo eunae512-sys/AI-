@@ -24,6 +24,9 @@ export type ModelScene = {
   title: string;        // UI 라벨 (예: "라떼아트 만드는 바리스타")
   desc: string;         // 한 줄 설명
   frame: FrameStyle;
+  // 씬 인식 폴백 검색어 — Imagen 실패 시 Pexels 가 씬·주제에 맞는 사진을 찾도록.
+  // 사물 씬(closeup/overhead/product)=인물 단어 금지, 인물 씬(portrait/lifestyle)=korean+사람.
+  fallbackQuery: string;
   defaultGender?: ModelGender;
   defaultAge?: ModelAge;
   // 영문 프롬프트 — gpt-image-1에 직접 전달
@@ -50,6 +53,7 @@ const genderDescriptor = (gender?: ModelGender): string => {
 
 // 공통 후미 — 출연자 익명성, 광고법 준수, 자연스러움
 const COMMON_TAIL =
+  "Professional commercial advertising photography, high detail, sharp focus, polished editorial lighting, premium magazine quality. " +
   "Natural editorial photography, soft window light, shallow depth of field, " +
   "subject face partially obscured or three-quarter angle for privacy, " +
   "muted earth tones, warm color grading, 9:16 vertical composition with negative space at top for overlay text. " +
@@ -66,6 +70,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "요리사 플레이팅",
     desc: "정성스럽게 마지막 가니쉬를 올리는 손",
     frame: "closeup",
+    fallbackQuery: "korean dish plating hands garnish wooden counter close up",
     defaultGender: "any",
     defaultAge: "30s",
     promptEN: ({ signatureMenu }) =>
@@ -79,6 +84,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "사장님 인사",
     desc: "가게 입구에서 환영하는 자세",
     frame: "portrait",
+    fallbackQuery: "korean restaurant owner woman apron entrance warm interior",
     defaultGender: "female",
     defaultAge: "40s",
     promptEN: ({ gender, age }) =>
@@ -93,6 +99,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "손님 식사",
     desc: "맛있게 한 입 먹는 순간",
     frame: "lifestyle",
+    fallbackQuery: "korean person eating korean food restaurant table chopsticks candid",
     defaultGender: "any",
     defaultAge: "20s",
     promptEN: ({ gender, age, signatureMenu }) =>
@@ -107,6 +114,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "테이블 위에서",
     desc: "한상차림 위에서 본 컷 (인물 없음)",
     frame: "overhead",
+    fallbackQuery: "korean restaurant table overhead flat lay side dishes wooden",
     promptEN: ({ signatureMenu }) =>
       `Overhead flat-lay of a Korean restaurant table with ${signatureMenu ?? "various side dishes and a main course"}, ` +
       `wooden table surface, two pairs of chopsticks resting at the edge suggesting people just out of frame, ` +
@@ -121,6 +129,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "라떼아트 만드는 바리스타",
     desc: "스팀밀크 따르는 손",
     frame: "closeup",
+    fallbackQuery: "latte art pouring hands ceramic cup cafe counter close up",
     defaultGender: "any",
     defaultAge: "20s",
     promptEN: () =>
@@ -134,6 +143,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "카페 사장님",
     desc: "카운터 뒤에서 환영하는 모습",
     frame: "portrait",
+    fallbackQuery: "korean cafe owner woman counter coffee warm interior",
     defaultGender: "female",
     defaultAge: "30s",
     promptEN: ({ gender, age }) =>
@@ -148,6 +158,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "손님 — 책 읽는 오후",
     desc: "창가에서 커피 한 모금",
     frame: "lifestyle",
+    fallbackQuery: "korean person cafe window coffee book afternoon candid",
     defaultGender: "any",
     defaultAge: "20s",
     promptEN: ({ gender, age }) =>
@@ -162,6 +173,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "테이블 위 — 음료만",
     desc: "라떼와 디저트 (인물 없음)",
     frame: "overhead",
+    fallbackQuery: "latte dessert marble cafe table overhead flat lay still life",
     promptEN: ({ signatureMenu }) =>
       `Overhead flat-lay of ${signatureMenu ?? "a specialty latte and a small dessert"} on a marble cafe table, ` +
       `one hand just entering frame from the side reaching for the cup, ` +
@@ -176,6 +188,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "디저트 만드는 손",
     desc: "크림 짜는 순간 클로즈업",
     frame: "closeup",
+    fallbackQuery: "pastry cream piping hands dessert marble berries close up",
     promptEN: () =>
       `Close-up of pastry chef's hands piping cream onto a delicate dessert, marble surface, ` +
       `fresh berries scattered nearby, soft daylight, ` + COMMON_TAIL,
@@ -187,6 +200,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "사장님 — 디저트 들고",
     desc: "갓 만든 트레이 들고 미소",
     frame: "portrait",
+    fallbackQuery: "korean dessert shop owner woman tray pastries pastel interior",
     defaultGender: "female",
     defaultAge: "30s",
     promptEN: ({ gender, age, signatureMenu }) =>
@@ -200,6 +214,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "손님 — 한 입 베어 무는 순간",
     desc: "디저트와 표정",
     frame: "lifestyle",
+    fallbackQuery: "korean person eating dessert cafe soft light candid",
     defaultGender: "any",
     defaultAge: "20s",
     promptEN: ({ gender, age, signatureMenu }) =>
@@ -213,6 +228,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "디저트 플랫레이",
     desc: "위에서 본 컷 (인물 없음)",
     frame: "overhead",
+    fallbackQuery: "artisan dessert ceramic plate marble overhead flat lay still life",
     promptEN: ({ signatureMenu }) =>
       `Overhead flat-lay of ${signatureMenu ?? "an artisan dessert"} on a ceramic plate, fork resting beside, ` +
       `linen napkin, dried flowers, marble surface, ` + COMMON_TAIL,
@@ -226,6 +242,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "호스트 환영",
     desc: "한옥 마루 앞에서 인사",
     frame: "portrait",
+    fallbackQuery: "korean hanok host woman wooden veranda linen welcoming warm light",
     defaultGender: "female",
     defaultAge: "40s",
     promptEN: ({ gender, age }) =>
@@ -240,6 +257,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "객실 준비 손길",
     desc: "이불 정리, 차 준비",
     frame: "closeup",
+    fallbackQuery: "korean hanok room folded white linen bedding tea tray morning light",
     promptEN: () =>
       `Close-up of hands smoothing a clean white linen on a traditional Korean floor mattress, ` +
       `dried flowers and a small tea tray nearby, soft morning light, ` + COMMON_TAIL,
@@ -251,6 +269,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "손님 — 마루에서 차 한잔",
     desc: "한옥 마루에서의 평화로운 순간",
     frame: "lifestyle",
+    fallbackQuery: "korean person hanok wooden veranda tea cup garden calm",
     defaultGender: "any",
     defaultAge: "30s",
     promptEN: ({ gender, age }) =>
@@ -265,6 +284,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "객실 내부 — 인물 없음",
     desc: "햇살 드는 마루방",
     frame: "lifestyle",
+    fallbackQuery: "empty korean hanok interior sunlight wooden lattice futon tea set",
     promptEN: () =>
       `Empty traditional Korean hanok interior, sunlight streaming through wooden lattice door, ` +
       `clean futon, low wooden table with a tea set, dried persimmons hanging in the background, ` + COMMON_TAIL,
@@ -278,6 +298,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "디자이너 시술 중",
     desc: "고객 머리 손질하는 손",
     frame: "closeup",
+    fallbackQuery: "hands shears cutting hair salon close up",
     promptEN: () =>
       `Close-up of a hair stylist's hands working with shears on a client's hair, ` +
       `soft salon lighting, focus on the precise hand motion, mirrors blurred in background, ` + COMMON_TAIL,
@@ -289,6 +310,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "원장님 — 살롱 앞에서",
     desc: "환영 자세, 시술복 차림",
     frame: "portrait",
+    fallbackQuery: "korean hair salon director woman black apron minimalist interior",
     defaultGender: "female",
     defaultAge: "30s",
     promptEN: ({ gender, age }) =>
@@ -303,6 +325,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "손님 — 거울 앞 만족",
     desc: "시술 직후 표정",
     frame: "lifestyle",
+    fallbackQuery: "korean person salon mirror styled hair soft light candid",
     defaultGender: "any",
     defaultAge: "20s",
     promptEN: ({ gender, age }) =>
@@ -316,6 +339,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "시술 도구 정돈",
     desc: "도구만, 인물 없음",
     frame: "overhead",
+    fallbackQuery: "hair styling tools brush scissors comb marble counter overhead flat lay",
     promptEN: () =>
       `Overhead flat-lay of professional hair styling tools — wooden brush, scissors, comb — ` +
       `arranged neatly on a clean marble salon counter, soft daylight, ` + COMMON_TAIL,
@@ -329,6 +353,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "사장님 — 매장 안",
     desc: "옷걸이 사이에서 정리 중",
     frame: "portrait",
+    fallbackQuery: "korean boutique owner woman clothing rack fashion store linen apron",
     defaultGender: "female",
     defaultAge: "30s",
     promptEN: ({ gender, age }) =>
@@ -342,6 +367,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "손님 — 매장 둘러보기",
     desc: "옷 살펴보는 자연스러운 순간",
     frame: "lifestyle",
+    fallbackQuery: "korean person touching fabric garment boutique afternoon candid",
     defaultGender: "any",
     defaultAge: "20s",
     promptEN: ({ gender, age }) =>
@@ -355,6 +381,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "제품 플랫레이",
     desc: "제품만 (인물 없음)",
     frame: "overhead",
+    fallbackQuery: "folded linen garment leather accessory dried flowers neutral overhead flat lay",
     promptEN: () =>
       `Overhead flat-lay of a folded linen garment, a small leather accessory, and dried flowers, ` +
       `on a soft neutral surface, warm window light, ` + COMMON_TAIL,
@@ -368,6 +395,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "사장님 — 불 앞에서",
     desc: "웍을 흔드는 진지한 표정",
     frame: "lifestyle",
+    fallbackQuery: "korean chef cooking wok flame stove kitchen steam",
     defaultGender: "male",
     defaultAge: "40s",
     promptEN: ({ gender, age, signatureMenu }) =>
@@ -381,6 +409,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "직원 — 음식 서빙",
     desc: "접시를 테이블로 옮기는 손",
     frame: "closeup",
+    fallbackQuery: "korean dish served hands plate wooden table steam close up",
     defaultGender: "any",
     defaultAge: "20s",
     promptEN: ({ signatureMenu }) =>
@@ -394,6 +423,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "손님 — 건배하는 순간",
     desc: "잔 부딪히는 손과 분위기",
     frame: "lifestyle",
+    fallbackQuery: "korean people toast glasses restaurant table evening candid",
     defaultGender: "any",
     defaultAge: "30s",
     promptEN: ({ gender, age }) =>
@@ -407,6 +437,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "대표 메뉴 클로즈업",
     desc: "김 오르는 한 그릇 (인물 없음)",
     frame: "closeup",
+    fallbackQuery: "korean dish ceramic bowl steam close up dark wood still life",
     promptEN: ({ signatureMenu }) =>
       `Close-up of ${signatureMenu ?? "a signature Korean dish"} freshly served in a ceramic bowl, gentle steam rising, ` +
       `rich texture and glistening surface, dark wooden table, dramatic warm side light, no people, ` + COMMON_TAIL,
@@ -420,6 +451,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "사장님 — 원두 고르는 손",
     desc: "로스팅 원두를 살피는 모습",
     frame: "closeup",
+    fallbackQuery: "roasted coffee beans hands cupping roastery close up",
     defaultGender: "male",
     defaultAge: "30s",
     promptEN: ({ gender, age }) =>
@@ -433,6 +465,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "바리스타 — 음료 건네는 손",
     desc: "완성 음료를 내미는 순간",
     frame: "closeup",
+    fallbackQuery: "coffee cup handed across wooden cafe counter close up",
     defaultGender: "any",
     defaultAge: "20s",
     promptEN: ({ signatureMenu }) =>
@@ -446,6 +479,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "손님 — 작업하는 오후",
     desc: "노트북과 커피 한 잔",
     frame: "lifestyle",
+    fallbackQuery: "korean person laptop cafe table coffee window candid",
     defaultGender: "any",
     defaultAge: "20s",
     promptEN: ({ gender, age }) =>
@@ -459,6 +493,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "음료 클로즈업 — 따르는 순간",
     desc: "잔에 부어지는 음료 (인물 없음)",
     frame: "closeup",
+    fallbackQuery: "iced coffee pouring glass ice splash marble still life no people",
     promptEN: ({ signatureMenu }) =>
       `Close-up of ${signatureMenu ?? "iced specialty coffee"} being poured into a glass with ice, splash and texture frozen in motion, ` +
       `marble surface, bright clean side light, no people, ` + COMMON_TAIL,
@@ -472,6 +507,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "데코레이션 손길",
     desc: "베리·금박 올리는 순간",
     frame: "closeup",
+    fallbackQuery: "pastry decorating berries tweezers cake marble close up",
     promptEN: ({ signatureMenu }) =>
       `Close-up of pastry chef's hands arranging fresh berries and edible flowers on top of ${signatureMenu ?? "a delicate cake"}, ` +
       `tweezers in hand, marble surface, soft daylight, ` + COMMON_TAIL,
@@ -483,6 +519,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "사장님 — 쇼케이스 앞",
     desc: "디저트 진열장 정리하는 모습",
     frame: "portrait",
+    fallbackQuery: "korean dessert shop owner woman pastry showcase pastel interior",
     defaultGender: "female",
     defaultAge: "30s",
     promptEN: ({ gender, age }) =>
@@ -496,6 +533,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "손님 — 함께 나누는 순간",
     desc: "두 손이 같은 접시로",
     frame: "lifestyle",
+    fallbackQuery: "korean people sharing dessert two forks plate cafe candid",
     defaultGender: "any",
     defaultAge: "20s",
     promptEN: ({ gender, age, signatureMenu }) =>
@@ -509,6 +547,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "디저트 클로즈업 — 단면",
     desc: "레이어가 보이는 한 컷 (인물 없음)",
     frame: "closeup",
+    fallbackQuery: "layered cake slice cross section ceramic plate marble still life",
     promptEN: ({ signatureMenu }) =>
       `Close-up cross-section of ${signatureMenu ?? "a layered cake slice"} on a ceramic plate, showing rich layers and texture, ` +
       `fresh fruit beside, soft natural light, marble surface, no people, ` + COMMON_TAIL,
@@ -522,6 +561,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "호스트 — 열쇠 건네는 손",
     desc: "체크인 환영 순간",
     frame: "closeup",
+    fallbackQuery: "brass key wooden tray hanok entrance hands close up",
     defaultGender: "female",
     defaultAge: "40s",
     promptEN: () =>
@@ -535,6 +575,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "차 내어주는 손",
     desc: "찻잔과 다과 준비",
     frame: "closeup",
+    fallbackQuery: "korean tea cup sweets wooden tray hanok floor hands close up",
     promptEN: () =>
       `Close-up of hands placing a traditional Korean tea cup and small sweets on a low wooden tray, ` +
       `hanok floor, dried flowers nearby, soft morning light, ` + COMMON_TAIL,
@@ -546,6 +587,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "손님 — 창밖 바라보며",
     desc: "한지창 앞 평화로운 순간",
     frame: "lifestyle",
+    fallbackQuery: "korean person hanok paper window tea cup linen morning calm",
     defaultGender: "any",
     defaultAge: "30s",
     promptEN: ({ gender, age }) =>
@@ -559,6 +601,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "공간 디테일 — 다탁",
     desc: "찻상과 햇살 (인물 없음)",
     frame: "closeup",
+    fallbackQuery: "korean tea table hanok still life ceramic tea set lattice shadow",
     promptEN: ({ signatureMenu }) =>
       `Close-up of a low wooden tea table with ${signatureMenu ? `${signatureMenu} and ` : ""}a ceramic tea set and a single dried flower, ` +
       `sunlight casting soft lattice shadows across a hanok floor, no people, ` + COMMON_TAIL,
@@ -572,6 +615,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "컬러 바르는 손",
     desc: "염색 브러시 작업 클로즈업",
     frame: "closeup",
+    fallbackQuery: "gloved hands color brush foils hair salon close up",
     promptEN: () =>
       `Close-up of a hair colorist's gloved hands applying color with a brush to sectioned hair, ` +
       `foils softly blurred, clean salon light, focus on precise motion, ` + COMMON_TAIL,
@@ -583,6 +627,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "드라이 마무리",
     desc: "브러시와 드라이어로 마무리",
     frame: "closeup",
+    fallbackQuery: "hair blow dry round brush dryer salon hands close up",
     promptEN: () =>
       `Close-up of a stylist's hands finishing a blow-dry with a round brush and hair dryer, ` +
       `soft flowing hair, warm salon light, mirrors blurred behind, ` + COMMON_TAIL,
@@ -594,6 +639,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "원장님 — 상담 중",
     desc: "거울 앞 스타일 상담",
     frame: "lifestyle",
+    fallbackQuery: "korean hair salon director woman mirror consulting minimalist interior",
     defaultGender: "female",
     defaultAge: "40s",
     promptEN: ({ gender, age }) =>
@@ -607,6 +653,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "손님 — 샴푸 받는 순간",
     desc: "눈 감고 이완된 표정",
     frame: "closeup",
+    fallbackQuery: "korean shampoo basin eyes closed relaxed salon close up",
     defaultGender: "any",
     defaultAge: "20s",
     promptEN: ({ gender, age }) =>
@@ -620,6 +667,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "제품 진열 — 케어 라인",
     desc: "헤어 제품만 (인물 없음)",
     frame: "overhead",
+    fallbackQuery: "hair care products bottles wooden comb marble counter overhead flat lay",
     promptEN: ({ signatureMenu }) =>
       `Overhead flat-lay of premium hair care products${signatureMenu ? ` featuring ${signatureMenu}` : ""} — bottles and a wooden comb — arranged on a clean marble counter, ` +
       `a folded linen towel and dried eucalyptus beside, soft daylight, no people, ` + COMMON_TAIL,
@@ -633,6 +681,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "사장님 — 포장하는 손",
     desc: "구매 상품을 정성껏 포장",
     frame: "closeup",
+    fallbackQuery: "hands wrapping item kraft paper twine boutique counter close up",
     defaultGender: "female",
     defaultAge: "30s",
     promptEN: ({ signatureMenu }) =>
@@ -646,6 +695,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "사장님 — 진열 매만지는 모습",
     desc: "선반 상품을 정돈",
     frame: "lifestyle",
+    fallbackQuery: "korean boutique owner woman arranging shelf lifestyle store warm light",
     defaultGender: "female",
     defaultAge: "40s",
     promptEN: ({ gender, age }) =>
@@ -659,6 +709,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "손님 — 제품 살펴보는 손",
     desc: "물건을 들어 살피는 순간",
     frame: "closeup",
+    fallbackQuery: "hands lifting handcrafted item boutique shelves close up",
     defaultGender: "any",
     defaultAge: "20s",
     promptEN: ({ signatureMenu }) =>
@@ -672,6 +723,7 @@ export const MODEL_SCENES: ModelScene[] = [
     title: "제품 디테일 클로즈업",
     desc: "질감이 보이는 한 컷 (인물 없음)",
     frame: "closeup",
+    fallbackQuery: "handcrafted product material texture linen surface dried flower still life",
     promptEN: ({ signatureMenu }) =>
       `Close-up of ${signatureMenu ?? "a handcrafted product"} showing rich material texture, resting on a soft neutral linen surface, ` +
       `dried flower beside, warm directional window light, no people, ` + COMMON_TAIL,
