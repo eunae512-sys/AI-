@@ -26,6 +26,7 @@ import { useBrand } from "@/components/brand/BrandProvider";
 import { useToast } from "@/components/ui/toast";
 import { NextStepCard } from "@/components/layout/RoadmapStrip";
 import { AiModelGenerator } from "@/components/ai-gen/AiModelGenerator";
+import { PosterStudio } from "@/components/ai-gen/PosterStudio";
 import { appendAiHashtag } from "@/lib/ai-gen/watermark";
 import type { Industry } from "@/lib/ai-gen/model-scenes";
 import { SAGE } from "@/lib/landing/tokens";
@@ -49,7 +50,7 @@ type Uploaded = {
   aiSceneTitle?: string;
 };
 
-type SourceMode = "upload" | "ai-model";
+type SourceMode = "upload" | "ai-model" | "poster";
 
 export function ShortsScreen() {
   const { brand, userBrand } = useBrand();
@@ -354,6 +355,19 @@ export function ShortsScreen() {
               AI 컷 생성
               <Badge tone="default" className="ml-1">신규</Badge>
             </button>
+            <button
+              onClick={() => setSourceMode("poster")}
+              className={cn(
+                "flex-1 px-3 py-2 rounded-md text-sm font-medium inline-flex items-center justify-center gap-1.5 transition-colors",
+                sourceMode === "poster"
+                  ? "bg-white dark:bg-zinc-950 shadow-sm text-zinc-900 dark:text-zinc-100"
+                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100",
+              )}
+            >
+              <Sparkles className="h-4 w-4" style={{ color: SAGE }} />
+              내 사진 → 포스터
+              <Badge tone="default" className="ml-1">신규</Badge>
+            </button>
           </div>
         )}
 
@@ -399,6 +413,25 @@ export function ShortsScreen() {
               });
               setResults(null);
               toast.success(`AI 컷 적용 — 톤을 골라 카피를 만들어보세요`);
+            }}
+          />
+        )}
+
+        {!file && sourceMode === "poster" && (
+          <PosterStudio
+            industry={brand.industry as Industry}
+            signatureMenu={isActiveUserBrand ? userBrand?.signatureMenu : undefined}
+            onGenerated={({ url, styleId }) => {
+              setFile({
+                url,
+                name: `poster-${styleId}.png`,
+                size: 0,
+                type: "image",
+                aiGenerated: true,
+                aiSceneTitle: "AI 포스터",
+              });
+              setResults(null);
+              toast.success("AI 포스터 적용 — 톤을 골라 카피를 만들어보세요");
             }}
           />
         )}
