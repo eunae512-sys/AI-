@@ -736,7 +736,7 @@ function LayoutPreview({
   if (layout === "menu") {
     return (
       <div className="absolute inset-0 flex flex-col" style={{ backgroundColor: PAPER }}>
-        <div className="h-[54%] overflow-hidden">
+        <div className="h-[50%] overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={image} alt="" className="h-full w-full object-cover" />
         </div>

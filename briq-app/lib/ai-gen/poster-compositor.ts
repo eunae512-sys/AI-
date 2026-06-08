@@ -55,7 +55,8 @@ const OUT_H = 1920;
 
 const SERIF_HANGUL_STACK =
   "'Nanum Myeongjo', 'Cormorant Garamond', 'Apple SD Gothic Neo', serif";
-const SANS_STACK = "'Pretendard', 'Apple SD Gothic Neo', sans-serif";
+const SANS_STACK =
+  "'Pretendard Variable', 'Pretendard', 'Apple SD Gothic Neo', sans-serif";
 const LATIN_SERIF_STACK = "'Cormorant Garamond', 'Nanum Myeongjo', serif";
 
 // PAPER #FAF7EE → rgba 헬퍼.
@@ -74,8 +75,8 @@ async function ensureFonts(): Promise<void> {
   const specs = [
     `700 96px 'Nanum Myeongjo'`,
     `800 96px 'Nanum Myeongjo'`,
-    `400 40px 'Pretendard'`,
-    `600 40px 'Pretendard'`,
+    `400 40px 'Pretendard Variable'`,
+    `600 40px 'Pretendard Variable'`,
     `600 40px 'Cormorant Garamond'`,
   ];
   try {
@@ -498,8 +499,8 @@ function drawMenu(
   ctx.fillStyle = PAPER;
   ctx.fillRect(0, 0, W, H);
 
-  // 상단 사진 ~54%.
-  const photoH = Math.round(H * 0.54);
+  // 상단 사진 ~50% (하단 메뉴 리스트 공간 확보 — 최대 5행).
+  const photoH = Math.round(H * 0.5);
   ctx.save();
   ctx.beginPath();
   ctx.rect(0, 0, W, photoH);
@@ -531,14 +532,14 @@ function drawMenu(
   y += Math.round(H * 0.01);
   ctx.fillStyle = accent;
   ctx.fillRect(marginX, y, Math.round(W * 0.1), Math.max(3, Math.round(W * 0.0045)));
-  y += Math.round(H * 0.035);
+  y += Math.round(H * 0.026);
 
   const items = (content.menuItems ?? [])
     .map((m) => ({ name: (m.name ?? "").trim(), desc: (m.desc ?? "").trim() }))
     .filter((m) => m.name.length > 0)
     .slice(0, 6);
 
-  const rowH = Math.round(H * 0.066);
+  const rowH = Math.round(H * 0.06);
   const namePx = Math.round(W * 0.038);
   const descPx = Math.round(W * 0.028);
 
