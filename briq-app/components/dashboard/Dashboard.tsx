@@ -116,7 +116,15 @@ function saveCover(brandId: string, pick: CoverPick) {
 // ─────────────────────────────────────────────────────────────
 
 export function DashboardScreen() {
-  const { brand } = useBrand();
+  const { brand, userBrands } = useBrand();
+
+  // 활성 브랜드의 온보딩 실데이터 — 멀티브랜드 정합(단일 primary 가 아니라 id 매칭).
+  const activeUser = React.useMemo(
+    () => userBrands.find((b) => b.id === brand.id) ?? null,
+    [userBrands, brand.id],
+  );
+  // 시그니처 메뉴 실입력이 있으면 today post 가 실데이터 기반, 없으면 시즌 추정(예시).
+  const isEstimated = !(activeUser?.signatureMenu && activeUser.signatureMenu.length > 0);
 
   const [tone, setTone] = React.useState<VoiceTone>(() => TONE_DEFAULT[brand.industry]);
   React.useEffect(() => {
@@ -129,8 +137,11 @@ export function DashboardScreen() {
 
   const [shop, setShop] = React.useState<ShopHand | null>(null);
   React.useEffect(() => {
-    setShop(getShopHand(brand, tone, new Date()));
-  }, [brand, tone]);
+    setShop(getShopHand(brand, tone, new Date(), {
+      signatureMenu: activeUser?.signatureMenu,
+      tagline: activeUser?.tagline,
+    }));
+  }, [brand, tone, activeUser]);
 
   // 표지 url — CoverStory 가 통지, InstagramMobilePreview 와 공유
   const [coverUrl, setCoverUrl] = React.useState<string | null>(null);
@@ -161,7 +172,7 @@ export function DashboardScreen() {
         <Masthead brand={brand} issueNumber={issueNumber} tone={tone} onToneChange={changeTone} />
         <AutomationStatus />
         <DivLine />
-        <CoverStory shop={shop} brand={brand} tone={tone} onCoverChange={setCoverUrl} />
+        <CoverStory shop={shop} brand={brand} tone={tone} estimated={isEstimated} onCoverChange={setCoverUrl} />
         <DivLine />
         <SuggestedMoves brand={brand} />
         <DivLine />
@@ -454,11 +465,14 @@ function CoverStory({
   shop,
   brand,
   tone,
+  estimated,
   onCoverChange,
 }: {
   shop: ShopHand;
   brand: Brand;
   tone: VoiceTone;
+  /** 시그니처 메뉴 실입력 없이 시즌 추천으로 도출된 예시 주제인지 — 정직성 라벨용 */
+  estimated?: boolean;
   /** 부모(Dashboard)에게 현재 표지 url 통지 — 모바일 미리보기와 공유 */
   onCoverChange?: (url: string | null) => void;
 }) {
@@ -644,7 +658,17 @@ function CoverStory({
           transition={{ duration: 0.6, delay: 0.1, ease: [0.2, 0.7, 0.2, 1] }}
           className="md:col-span-5 flex flex-col"
         >
-          <div className="editorial-label">Feature</div>
+          <div className="flex items-center gap-2">
+            <div className="editorial-label">Feature</div>
+            {estimated && (
+              <span
+                className="text-[10.5px] text-zinc-400 dark:text-zinc-500"
+                style={{ letterSpacing: "0.01em", wordBreak: "keep-all" }}
+              >
+                시즌 추천 기반 예시
+              </span>
+            )}
+          </div>
           <h2
             className="mt-3 text-[24px] sm:text-[28px] md:text-[32px] leading-[1.15] tracking-[-0.01em] text-zinc-900 dark:text-zinc-100"
             style={titleStyle(t)}
