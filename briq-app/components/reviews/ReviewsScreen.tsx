@@ -121,6 +121,15 @@ export function ReviewsScreen() {
       </div>
 
       {/* KPI strip */}
+      <div className="flex items-baseline gap-2 mb-2">
+        <div className="text-[10px] uppercase tracking-[0.15em] text-zinc-400 font-semibold">이번 달 요약</div>
+        <span
+          className="text-[10.5px] text-zinc-400"
+          style={{ letterSpacing: "0.01em", wordBreak: "keep-all" }}
+        >
+          예시 데이터 — 채널 연동 시 내 가게 실수치로
+        </span>
+      </div>
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-5">
         {kpis.map((k) => (
           <Card key={k.label} className="p-4">

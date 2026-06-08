@@ -169,7 +169,7 @@ export function buildDraftFromTopic(topic: string, kindOverride?: string, brand?
     channels: ["Instagram", "Naver Blog", "Story"],
     schedule: { startsAt: nextWeekday(), postsTotal: 4 },
     autoDecisions: [
-      { label: "발행 시간", value: "화·수 오전 11:48", note: "지난 4주 reach 1.6배" },
+      { label: "발행 시간", value: "화·수 오전 11:48", note: "점심 전 노출 골든타임" },
       { label: "후킹 패턴", value: hookPatternLabel(kind), note: "검증된 SMB 인스타 결" },
       { label: "해시태그", value: gen ? `${gen.marketing.hashtags.length}개 자동` : "12개 자동" },
       { label: "톤", value: "Editorial · 따뜻한 가게 톤" },

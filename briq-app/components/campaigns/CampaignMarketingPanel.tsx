@@ -39,12 +39,12 @@ export function CampaignMarketingPanel({ marketing }: { marketing: CardnewsMarke
         <div className="editorial-label mb-3">예상 지표</div>
         <dl className="grid grid-cols-2 gap-x-0 gap-y-5 border-y border-zinc-200 dark:border-zinc-800 py-5">
           <Metric label="저장률" value={marketing.expectedMetrics.saveRate} hint="우리 가게 평균 대비" />
-          <Metric label="공유율" value={marketing.expectedMetrics.shareRate} hint="인스타 평균 1.2%" border />
+          <Metric label="공유율" value={marketing.expectedMetrics.shareRate} hint="인스타 일반 대비" border />
           <Metric label="댓글" value={marketing.expectedMetrics.comments} hint="발행 24시간 안" />
           <Metric label="팔로우 전환" value={marketing.expectedMetrics.followConv} hint="저장→팔로우" border />
         </dl>
         <p className="mt-3 text-[10.5px] text-zinc-400 leading-relaxed">
-          최근 4주 발행 데이터 + 후킹 공식 보정. 발행 12시간 안 한 번 보정됩니다.
+          후킹 공식 기반 예상치예요. 발행 12시간 안에 실제 반응으로 한 번 보정됩니다.
         </p>
       </div>
     </div>
