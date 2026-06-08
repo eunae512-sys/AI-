@@ -18,6 +18,7 @@ import {
 } from "@/lib/dummy/today-shift";
 import { InstagramMobilePreview } from "@/components/dashboard/InstagramMobilePreview";
 import { cn } from "@/lib/utils";
+import { getSeasonContext } from "@/lib/content/season";
 
 // ─────────────────────────────────────────────────────────────
 // 매거진 발행 톤 대시보드
@@ -324,6 +325,13 @@ type SuggestedMove = { id: string; title: string; desc: string; kind?: string };
 
 function suggestionsForIndustry(industry: Brand["industry"], brandName: string): SuggestedMove[] {
   const name = brandName.replace(/\s.*$/, "");
+  const { seasonKey, seasonLabel } = getSeasonContext();
+  const seasonHint: Record<"spring" | "summer" | "autumn" | "winter", string> = {
+    spring: "봄나들이·어버이날",
+    summer: "여름 휴가·장마",
+    autumn: "추석·단풍",
+    winter: "연말·크리스마스",
+  };
   const generic: SuggestedMove[] = [
     {
       id: "new-menu",
@@ -351,9 +359,9 @@ function suggestionsForIndustry(industry: Brand["industry"], brandName: string):
     },
     {
       id: "event",
-      title: "이번 시즌 이벤트",
+      title: `${seasonLabel} 시즌 이벤트`,
       kind: "시즌",
-      desc: "어버이날·여름 휴가·크리스마스 등 시즌별 자연스러운 이벤트 안내. 광고티 없이.",
+      desc: `${seasonLabel} 제철·이벤트(${seasonHint[seasonKey]})를 광고티 없이 자연스럽게 안내.`,
     },
     {
       id: "revisit",
