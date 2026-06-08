@@ -55,6 +55,8 @@ export type TodayPost = {
   channelLabel: string;
   reasoning: string;
   titleFont?: "serif" | "sans";
+  /** 주제 도출 출처 — 정직성 라벨용 (menu=실입력, campaign=캠페인, season=시즌 추정) */
+  source: SubjectSource;
 };
 
 export type WeekDay = {
@@ -511,6 +513,7 @@ export function getShopHand(
     channelLabel: "인스타그램",
     reasoning: pick.reasoning,
     titleFont: pick.titleFont,
+    source: rs.source,
   };
 
   return {

@@ -665,7 +665,7 @@ function CoverStory({
                 className="text-[10.5px] text-zinc-400 dark:text-zinc-500"
                 style={{ letterSpacing: "0.01em", wordBreak: "keep-all" }}
               >
-                시즌 추천 기반 예시
+                {t.source === "campaign" ? "진행 중인 캠페인 기반" : "시즌 추천 · 예시"}
               </span>
             )}
           </div>
