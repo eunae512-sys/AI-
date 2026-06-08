@@ -30,12 +30,25 @@ import {
   getPosterStyles,
   type PosterStyle,
 } from "@/lib/ai-gen/poster-templates";
+import { composePoster } from "@/lib/ai-gen/poster-compositor";
 import { applyAiWatermark, buildAiMeta } from "@/lib/ai-gen/watermark";
-import { SAGE, INK, INK_MUTE, RULE, PAPER_HOVER } from "@/lib/landing/tokens";
+import {
+  SAGE,
+  INK,
+  INK_SOFT,
+  INK_MUTE,
+  RULE,
+  PAPER_HOVER,
+  SERIF_HANGUL,
+} from "@/lib/landing/tokens";
 
 type Props = {
   industry: Industry;
   signatureMenu?: string[];
+  /** 가게명 — 제목 프리필 폴백 */
+  brandName?: string;
+  /** 태그라인/한 줄 소개 — 부제 프리필 */
+  tagline?: string;
   /** 외부에서 미리 넣어줄 사진(data URL) — 있으면 업로드 단계 생략 */
   initialImage?: string;
   onGenerated: (r: { url: string; styleId: string; meta: unknown }) => void;
@@ -57,6 +70,8 @@ const ACCENT_SWATCHES: { label: string; value: string; swatch: string }[] = [
 export function PosterStudio({
   industry,
   signatureMenu,
+  brandName,
+  tagline,
   initialImage,
   onGenerated,
   onClose,
@@ -73,12 +88,27 @@ export function PosterStudio({
   const [accentColor, setAccentColor] = React.useState<string>("");
   const [handwriting, setHandwriting] = React.useState(false);
   const [generating, setGenerating] = React.useState(false);
+  const [composing, setComposing] = React.useState(false);
   const [preview, setPreview] = React.useState<string | null>(null);
   const [previewStyle, setPreviewStyle] = React.useState<PosterStyle | null>(null);
+
+  // 앱이 얹을 한글 텍스트 — 실제 브랜드 데이터로 프리필(정직성: 사용자/실데이터만).
+  const [title, setTitle] = React.useState<string>(
+    () => signatureMenu?.[0] || brandName || "",
+  );
+  const [subtitle, setSubtitle] = React.useState<string>(() => tagline || "");
 
   React.useEffect(() => {
     setStyle(styles[0]);
   }, [styles]);
+
+  // 브랜드 컨텍스트 바뀌면 프리필 갱신(사용자가 손대기 전까지).
+  React.useEffect(() => {
+    setTitle(signatureMenu?.[0] || brandName || "");
+  }, [signatureMenu, brandName]);
+  React.useEffect(() => {
+    setSubtitle(tagline || "");
+  }, [tagline]);
 
   const readFile = async (f: File) => {
     if (!f.type.startsWith("image/")) {
@@ -109,10 +139,10 @@ export function PosterStudio({
     setGenerating(true);
     setPreview(null);
     try {
+      // 글자 없는 변환 프롬프트 — signature/handwriting 텍스트 인자 제거(깨진 글자 원인).
+      // 한글 텍스트는 합성 단계(composePoster)에서 정확한 폰트로 얹는다.
       const prompt = style.prompt({
         accentColor: accentColor || undefined,
-        handwriting,
-        signature: signatureMenu?.[0],
       });
       const res = await fetch("/api/generate-poster", {
         method: "POST",
@@ -131,14 +161,9 @@ export function PosterStudio({
         toast.warn(data?.error || "AI 포스터 편집에 실패했어요. 다시 시도해주세요.");
         return;
       }
-      let finalUrl = data.image as string;
-      try {
-        finalUrl = await applyAiWatermark(data.image, { position: "bottom-right" });
-      } catch (we) {
-        console.warn("[poster-watermark] fallback to original:", (we as Error).message);
-        toast.info("워터마크 부착은 발행 시점에 자동 재시도됩니다");
-      }
-      setPreview(finalUrl);
+      // 미리보기는 *글자 없는* AI 원본 — 그 위에 제목/부제를 DOM 오버레이로 표시.
+      // 최종 합성(텍스트+워터마크)은 "이 포스터 사용" 시 canvas 로 수행.
+      setPreview(data.image as string);
       setPreviewStyle(style);
       toast.success(`AI 포스터 완성 · 약 ${COST_KRW}원 사용`);
     } catch (e) {
@@ -148,17 +173,52 @@ export function PosterStudio({
     }
   };
 
-  const useThis = () => {
+  const useThis = async () => {
     if (!preview || !previewStyle) return;
-    onGenerated({
-      url: preview,
-      styleId: previewStyle.id,
-      meta: buildAiMeta({
-        id: previewStyle.id,
-        title: previewStyle.label,
-        industry,
-      }),
-    });
+    setComposing(true);
+    try {
+      // 1) AI 이미지 + 정확한 한글 텍스트 → 단일 PNG (canvas).
+      //    텍스트가 비어 있으면 이미지 그대로 반환.
+      let composed = preview;
+      try {
+        composed = await composePoster({
+          imageSrc: preview,
+          title: title.trim() || undefined,
+          subtitle: subtitle.trim() || undefined,
+          zone: previewStyle.textZone,
+          handwriting,
+          accentColor: accentColor || undefined,
+        });
+      } catch (ce) {
+        console.warn("[poster-compose] fallback to AI image:", (ce as Error).message);
+      }
+      // 2) KFTC AI 라벨 워터마크(우하단).
+      let finalUrl = composed;
+      try {
+        finalUrl = await applyAiWatermark(composed, { position: "bottom-right" });
+      } catch (we) {
+        console.warn("[poster-watermark] fallback:", (we as Error).message);
+        toast.info("워터마크 부착은 발행 시점에 자동 재시도됩니다");
+      }
+      onGenerated({
+        url: finalUrl,
+        styleId: previewStyle.id,
+        meta: buildAiMeta({
+          id: previewStyle.id,
+          title: previewStyle.label,
+          industry,
+        }),
+      });
+    } finally {
+      setComposing(false);
+    }
+  };
+
+  // 미리보기 텍스트 오버레이 위치 — textZone → flex 정렬.
+  const overlayJustify = (zone: PosterStyle["textZone"]): string => {
+    if (zone === "top") return "flex-start";
+    if (zone === "bottom") return "flex-end";
+    return "flex-end"; // lower-third — 아래쪽
   };
 
   return (
@@ -286,7 +346,35 @@ export function PosterStudio({
         </div>
       )}
 
-      {/* 3) 옵션 (접이식) */}
+      {/* 3) 포스터 텍스트 — 앱이 정확한 폰트로 얹는 한글(편집 가능, 실데이터 프리필) */}
+      {image && (
+        <div className="space-y-2">
+          <div className="text-xs font-semibold" style={{ color: INK }}>
+            포스터 글자 — 정확한 한글로 얹어요
+          </div>
+          <p className="text-[11px]" style={{ color: INK_MUTE }}>
+            AI 이미지엔 글자를 안 그려요(깨짐 방지). 아래 제목·부제를 앱이 또렷한 폰트로 합성합니다.
+          </p>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="제목 — 가게명/메뉴 (예: 윤안당)"
+            className="w-full px-3 py-2 text-sm border outline-none"
+            style={{ borderColor: RULE, color: INK, backgroundColor: "transparent" }}
+          />
+          <input
+            type="text"
+            value={subtitle}
+            onChange={(e) => setSubtitle(e.target.value)}
+            placeholder="부제 — 한 줄 소개 (선택)"
+            className="w-full px-3 py-2 text-sm border outline-none"
+            style={{ borderColor: RULE, color: INK, backgroundColor: "transparent" }}
+          />
+        </div>
+      )}
+
+      {/* 4) 옵션 (접이식) */}
       {image && (
         <div className="border" style={{ borderColor: RULE }}>
           <button
@@ -337,7 +425,7 @@ export function PosterStudio({
                   onChange={(e) => setHandwriting(e.target.checked)}
                   className="accent-current"
                 />
-                제목·라벨 일부를 감성 손글씨 스타일로
+                제목 손글씨 느낌 (영문·숫자에만 — 한글은 명조 유지)
               </label>
             </div>
           )}
@@ -366,8 +454,20 @@ export function PosterStudio({
             )}
           </Button>
           {preview && (
-            <Button onClick={useThis} variant="default" className="h-11 px-5">
-              이 포스터 사용
+            <Button
+              onClick={useThis}
+              variant="default"
+              disabled={composing}
+              className="h-11 px-5"
+            >
+              {composing ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  합성 중
+                </>
+              ) : (
+                "이 포스터 사용"
+              )}
             </Button>
           )}
         </div>
@@ -389,6 +489,56 @@ export function PosterStudio({
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={preview} alt={previewStyle.label} className="h-full w-full object-cover" />
+                  {/* 라이브 텍스트 오버레이 — 앱이 얹을 한글 미리보기(최종은 canvas 합성).
+                      한글 명조 upright(철칙: italic 금지). 위치=textZone. */}
+                  {(title.trim() || subtitle.trim()) && (
+                    <div
+                      className="absolute inset-0 flex flex-col px-3 py-4 pointer-events-none"
+                      style={{ justifyContent: overlayJustify(previewStyle.textZone) }}
+                    >
+                      <div
+                        className="px-2.5 py-2"
+                        style={{ backgroundColor: "rgba(250,247,238,0.86)" }}
+                      >
+                        {accentColor && (
+                          <span
+                            className="block mb-1"
+                            style={{
+                              width: "2.2rem",
+                              height: "2px",
+                              backgroundColor: SAGE,
+                            }}
+                          />
+                        )}
+                        {title.trim() && (
+                          <div
+                            className="leading-tight"
+                            style={{
+                              fontFamily: SERIF_HANGUL,
+                              fontWeight: 700,
+                              fontSize: "1.05rem",
+                              color: INK,
+                              wordBreak: "keep-all",
+                            }}
+                          >
+                            {title.trim()}
+                          </div>
+                        )}
+                        {subtitle.trim() && (
+                          <div
+                            className="mt-0.5 leading-snug"
+                            style={{
+                              fontSize: "0.72rem",
+                              color: INK_SOFT,
+                              wordBreak: "keep-all",
+                            }}
+                          >
+                            {subtitle.trim()}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-2 min-w-0">
                   <div className="flex flex-wrap gap-1.5">
