@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Onboarding } from "@/components/onboarding/Onboarding";
+import { BrandProvider } from "@/components/brand/BrandProvider";
 
 export const metadata: Metadata = {
   title: "시작하기",
@@ -13,7 +14,10 @@ export default function OnboardingPage() {
   // useSearchParams 사용 시 Suspense 안에서만 안전 (prerender 깨짐 방지)
   return (
     <Suspense fallback={null}>
-      <Onboarding />
+      {/* Onboarding 이 useBrand(addBrand)를 사용 → (app) 레이아웃 밖이라 Provider 직접 래핑 */}
+      <BrandProvider>
+        <Onboarding />
+      </BrandProvider>
     </Suspense>
   );
 }
