@@ -529,6 +529,7 @@ export function ShortsScreen() {
                   filePreview={file}
                   onCopy={copyText}
                   copiedKey={copiedKey}
+                  brandColor={brand.brandColors?.primary}
                 />
               );
             })}
@@ -628,12 +629,14 @@ function PlatformCard({
   filePreview,
   onCopy,
   copiedKey,
+  brandColor,
 }: {
   result: PlatformOutput;
   meta: (typeof PLATFORMS)[number];
   filePreview: Uploaded | null;
   onCopy: (text: string, key: string) => void;
   copiedKey: string | null;
+  brandColor?: string;
 }) {
   const fullText = `${result.title}\n\n${result.caption}\n\n${result.hashtags.join(" ")}`;
 
@@ -665,16 +668,24 @@ function PlatformCard({
             <img src={filePreview.url} alt="" className="h-full w-full object-cover" />
           )}
           {/* 하단 스크림 — 어떤 사진에서도 자막이 읽히도록 */}
-          <div className="absolute inset-x-0 bottom-0 h-[55%] bg-gradient-to-t from-black/80 via-black/35 to-transparent pointer-events-none" />
-          {/* 번인 자막 — 중앙 정렬·하단 안전영역·어절 보존 */}
-          <div className="absolute inset-x-0 bottom-0 px-3 pb-4 pointer-events-none">
+          <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none" />
+          {/* 번인 자막 — 썸네일형 임팩트(굵은 아웃라인·브랜드 액센트 바·중앙) */}
+          <div className="absolute inset-x-0 bottom-0 px-2.5 pb-4 flex flex-col items-center pointer-events-none">
+            <span
+              className="mb-1.5 block h-[3px] w-8 rounded-full"
+              style={{ background: brandColor ?? "#4F5F4B" }}
+            />
             <p
-              className="text-center text-white text-[13px] font-semibold leading-snug"
+              className="text-center text-white leading-[1.12]"
               style={{
+                fontSize: "16px",
+                fontWeight: 900,
                 wordBreak: "keep-all",
                 textWrap: "balance",
-                letterSpacing: "0.01em",
-                textShadow: "0 1px 8px rgba(0,0,0,0.6)",
+                letterSpacing: "-0.02em",
+                textShadow: "0 2px 6px rgba(0,0,0,0.55), 0 0 1px rgba(0,0,0,0.95)",
+                WebkitTextStroke: "0.7px rgba(0,0,0,0.5)",
+                paintOrder: "stroke fill",
               }}
             >
               {result.subtitle}
