@@ -479,9 +479,17 @@ ${buildViralMandate({ voice, platform: "naver" })}`;
     }
     if (!bodyText) {
       // 주 프로바이더(Gemini) 에러를 우선 노출 — OpenAI 쿼터는 영구 소진이라 정보가치 낮음
-      const errMsg = geminiMsg || lastMsg || "본문 생성 실패";
+      const rawMsg = geminiMsg || lastMsg || "본문 생성 실패";
       const errStatus = geminiStatus || lastStatus;
-      return NextResponse.json({ ok: false, error: errMsg }, { status: errStatus });
+      console.error("[blog-gen] 최종 실패", errStatus, rawMsg.slice(0, 200));
+      // 사용자에게는 원시 JSON 대신 친화 한국어 안내(원본은 위 로그에만).
+      const friendly =
+        errStatus === 503 || /unavailable|overload|high demand|try again/i.test(rawMsg)
+          ? "AI 서버가 잠시 혼잡해요. 30초쯤 뒤 다시 시도해 주세요."
+          : errStatus === 429 || /quota|resource_exhausted|rate.?limit/i.test(rawMsg)
+            ? "지금 AI 사용량이 많아 잠시 제한됐어요. 잠시 후 다시 시도해 주세요."
+            : "본문 생성에 실패했어요. 잠시 후 다시 시도해 주세요.";
+      return NextResponse.json({ ok: false, error: friendly }, { status: errStatus });
     }
 
     // 자동 확장 — 첫 응답이 목표의 70% 미만이면 한 번만 retry 로 늘림

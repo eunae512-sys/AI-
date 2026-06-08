@@ -24,6 +24,29 @@ export type GeminiJsonResult = {
 const RATE_IN = 0.3;
 const RATE_OUT = 2.5;
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * 일시적(transient) Gemini 오류인지 — 재시도하면 풀릴 가능성이 높은 것만.
+ * 503(과부하·UNAVAILABLE)·500(internal)·"high demand/overload/try again" 메시지.
+ * 쿼터/billing(영구) 은 제외 — 빨리 OpenAI 폴백으로 넘겨야 하므로 재시도하지 않는다.
+ */
+export function isGeminiTransient(e: unknown): boolean {
+  if (isGeminiQuotaError(e)) return false; // 쿼터/레이트리밋은 일시 재시도 대상 아님
+  const err = e as { status?: number; code?: number; message?: string };
+  const status = err?.status ?? err?.code ?? 0;
+  const m = (err?.message ?? String(e)).toLowerCase();
+  return (
+    status === 503 ||
+    status === 500 ||
+    m.includes("unavailable") ||
+    m.includes("overload") ||
+    m.includes("high demand") ||
+    m.includes("try again later") ||
+    m.includes("internal error")
+  );
+}
+
 export async function geminiGenerateJson(opts: {
   system: string;
   user: string;
@@ -36,20 +59,36 @@ export async function geminiGenerateJson(opts: {
   const ai = new GoogleGenAI({ apiKey });
   const started = Date.now();
 
-  const res = await ai.models.generateContent({
-    model,
-    contents: opts.user,
-    config: {
-      systemInstruction: opts.system,
-      responseMimeType: "application/json",
-      temperature: opts.temperature ?? 0.7,
-      // 긴 본문(블로그 2000~3000자)이 JSON 중간에 잘려 파싱 실패하지 않도록 충분히 확보
-      maxOutputTokens: opts.maxOutputTokens ?? 8192,
-      // gemini-2.5-flash 는 thinking 토큰이 maxOutputTokens 예산을 잠식 → 긴 본문이 잘림.
-      // 구조화 카피/본문 생성엔 추론 불필요하므로 thinking 끔(출력 예산 확보 + 속도/비용↓).
-      thinkingConfig: { thinkingBudget: 0 },
-    },
-  });
+  // 일시 오류(503 과부하 등) 재시도 — 최대 3회, backoff 500ms·1000ms.
+  // 쿼터/billing·파싱 실패는 재시도 없이 즉시 throw(영구 오류 → 빠른 폴백).
+  const MAX_ATTEMPTS = 3;
+  let res: Awaited<ReturnType<typeof ai.models.generateContent>> | undefined;
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    try {
+      res = await ai.models.generateContent({
+        model,
+        contents: opts.user,
+        config: {
+          systemInstruction: opts.system,
+          responseMimeType: "application/json",
+          temperature: opts.temperature ?? 0.7,
+          // 긴 본문(블로그 2000~3000자)이 JSON 중간에 잘려 파싱 실패하지 않도록 충분히 확보
+          maxOutputTokens: opts.maxOutputTokens ?? 8192,
+          // gemini-2.5-flash 는 thinking 토큰이 maxOutputTokens 예산을 잠식 → 긴 본문이 잘림.
+          // 구조화 카피/본문 생성엔 추론 불필요하므로 thinking 끔(출력 예산 확보 + 속도/비용↓).
+          thinkingConfig: { thinkingBudget: 0 },
+        },
+      });
+      break;
+    } catch (e) {
+      if (isGeminiTransient(e) && attempt < MAX_ATTEMPTS - 1) {
+        await sleep(500 * 2 ** attempt); // 500ms, 1000ms
+        continue;
+      }
+      throw e;
+    }
+  }
+  if (!res) throw new Error(`Gemini(${model}) 응답 없음`);
 
   const text = (res.text ?? "").trim();
   if (!text) throw new Error(`Gemini(${model}) 빈 응답`);
