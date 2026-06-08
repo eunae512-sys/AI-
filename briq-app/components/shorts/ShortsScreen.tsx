@@ -421,6 +421,8 @@ export function ShortsScreen() {
           <PosterStudio
             industry={brand.industry as Industry}
             signatureMenu={isActiveUserBrand ? userBrand?.signatureMenu : undefined}
+            brandName={brand.name}
+            tagline={tagline}
             onGenerated={({ url, styleId }) => {
               setFile({
                 url,
