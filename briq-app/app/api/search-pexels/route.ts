@@ -217,13 +217,27 @@ export async function POST(req: NextRequest) {
     const filtered = allowPeople ? scored : scored.filter((s) => s.score > -20);
     const pool = filtered.length > 0 ? filtered : scored;
 
-    // pickIndex 명시되면 그대로, 아니면 top 5 중 랜덤 (다양성 + 품질)
+    // pickIndex 명시되면 그대로.
+    // 아니면 top 5 중 — slideId 가 유효 정수면 결정적 오프셋(슬라이드 간 분산·랜덤 충돌 회귀 방지),
+    // slideId·pickIndex 둘 다 없을 때만 랜덤(다양성).
+    const slideIdNum =
+      typeof slideId === "number"
+        ? slideId
+        : typeof slideId === "string" && /^-?\d+$/.test(slideId.trim())
+          ? Number(slideId.trim())
+          : null;
     let pick;
     if (pickIndex >= 0 && pickIndex < photos.length) {
       pick = photos[pickIndex];
     } else {
       const topN = pool.slice(0, Math.min(5, pool.length));
-      pick = topN[Math.floor(Math.random() * topN.length)].p;
+      if (slideIdNum !== null) {
+        // 결정적: slideId 기반 모듈로 오프셋 (1-based slideId 가정, 음수도 안전 처리)
+        const offset = ((Math.trunc(slideIdNum) - 1) % topN.length + topN.length) % topN.length;
+        pick = topN[offset].p;
+      } else {
+        pick = topN[Math.floor(Math.random() * topN.length)].p;
+      }
     }
     const imageUrl = pick.src.large2x || pick.src.large || pick.src.original;
 

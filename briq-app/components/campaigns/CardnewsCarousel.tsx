@@ -255,36 +255,68 @@ export function CardnewsCarousel({ slides: initialSlides, industry, brandId, bra
   );
   React.useEffect(() => {
     let cancelled = false;
-    const tasks = initialSlides.map(async (s, idx) => {
-      try {
-        const q = s.imageQuery ?? buildEditorialQuery(s.caption, industry);
-        const r = await fetch("/api/search-pexels", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            query: q,
-            orientation: "portrait",
-            perPage: 24,
-            allowPeople: false,
-            slideId: s.n,
-          }),
-        });
-        const data = await r.json();
-        if (cancelled || !data.ok || !data.image) return;
-        setSlides((prev) => {
-          const next = [...prev];
-          // 사용자가 SlideImagePicker 로 직접 픽한 이미지가 있으면 (data URL / upload) 덮어쓰지 않음.
-          // 캡션이 같은 prev slide 의 cover 가 같은 도메인(pexels)이면 새 쿼리 결과로 교체.
+    // 슬라이드 간 사진 중복 제거 — 2-pass:
+    //  1) 병렬: 각 슬라이드의 후보 풀(returnCandidates)을 모은다.
+    //  2) 단일 동기 패스: used Set 으로 슬라이드 순서대로 distinct 배정.
+    const run = async () => {
+      // 1차: 슬라이드별 후보 url 풀 수집 (병렬)
+      const pools: string[][] = await Promise.all(
+        initialSlides.map(async (s) => {
+          try {
+            const q = s.imageQuery ?? buildEditorialQuery(s.caption, industry);
+            const r = await fetch("/api/search-pexels", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                query: q,
+                orientation: "portrait",
+                perPage: 30,
+                allowPeople: false,
+                slideId: s.n,
+                returnCandidates: true,
+                candidateCount: 9,
+              }),
+            });
+            const data = await r.json();
+            if (!data?.ok) return [];
+            const urls: string[] = Array.isArray(data.candidates)
+              ? data.candidates.map((c: { url?: string }) => c?.url).filter(Boolean)
+              : [];
+            if (urls.length) return urls;
+            return typeof data.image === "string" && data.image ? [data.image] : [];
+          } catch {
+            return [];
+          }
+        }),
+      );
+      if (cancelled) return;
+
+      // 2차: distinct 배정 (단일 동기 패스)
+      const allUrls = pools.flat();
+      const used = new Set<string>();
+      const assigned: (string | undefined)[] = pools.map((pool) => {
+        // 자기 풀에서 used 에 없는 첫 url
+        const own = pool.find((u) => !used.has(u));
+        const pick = own ?? allUrls.find((u) => !used.has(u));
+        if (pick) used.add(pick);
+        return pick;
+      });
+
+      // state 반영 — race 방지 위해 한 번에 setSlides
+      setSlides((prev) => {
+        const next = [...prev];
+        for (let idx = 0; idx < next.length; idx++) {
+          const url = assigned[idx];
+          if (!url) continue; // 빈 풀 / 배정 실패 — 기존 cover 유지
           const existing = next[idx];
-          if (existing?.cover && !existing.cover.startsWith("http")) return prev; // 업로드된 data URL 보존
-          next[idx] = { ...existing, cover: data.image };
-          return next;
-        });
-      } catch {
-        // 무시
-      }
-    });
-    Promise.allSettled(tasks);
+          // 사용자가 SlideImagePicker 로 직접 픽한 이미지(data URL / upload)는 덮어쓰지 않음.
+          if (existing?.cover && !existing.cover.startsWith("http")) continue;
+          next[idx] = { ...existing, cover: url };
+        }
+        return next;
+      });
+    };
+    run();
     return () => {
       cancelled = true;
     };
