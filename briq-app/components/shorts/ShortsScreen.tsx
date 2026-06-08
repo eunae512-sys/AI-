@@ -530,6 +530,7 @@ export function ShortsScreen() {
                   onCopy={copyText}
                   copiedKey={copiedKey}
                   brandColor={brand.brandColors?.primary}
+                  brandName={brand.name}
                 />
               );
             })}
@@ -630,6 +631,7 @@ function PlatformCard({
   onCopy,
   copiedKey,
   brandColor,
+  brandName,
 }: {
   result: PlatformOutput;
   meta: (typeof PLATFORMS)[number];
@@ -637,6 +639,7 @@ function PlatformCard({
   onCopy: (text: string, key: string) => void;
   copiedKey: string | null;
   brandColor?: string;
+  brandName?: string;
 }) {
   const fullText = `${result.title}\n\n${result.caption}\n\n${result.hashtags.join(" ")}`;
 
@@ -667,29 +670,44 @@ function PlatformCard({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={filePreview.url} alt="" className="h-full w-full object-cover" />
           )}
-          {/* 하단 스크림 — 사진과 자막 분리 */}
-          <div className="absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
-          {/* 번인 자막 — 광고 포스터형: 명조 디스플레이 + 브랜드 컬러 하이라이트 밴드 */}
+          {/* 하단 스크림 — 사진과 자막 분리(밝은 사진서도 헤드라인 가독) */}
+          <div className="absolute inset-x-0 bottom-0 h-[64%] bg-gradient-to-t from-black/78 via-black/28 to-transparent pointer-events-none" />
+          {/* 번인 자막 — 광고 포스터형 에디토리얼 락업: 아이브로 + 브랜드 컬러 룰 + 명조 헤드라인 */}
           <div className="absolute inset-x-0 bottom-0 px-3 pb-5 text-center pointer-events-none">
+            {brandName && (
+              <div
+                style={{
+                  fontFamily: "'Cormorant Garamond', 'Nanum Myeongjo', serif",
+                  fontSize: "9px",
+                  fontWeight: 600,
+                  letterSpacing: "0.16em",
+                  color: "#FAF7EE",
+                  opacity: 0.85,
+                  textShadow: "0 1px 6px rgba(0,0,0,0.6)",
+                }}
+              >
+                {brandName}
+              </div>
+            )}
             <span
+              className="mx-auto my-1.5 block rounded-full"
+              style={{ height: "2px", width: "18px", background: brandColor ?? "#4F5F4B" }}
+            />
+            <p
               style={{
                 fontFamily: "'Nanum Myeongjo', serif",
-                fontSize: "20px",
+                fontSize: "19px",
                 fontWeight: 800,
-                lineHeight: 1.5,
+                lineHeight: 1.34,
                 wordBreak: "keep-all",
                 textWrap: "balance",
                 letterSpacing: "-0.01em",
                 color: "#FAF7EE",
-                background: brandColor ?? "#4F5F4B",
-                boxDecorationBreak: "clone",
-                WebkitBoxDecorationBreak: "clone",
-                padding: "3px 9px",
-                boxShadow: "0 3px 14px rgba(0,0,0,0.4)",
+                textShadow: "0 2px 12px rgba(0,0,0,0.6), 0 0 2px rgba(0,0,0,0.7)",
               }}
             >
               {result.subtitle}
-            </span>
+            </p>
           </div>
         </div>
       )}
