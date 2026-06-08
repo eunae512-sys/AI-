@@ -42,9 +42,9 @@ const ageDescriptor = (age?: ModelAge): string => {
 
 const genderDescriptor = (gender?: ModelGender): string => {
   switch (gender) {
-    case "female": return "a Korean woman with East Asian features";
-    case "male": return "a Korean man with East Asian features";
-    default: return "a Korean person with East Asian features";
+    case "female": return "a South Korean woman, East Asian ethnicity with black hair and Korean facial features";
+    case "male": return "a South Korean man, East Asian ethnicity with black hair and Korean facial features";
+    default: return "a South Korean person, East Asian ethnicity with black hair and Korean facial features";
   }
 };
 
@@ -54,6 +54,7 @@ const COMMON_TAIL =
   "subject face partially obscured or three-quarter angle for privacy, " +
   "muted earth tones, warm color grading, 9:16 vertical composition with negative space at top for overlay text. " +
   "Authentic, unstaged feel — not stock photo. " +
+  "CRITICAL: EVERY person in the image is Korean — East Asian ethnicity, black hair, Korean facial features. Absolutely no Western, Caucasian, or non-Asian people. " +
   "CRITICAL: no Korean text, no signage, no logos, no captions, no brand marks in the image.";
 
 export const MODEL_SCENES: ModelScene[] = [
