@@ -152,11 +152,13 @@ export function BlogScreen() {
   const { lastSavedAt } = useAutoSaveDraft({
     scope: "blog",
     brandId: brand.id,
-    value: { topic, body, activePreset },
+    // serp(네이버 노출 분석)도 함께 저장 → 새로고침/재진입 시 본문뿐 아니라 분석 패널까지 복원.
+    value: { topic, body, activePreset, serp },
     onRestore: (draft) => {
       if (typeof draft.topic === "string") setTopic(draft.topic);
       if (typeof draft.body === "string") setBody(draft.body);
       if (typeof draft.activePreset === "number") setActivePreset(draft.activePreset);
+      if (draft.serp && typeof draft.serp === "object") setSerp(draft.serp as SerpResult);
       restoredBrandRef.current = brand.id; // 이 브랜드는 초안이 복원됨 → 리셋 금지
     },
   });
