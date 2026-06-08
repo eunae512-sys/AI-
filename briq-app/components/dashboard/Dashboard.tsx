@@ -199,7 +199,17 @@ function AutomationStatus() {
   return (
     <section className="py-8 sm:py-10">
       <div className="flex items-baseline justify-between mb-4">
-        <div className="editorial-label">Auto operations · live</div>
+        <div className="flex items-baseline gap-2">
+          <div className="editorial-label">Auto operations</div>
+          {!isFresh && (
+            <span
+              className="text-[10.5px] text-zinc-400 dark:text-zinc-500"
+              style={{ letterSpacing: "0.01em", wordBreak: "keep-all" }}
+            >
+              예시 데이터
+            </span>
+          )}
+        </div>
         <Link
           href="/automation"
           className="text-[11.5px] text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors underline underline-offset-4 decoration-[0.5px]"
@@ -227,7 +237,7 @@ function AutomationStatus() {
           <StatusBlock label="다음 발행 준비" value="완료" sub="오늘 오후 7:12" />
           <StatusBlock label="이번 주 예약" value="12" unit="건" sub="인스타 9 · 블로그 3" />
           <StatusBlock label="댓글 답변 제안" value="ON" sub="검수 후 발송" />
-          <StatusBlock label="진행 중 캠페인" value="2" unit="개" sub="신메뉴 · 어버이날" />
+          <StatusBlock label="진행 중 캠페인" value="2" unit="개" sub="신메뉴 · 이번 시즌" />
         </div>
       )}
     </section>
