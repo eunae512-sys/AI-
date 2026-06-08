@@ -144,6 +144,10 @@ export function BlogScreen() {
   const [analyzing, setAnalyzing] = React.useState(false);
   const [phase, setPhase] = React.useState<"idle" | "analyzing" | "generating">("idle");
 
+  // 저장된 초안이 복원된 브랜드 id — 리셋 effect 가 복원본을 덮어쓰지 않도록 가드.
+  // (복원 effect 가 리셋 effect 보다 먼저 실행되므로, 복원 시 여기에 표시해두면 리셋이 건너뜀)
+  const restoredBrandRef = React.useRef<string | null>(null);
+
   // 자동 저장 — 활성 브랜드 작업 영속화.
   const { lastSavedAt } = useAutoSaveDraft({
     scope: "blog",
@@ -153,11 +157,16 @@ export function BlogScreen() {
       if (typeof draft.topic === "string") setTopic(draft.topic);
       if (typeof draft.body === "string") setBody(draft.body);
       if (typeof draft.activePreset === "number") setActivePreset(draft.activePreset);
+      restoredBrandRef.current = brand.id; // 이 브랜드는 초안이 복원됨 → 리셋 금지
     },
   });
 
   React.useEffect(() => {
-    // 브랜드 전환 시: preset·주제·본문·분석 리셋.
+    // 이 브랜드의 저장된 초안이 복원됐으면 리셋하지 않는다(복원본 보존).
+    // 복원 effect 가 먼저 실행돼 restoredBrandRef 를 채우므로, 마운트·브랜드 전환 모두에서
+    // 복원된 초안은 살아남고, 초안이 없는 브랜드만 빈 상태로 초기화된다.
+    if (restoredBrandRef.current === brand.id) return;
+    // 저장된 초안이 없는 브랜드 — preset·주제·본문·분석 빈 상태로.
     setActivePreset(0);
     setTopic(presets[0]?.title ?? "");
     setBody("");
