@@ -664,9 +664,21 @@ function PlatformCard({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={filePreview.url} alt="" className="h-full w-full object-cover" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-transparent to-black/70 pointer-events-none" />
-          <div className="absolute bottom-3 left-3 right-3 text-white text-sm font-bold leading-tight drop-shadow">
-            {result.subtitle}
+          {/* 하단 스크림 — 어떤 사진에서도 자막이 읽히도록 */}
+          <div className="absolute inset-x-0 bottom-0 h-[55%] bg-gradient-to-t from-black/80 via-black/35 to-transparent pointer-events-none" />
+          {/* 번인 자막 — 중앙 정렬·하단 안전영역·어절 보존 */}
+          <div className="absolute inset-x-0 bottom-0 px-3 pb-4 pointer-events-none">
+            <p
+              className="text-center text-white text-[13px] font-semibold leading-snug"
+              style={{
+                wordBreak: "keep-all",
+                textWrap: "balance",
+                letterSpacing: "0.01em",
+                textShadow: "0 1px 8px rgba(0,0,0,0.6)",
+              }}
+            >
+              {result.subtitle}
+            </p>
           </div>
         </div>
       )}
