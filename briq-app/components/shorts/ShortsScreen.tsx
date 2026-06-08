@@ -667,29 +667,29 @@ function PlatformCard({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={filePreview.url} alt="" className="h-full w-full object-cover" />
           )}
-          {/* 하단 스크림 — 어떤 사진에서도 자막이 읽히도록 */}
-          <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none" />
-          {/* 번인 자막 — 썸네일형 임팩트(굵은 아웃라인·브랜드 액센트 바·중앙) */}
-          <div className="absolute inset-x-0 bottom-0 px-2.5 pb-4 flex flex-col items-center pointer-events-none">
+          {/* 하단 스크림 — 사진과 자막 분리 */}
+          <div className="absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
+          {/* 번인 자막 — 광고 포스터형: 명조 디스플레이 + 브랜드 컬러 하이라이트 밴드 */}
+          <div className="absolute inset-x-0 bottom-0 px-3 pb-5 text-center pointer-events-none">
             <span
-              className="mb-1.5 block h-[3px] w-8 rounded-full"
-              style={{ background: brandColor ?? "#4F5F4B" }}
-            />
-            <p
-              className="text-center text-white leading-[1.12]"
               style={{
-                fontSize: "16px",
-                fontWeight: 900,
+                fontFamily: "'Nanum Myeongjo', serif",
+                fontSize: "20px",
+                fontWeight: 800,
+                lineHeight: 1.5,
                 wordBreak: "keep-all",
                 textWrap: "balance",
-                letterSpacing: "-0.02em",
-                textShadow: "0 2px 6px rgba(0,0,0,0.55), 0 0 1px rgba(0,0,0,0.95)",
-                WebkitTextStroke: "0.7px rgba(0,0,0,0.5)",
-                paintOrder: "stroke fill",
+                letterSpacing: "-0.01em",
+                color: "#FAF7EE",
+                background: brandColor ?? "#4F5F4B",
+                boxDecorationBreak: "clone",
+                WebkitBoxDecorationBreak: "clone",
+                padding: "3px 9px",
+                boxShadow: "0 3px 14px rgba(0,0,0,0.4)",
               }}
             >
               {result.subtitle}
-            </p>
+            </span>
           </div>
         </div>
       )}
