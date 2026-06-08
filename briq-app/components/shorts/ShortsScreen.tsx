@@ -48,6 +48,8 @@ type Uploaded = {
   type: "image" | "video";
   aiGenerated?: boolean;
   aiSceneTitle?: string;
+  /** AI 포스터(자체 합성 텍스트 보유) — 발행 미리보기에서 번인 자막 중복 방지 */
+  isPoster?: boolean;
 };
 
 type SourceMode = "upload" | "ai-model" | "poster";
@@ -431,6 +433,7 @@ export function ShortsScreen() {
                 type: "image",
                 aiGenerated: true,
                 aiSceneTitle: "AI 포스터",
+                isPoster: true,
               });
               setResults(null);
               toast.success("AI 포스터 적용 — 톤을 골라 카피를 만들어보세요");
@@ -705,6 +708,10 @@ function PlatformCard({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={filePreview.url} alt="" className="h-full w-full object-cover" />
           )}
+          {/* 포스터는 자체 합성 텍스트(아이브로+헤드라인+워터마크)를 이미 가짐 →
+              스크림·번인 자막을 얹지 않는다(중복·겹침 방지). 일반 사진/영상만 자막 번인. */}
+          {!filePreview.isPoster && (
+            <>
           {/* 하단 스크림 — 사진과 자막 분리(밝은 사진서도 헤드라인 가독) */}
           <div className="absolute inset-x-0 bottom-0 h-[64%] bg-gradient-to-t from-black/78 via-black/28 to-transparent pointer-events-none" />
           {/* 번인 자막 — 광고 포스터형 비대칭 키네틱: 세로 브랜드 컬러 바 + 아이브로 + 좌측 명조 헤드라인 */}
@@ -747,6 +754,8 @@ function PlatformCard({
               </div>
             </div>
           </div>
+            </>
+          )}
         </div>
       )}
 
