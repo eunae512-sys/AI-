@@ -250,9 +250,10 @@ export default function LoginPage() {
           style={{ color: INK_MUTE, fontFamily: SERIF_LATIN, borderTop: `0.5px solid ${RULE}` }}
         >
           <span>© BRIQ MMXXVI</span>
-          <div className="flex gap-5">
-            <span>개인정보 (준비 중)</span>
-            <span>이용약관 (준비 중)</span>
+          {/* 실제 법적 페이지로 연결 — 한글은 italic/uppercase 금지(철칙) → not-italic·normal-case */}
+          <div className="flex gap-5 not-italic normal-case" style={{ letterSpacing: "0.02em" }}>
+            <Link href="/privacy" className="hover:opacity-100">개인정보처리방침</Link>
+            <Link href="/terms" className="hover:opacity-100">이용약관</Link>
           </div>
         </div>
       </div>
