@@ -43,6 +43,7 @@ import {
   getContainerClass,
 } from "@/lib/cardnews/layouts";
 import { getContext } from "@/lib/viral/context";
+import { getSeasonalTopicTitles } from "@/lib/content/seasonal-topics";
 import { cn } from "@/lib/utils";
 import { useUsage } from "@/lib/billing/use-usage";
 import { incrementUsage } from "@/lib/billing/usage";
@@ -353,87 +354,11 @@ export function CardnewsScreen() {
   // 지금 컨텍스트 — 자동으로 GPT 프롬프트에 들어감, 사용자에게 배지로 노출
   const ctx = useMemo(() => getContext(), []);
 
-  // 산업 × 월 매트릭스 — placeholder 가 오늘 시점에 자연스럽게 보이도록
+  // 현재 KST 시즌 × 업종 추천 주제 3개를 placeholder 로. (블로그와 동일 단일 소스)
   const topicPlaceholder = useMemo(() => {
-    const month = new Date().getMonth() + 1;
-    const tableByIndustry: Record<string, string[]> = {
-      restaurant: [
-        "신년 회식 코스 안내",
-        "졸업·입학 축하 한 상",
-        "봄 신메뉴 한 상 안내",
-        "어버이날 효도 코스",
-        "5월 봄나물 코스 안내",
-        "초여름 보양 한 상",
-        "여름 점심 자리 안내",
-        "삼복 보양식 코스",
-        "추석 가족 모임 자리",
-        "가을 송이 한 상",
-        "연말 모임 코스 안내",
-        "송년회 단체 자리",
-      ],
-      cafe: [
-        "신년 시즌 라떼 한 잔",
-        "발렌타인 디저트 한 잔",
-        "봄 시즌 신메뉴 안내",
-        "벚꽃 한정 음료",
-        "콜드브루 시즌 시작",
-        "여름 시그니처 한 잔",
-        "한여름 빙수 한 그릇",
-        "8월 휴가 영업 안내",
-        "가을 시즌 라떼 라인업",
-        "10월 핸드드립 라인업",
-        "겨울 따뜻한 한 잔",
-        "크리스마스 시즌 메뉴",
-      ],
-      dessert: [
-        "신년 디저트 선물 박스",
-        "발렌타인 한정 케이크",
-        "봄 시즌 마들렌",
-        "딸기 시즌 케이크",
-        "5월 어버이날 케이크",
-        "여름 수박 케이크",
-        "한여름 빙수 디저트",
-        "여름 휴가 픽업 안내",
-        "가을 시즌 몽블랑",
-        "할로윈 한정 쿠키",
-        "겨울 시즌 슈톨렌",
-        "크리스마스 케이크 예약",
-      ],
-      beauty: [
-        "신년 셀프 케어 시술",
-        "졸업·입학 단정 룩",
-        "봄 컬러 룩북",
-        "벚꽃 시즌 결혼식 하객",
-        "5월 봄 결혼 시즌 룩",
-        "초여름 시원한 컬러",
-        "여름 휴가 룩 시술",
-        "8월 펌 관리 가이드",
-        "가을 컬러 룩북",
-        "10월 결혼식 하객 룩",
-        "겨울 보호 시술 안내",
-        "연말 모임 단정 룩",
-      ],
-      stay: [
-        "신년 한옥 1박 패키지",
-        "졸업 가족 여행",
-        "봄 한옥 산책 1박",
-        "벚꽃 시즌 한옥스테이",
-        "어버이날 효도 1박",
-        "초여름 한옥 1박",
-        "장마철 한옥 1박 패키지",
-        "여름 휴가 한옥스테이",
-        "추석 가족 모임 한옥",
-        "단풍 한옥 1박",
-        "겨울 한옥 따뜻한 1박",
-        "연말 한옥 패키지",
-      ],
-    };
-    const list = tableByIndustry[brand.industry] ?? tableByIndustry.restaurant;
-    const idx = Math.min(11, Math.max(0, month - 1));
-    const a = list[idx];
-    const b = list[(idx + 1) % 12];
-    const c = list[(idx + 2) % 12];
-    return `예: ${a} · ${b} · ${c}`;
+    const titles = getSeasonalTopicTitles(brand.industry); // season 미지정 → 현재 KST 시즌
+    if (titles.length === 0) return "예: 신메뉴 안내 · 예약 안내 · 이벤트 안내";
+    return `예: ${titles.slice(0, 3).join(" · ")}`;
   }, [brand.industry]);
 
   const ctxLabel = useMemo(() => {
