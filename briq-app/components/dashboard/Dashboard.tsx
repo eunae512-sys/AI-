@@ -19,6 +19,7 @@ import {
 import { InstagramMobilePreview } from "@/components/dashboard/InstagramMobilePreview";
 import { cn } from "@/lib/utils";
 import { getSeasonContext } from "@/lib/content/season";
+import { translateTopicToEN } from "@/lib/cardnews/video-query";
 
 // ─────────────────────────────────────────────────────────────
 // 매거진 발행 톤 대시보드
@@ -514,7 +515,12 @@ function CoverStory({
   React.useEffect(() => {
     let cancelled = false;
     setLoadingCover(true);
-    const query = COVER_QUERY[brand.industry]?.[tone] ?? COVER_QUERY[brand.industry]?.editorial ?? "editorial natural light";
+    // 표지 검색어 = 오늘의 한 컷 주제 키워드(있으면) + 업종·톤 결.
+    // COVER_QUERY 업종×톤 고정값만 쓰면 "봄나물 코스" 같은 실주제와 무관한 사진이 나옴 →
+    // t.slideTitle 을 영문 키워드로 번역해 앞에 박는다(사전 매칭 0건이면 빈 문자열 → 기존 결만).
+    const base = COVER_QUERY[brand.industry]?.[tone] ?? COVER_QUERY[brand.industry]?.editorial ?? "editorial natural light";
+    const subjectEN = translateTopicToEN(t.slideTitle);
+    const query = subjectEN ? `${subjectEN}, ${base}` : base;
     const effectivePage = brandPageOffset + (pageSeed - 1);
     (async () => {
       try {
@@ -549,7 +555,7 @@ function CoverStory({
       finally { if (!cancelled) setLoadingCover(false); }
     })();
     return () => { cancelled = true; };
-  }, [brand.id, brand.industry, tone, pageSeed, brandPageOffset]);
+  }, [brand.id, brand.industry, tone, pageSeed, brandPageOffset, t.slideTitle]);
 
   const coverUrl: string | null =
     coverPick.kind === "upload" ? coverPick.url
