@@ -21,6 +21,12 @@ export interface ImageGenInput {
   size: string;
   quality: ImageQuality;
   signal?: AbortSignal;
+  /**
+   * 있으면 image-to-image 편집 모드. data URL("data:image/...;base64,...") 또는 https URL.
+   * 어댑터(현재 Nano Banana 만)가 inlineData 로 전달해 입력 사진을 살려 편집한다.
+   * 없으면 기존 text-to-image 동작(회귀 없음).
+   */
+  inputImage?: string;
 }
 
 export interface ImageGenResult {

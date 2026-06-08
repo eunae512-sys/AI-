@@ -92,3 +92,13 @@ export function selectImageProvider(opts: {
 }): ImageProvider | null {
   return selectImageProviderChain(opts)[0] ?? null;
 }
+
+/**
+ * 편집(image-to-image) 전용 프로바이더.
+ * 입력 사진을 inlineData 로 받아 편집할 수 있는 건 Nano Banana 뿐이라
+ * 선택 체인 없이 Nano Banana 를 고정 반환한다(Imagen 은 편집 미지원).
+ * isConfigured() 로 키 유무는 라우트가 판단.
+ */
+export function getEditProvider(): ImageProvider {
+  return new GeminiImageProvider("nanobanana");
+}

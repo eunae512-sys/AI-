@@ -40,6 +40,26 @@ const COST_USD: Record<string, number> = {
 const DEFAULT_NANOBANANA = "gemini-2.5-flash-image";
 const DEFAULT_IMAGEN = "imagen-4.0-fast-generate-001";
 
+// 편집 입력 사진을 Gemini inlineData({mimeType,data:base64}) 로 정규화.
+//   · data URL → 정규식으로 mimeType + base64 추출
+//   · https URL → fetch → arrayBuffer → base64, mimeType 은 content-type(기본 image/jpeg)
+async function toInlineData(
+  src: string,
+): Promise<{ mimeType: string; data: string }> {
+  const dataUrl = src.match(/^data:([^;]+);base64,(.+)$/s);
+  if (dataUrl) {
+    return { mimeType: dataUrl[1] || "image/jpeg", data: dataUrl[2] };
+  }
+  // https(또는 http) URL — 받아서 base64 로.
+  const res = await fetch(src);
+  if (!res.ok) {
+    throw new ProviderError(400, `입력 이미지 fetch 실패 (${res.status})`, false);
+  }
+  const mimeType = res.headers.get("content-type")?.split(";")[0]?.trim() || "image/jpeg";
+  const buf = Buffer.from(await res.arrayBuffer());
+  return { mimeType, data: buf.toString("base64") };
+}
+
 function isQuotaError(status: number, message: string): boolean {
   const m = message.toLowerCase();
   return (
@@ -97,9 +117,17 @@ export class GeminiImageProvider implements ImageProvider {
         });
         b64 = res.generatedImages?.[0]?.image?.imageBytes;
       } else {
+        // 편집(image-to-image): inputImage 가 있으면 inlineData 를 함께 전달.
+        // 없으면 기존 text-only 동작 그대로(회귀 없음).
+        const contents = input.inputImage
+          ? [
+              { inlineData: await toInlineData(input.inputImage) },
+              { text: input.prompt },
+            ]
+          : input.prompt;
         const res = await ai.models.generateContent({
           model: this.model,
-          contents: input.prompt,
+          contents,
         });
         const parts = res.candidates?.[0]?.content?.parts ?? [];
         for (const part of parts) {
