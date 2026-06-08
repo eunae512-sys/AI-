@@ -125,16 +125,16 @@ Items acknowledged and carried forward from previous milestone close:
 
 **Active goal:** 소상공인 자동화 마케팅 플랫폼 — 전세계 1등 사이트 (디테일 고도화 모드)
 
-**다음 작업 (NEXT): /reels 페이지 전면 리워크 → `.planning/HANDOFF-reels-rework.md` 참조**
-- 대상: `briq-app/components/reels/ReelsScreen.tsx` (~1688줄)
-- 목표: 에디토리얼 디자인 시스템 전면 이관 + "공간 확보"(밀도 완화·여백·위계). 로직 100% 보존.
-- 새 세션 시작 시: **먼저 `CLAUDE.md` Conventions + `.planning/HANDOFF-reels-rework.md` 읽기.**
-- 재개 명령 예: "/reels 페이지 에디토리얼 이관 + 공간 확보 — HANDOFF 참조"
+**이번 세션(6/5~6/8) 완료 요약:** 실제 소상공인 시선 냉정 분석 기반 고도화 다수. 키워드→이미지 매칭(vea)·카피 자연스러움 전수/HOOK 가짜수치(14v·ut1)·카드뉴스 사진 관련성/레이아웃 변주(uh9·2lx)·앱 라우트 1차 정리+검수 노출(w7f)·**적응형 nav 대행사 레이어**(0ux, 단일/다중 브랜드 둘 다)·랜딩 정직성(자동→반자동, 1x0)·사업자 정보(주식회사 어블러)·**AI 출연자 한국인 강제**(8147024·548c7af)·추천 씬 시드 변주(2mh)·**시즌 인식 추천**(블로그·카드뉴스·대시보드, cvk·d9z)·**AI 출연자 광고급 품질+폴백 씬 인식**(e86). 페르소나 확정=대행사+사장님 둘 다(메모리 dual-persona-agency-and-solo).
 
-**완료된 1등 고도화(이번 사이클):** 랜딩(Hero/Sections) · 온보딩 · 가격 · 결제(start/success/fail) · 대시보드 · 카드뉴스·릴스 카피 톤 · 인스타 미리보기(빈화면·겹침). 디자인 시스템·철칙은 `CLAUDE.md` Conventions 에 박제됨.
-**남은 후보:** /reels(다음) → /cardnews 편집 디테일 → 쿨 zinc 중립색 INK 토큰화(가격·대시보드).
+**다음 작업 후보 (NEXT — 우선순위 순):**
+1. **정직성 마감 잔여(대표 결정 필요)** — BRIQ 오퍼 SSOT `[확정 필요]`: 가격 단일화(Pro 49/59·이미지 한도), 무료체험 카드, 도메인 단일화(briq.app↔briqsns.com), "200+ 가게" 등 케이스 수치 근거. + 사업자: 통신판매업 신고번호·고객센터 전화/이메일("준비 중" 상태).
+2. **2차 라우트 정리** — content-distribution→발행 고급탭 흡수, automation/threads v2 보류 명시.
+3. **대행사 레이어 심화** — 요금제 게이팅(Studio 10브랜드/Agency) 실제 연결.
+4. **디자인 토큰화** — Sidebar/일부 화면 잔존 구 SaaS색(zinc/violet/amber)→에디토리얼 토큰(INK/SAGE/RULE).
+5. **앱 내부 데모 통계 "예시" 라벨** — /reviews·대시보드·캠페인 미검증 수치.
 
-**환경 메모:** dev 서버는 `pnpm dev` 가 의존성 검증서 실패 → `cd briq-app && ./node_modules/.bin/next dev -p 3000` 로 직접 띄울 것. OpenAI 쿼터·fal 잔액 소진 상태(텍스트/이미지/영상/음악은 Gemini 폴백으로 동작, 보컬음악·AI영상은 결제 충전 필요).
+**환경 메모:** dev 서버 `cd briq-app && ./node_modules/.bin/next dev -p 3000` 직접 실행(pnpm dev 실패). **AI 키 상태(6/8): GOOGLE_GENAI(Imagen4)·OPENAI·PEXELS·FAL 전부 .env.local 설정됨 — AI 출연자/이미지 실생성 동작 확인(gemini-imagen4).** jiti 프로브 패턴: `createJiti(__filename,{alias:{'@':path.resolve(__dirname)}})` (briq-app 내부 임시 .cjs). GSD 플래너가 cwd 때문에 PLAN을 briq-app/.planning 에 쓰면 루트 .planning 로 이동 필요.
 
-Last session: 2026-06-04
-Resume file: STATE.md (이 블록)
+Last session: 2026-06-08
+Resume file: STATE.md (이 블록) — 재개: `/gsd-resume-work` 또는 STATE.md Last activity + 위 NEXT 후보 참조
