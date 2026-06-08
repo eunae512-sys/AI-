@@ -112,6 +112,9 @@ export function AiModelGenerator({ industry, signatureMenu, topic, seed, onGener
           industry,
           gender: gender === "female" || gender === "male" ? gender : undefined,
           personaSeed: scene.id,
+          // 씬 인식 폴백 — Imagen 실패 시 씬·주제 맞는 Pexels 사진을 찾도록.
+          fallbackQuery: scene.fallbackQuery,
+          frame: scene.frame,
         }),
       });
       const data = await res.json();

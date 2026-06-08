@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   pickDemoImage,
   fetchPortraitFromPexels,
+  fetchSceneFromPexels,
 } from "@/lib/api/demo-images";
 import { selectImageProviderChain, ProviderError, type ImageQuality } from "@/lib/ai/image";
 import { ensurePlanAndQuota, bumpUsage } from "@/lib/billing/gate-server";
@@ -38,6 +39,10 @@ export async function POST(req: NextRequest) {
   const personaSeed = typeof body.personaSeed === "string" || typeof body.personaSeed === "number"
     ? String(body.personaSeed)
     : (typeof slideId === "string" || typeof slideId === "number" ? String(slideId) : undefined);
+  // 씬 인식 폴백 컨텍스트 — ModelScene.fallbackQuery + frame.
+  const fallbackQuery = typeof body.fallbackQuery === "string" && body.fallbackQuery.trim() ? body.fallbackQuery.trim() : undefined;
+  const frame = typeof body.frame === "string" ? body.frame : undefined;
+  const allowPeople = frame === "portrait" || frame === "lifestyle";
 
   if (!prompt || prompt.trim().length < 5) {
     return NextResponse.json(
@@ -54,13 +59,16 @@ export async function POST(req: NextRequest) {
     startedAt?: number;
   }): Promise<NextResponse> {
     const startedAt = opts.startedAt ?? Date.now();
-    const portrait = await fetchPortraitFromPexels({ industry, gender, seed: personaSeed });
+    // fallbackQuery 있으면 씬 인식 폴백(인물 씬만 사람 허용), 없으면 기존 portrait 폴백(하위호환).
+    const portrait = fallbackQuery
+      ? await fetchSceneFromPexels({ query: fallbackQuery, allowPeople, seed: personaSeed })
+      : await fetchPortraitFromPexels({ industry, gender, seed: personaSeed });
     if (portrait) {
       return NextResponse.json({
         ok: true,
         image: portrait.url,
         meta: {
-          source: "pexels-portrait-fallback",
+          source: fallbackQuery ? "pexels-scene-fallback" : "pexels-portrait-fallback",
           demoMode: true,
           model: "pexels",
           size,
