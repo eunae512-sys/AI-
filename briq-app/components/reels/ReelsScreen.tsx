@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Upload, Play, Heart, MessageCircle, Bookmark, Share2, Sparkles, RefreshCw, Music, Type, Pencil, X, Film, Download, Loader2, UserCircle2, Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { Upload, Play, Heart, MessageCircle, Bookmark, Share2, Sparkles, RefreshCw, Music, Type, Pencil, X, Film, Download, Loader2, Image as ImageIcon, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { compileReelsVideo, isCompileSupported, parseTrendStyle, describeTrendStyle } from "@/lib/reels/compile-video";
 import { buildVideoQueryDetailed } from "@/lib/cardnews/video-query";
 import { useBrand } from "@/components/brand/BrandProvider";
@@ -234,7 +234,7 @@ export function ReelsScreen() {
     setPhotos((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  // AI 출연자 패널 토글 + 추가 핸들러
+  // AI 컷 패널 토글 + 추가 핸들러
   const [aiPanelOpen, setAiPanelOpen] = React.useState(false);
 
   // AI 음악 패널 + 적용된 BGM 상태
@@ -299,7 +299,7 @@ export function ReelsScreen() {
       URL.revokeObjectURL(compiled.url);
       setCompiled(null);
     }
-    toast.success(`AI 출연자 추가 — "${sceneTitle}" 자동으로 컷에 배치`);
+    toast.success(`AI 컷 추가 — "${sceneTitle}" 자동으로 컷에 배치`);
   };
 
   // 업로드 시 자막 자동 시드 — 브랜드 후크 순환
@@ -364,7 +364,7 @@ export function ReelsScreen() {
     accentGradient?: string;   // 영상 없을 때 썸네일 그라디언트 (Tailwind safe class)
     source?: "trends" | "calendar" | "weekly"; // 어디서 온 추천인지
     appliedAt: number;
-    // 자동 추천 — 음악·출연자
+    // 자동 추천 — 음악·AI 컷
     suggestedMusicMood?: MusicMood;
     suggestedMusicMoodLabel?: string;
     suggestedSceneRole?: SceneRole;
@@ -424,7 +424,7 @@ export function ReelsScreen() {
     toast.info(`"${appliedTrend.suggestedMusicMoodLabel}" 무드 추천 — 가사 적고 생성하세요`);
   };
 
-  // 적용된 스타일의 추천 씬으로 AI 출연자 자동 생성 (사진 없을 때 빠른 진입)
+  // 적용된 스타일의 추천 씬으로 AI 컷 자동 생성 (사진 없을 때 빠른 진입)
   const startAiSceneForSuggested = async () => {
     if (!appliedTrend?.suggestedSceneRole) return;
     const role = appliedTrend.suggestedSceneRole;
@@ -440,7 +440,7 @@ export function ReelsScreen() {
     setAiPanelOpen(true);
     // 패널 열고 추천만 — 사용자가 생성 클릭 (자동 fire-and-forget 은 비용 발생이라 보류)
     toast.info(
-      `"${appliedTrend.suggestedSceneRoleLabel}" 씬 추천 — 위 패널에서 "AI 출연자 만들기"`,
+      `"${appliedTrend.suggestedSceneRoleLabel}" 씬 추천 — 위 패널에서 "AI 컷 만들기"`,
     );
   };
 
@@ -877,7 +877,7 @@ export function ReelsScreen() {
                 이 스타일로 영상 만들기 <span aria-hidden>→</span>
               </button>
 
-              {/* AI 자동 매칭 추천 — 스타일에 어울리는 BGM 무드 + 출연자 씬 */}
+              {/* AI 자동 매칭 추천 — 스타일에 어울리는 BGM 무드 + AI 컷 씬 */}
               {(appliedTrend.suggestedMusicMoodLabel || appliedTrend.suggestedSceneRoleLabel) && (
                 <div className="mt-5 pt-5" style={{ borderTop: `0.5px solid ${RULE_SOFT}` }}>
                   <SectionLabel>이 스타일에 어울리는 AI 자동 매칭</SectionLabel>
@@ -907,14 +907,14 @@ export function ReelsScreen() {
                         style={{ border: `0.5px solid ${RULE}`, background: "#FFFFFF" }}
                       >
                         <div className="flex items-center gap-1.5">
-                          <UserCircle2 className="h-3 w-3" strokeWidth={1.75} style={{ color: SAGE }} />
-                          <Eyebrow>추천 AI 출연자</Eyebrow>
+                          <ImageIcon className="h-3 w-3" strokeWidth={1.75} style={{ color: SAGE }} />
+                          <Eyebrow>추천 AI 컷</Eyebrow>
                         </div>
                         <div className="mt-1 text-[13px]" style={{ fontFamily: SERIF_HANGUL, color: INK, fontWeight: 600 }}>
                           {appliedTrend.suggestedSceneRoleLabel}
                         </div>
                         <div className="text-[11px] mt-1" style={{ color: INK_MUTE, fontFamily: SERIF_HANGUL }}>
-                          {uploadedPhotos.length === 0 ? "사진 없이 바로 만들기 →" : "출연자 추가 →"}
+                          {uploadedPhotos.length === 0 ? "사진 없이 바로 만들기 →" : "AI 컷 추가 →"}
                         </div>
                       </button>
                     )}
@@ -1640,8 +1640,8 @@ export function ReelsScreen() {
                     : { border: `0.5px solid ${RULE}`, color: INK, fontFamily: SERIF_HANGUL }
                 }
               >
-                <UserCircle2 className="h-3 w-3" strokeWidth={1.75} />
-                {aiPanelOpen ? "닫기" : "AI 출연자"}
+                <ImageIcon className="h-3 w-3" strokeWidth={1.75} />
+                {aiPanelOpen ? "닫기" : "AI 컷"}
               </button>
             </div>
             <input

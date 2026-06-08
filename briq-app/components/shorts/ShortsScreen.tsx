@@ -17,7 +17,6 @@ import {
   Hash,
   Play,
   X,
-  UserCircle2,
   ImagePlus,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -29,6 +28,7 @@ import { NextStepCard } from "@/components/layout/RoadmapStrip";
 import { AiModelGenerator } from "@/components/ai-gen/AiModelGenerator";
 import { appendAiHashtag } from "@/lib/ai-gen/watermark";
 import type { Industry } from "@/lib/ai-gen/model-scenes";
+import { SAGE } from "@/lib/landing/tokens";
 import {
   TONES,
   PLATFORMS,
@@ -138,7 +138,7 @@ export function ShortsScreen() {
     if (e.dataTransfer?.files?.[0]) await readFile(e.dataTransfer.files[0]);
   };
 
-  // AI 출연자로 생성된 경우 KFTC 의무 라벨 해시태그를 모든 플랫폼 카피에 추가
+  // AI 컷으로 생성된 경우 KFTC 의무 라벨 해시태그를 모든 플랫폼 카피에 추가
   const annotateForAi = React.useCallback(
     (outputs: PlatformOutput[]): PlatformOutput[] => {
       if (!file?.aiGenerated) return outputs;
@@ -155,7 +155,7 @@ export function ShortsScreen() {
     if (!file) {
       // 기본 모드에 따라 동작 — upload 면 파일 선택, ai-model 이면 안내
       if (sourceMode === "ai-model") {
-        toast.warn("위에서 씬을 골라 AI 출연자를 먼저 만들어주세요");
+        toast.warn("위에서 컷을 골라 AI 컷을 먼저 만들어주세요");
         return;
       }
       fileRef.current?.click();
@@ -305,15 +305,15 @@ export function ShortsScreen() {
         <StepChip n={3} label="복사·예약 발행" active={!!results} done={false} />
       </div>
 
-      {/* Step 1 — Source (Upload 또는 AI 출연자 생성) */}
+      {/* Step 1 — Source (Upload 또는 AI 컷 생성) */}
       <Card className="p-5 mb-4">
         <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
           <div>
             <h2 className="text-base font-semibold flex items-center gap-1.5">
-              <Upload className="h-4 w-4 text-violet-500" /> 1. 사진 한 장 — 직접 올리거나, AI가 그려드려요
+              <Upload className="h-4 w-4" style={{ color: SAGE }} /> 1. 사진 한 장 — 직접 올리거나, AI가 그려드려요
             </h2>
             <p className="text-sm text-zinc-500 mt-1">
-              사장님이 출연하기 어려우면 AI 출연자가 대신 — 모델·촬영 비용 없음
+              사람 없이 음식·공간·손길 컷을 AI로 — 모델·촬영 비용 없음
             </p>
           </div>
           {file && (
@@ -350,9 +350,9 @@ export function ShortsScreen() {
                   : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100",
               )}
             >
-              <UserCircle2 className="h-4 w-4 text-violet-500" />
-              AI 출연자 생성
-              <Badge tone="violet" className="ml-1">신규</Badge>
+              <ImageIcon className="h-4 w-4" style={{ color: SAGE }} />
+              AI 컷 생성
+              <Badge tone="default" className="ml-1">신규</Badge>
             </button>
           </div>
         )}
@@ -368,13 +368,13 @@ export function ShortsScreen() {
             onDragLeave={() => setDragOver(false)}
             onDrop={onDrop}
             className={cn(
-              "w-full rounded-2xl border-2 border-dashed py-12 px-6 text-center transition-all",
+              "w-full rounded-sm border-2 border-dashed py-12 px-6 text-center transition-all",
               "min-h-[200px] flex flex-col items-center justify-center gap-2",
               dragOver
-                ? "border-violet-500 bg-violet-50 dark:bg-violet-500/10"
+                ? "border-zinc-200 dark:border-zinc-800"
                 : "border-zinc-200 dark:border-zinc-800 hover:border-zinc-900 dark:hover:border-zinc-100 active:scale-[0.99]",
             )}
-            style={{ minHeight: 200 }}
+            style={dragOver ? { borderColor: SAGE, backgroundColor: "rgba(79,95,75,0.06)", minHeight: 200 } : { minHeight: 200 }}
           >
             <div className="text-5xl mb-1">📷</div>
             <div className="text-base font-semibold">사진 또는 영상을 드롭하거나 클릭</div>
@@ -398,14 +398,14 @@ export function ShortsScreen() {
                 aiSceneTitle: scene.title,
               });
               setResults(null);
-              toast.success(`AI 출연자 적용 — 톤을 골라 카피를 만들어보세요`);
+              toast.success(`AI 컷 적용 — 톤을 골라 카피를 만들어보세요`);
             }}
           />
         )}
 
         {file && (
           <div className="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-4 items-start">
-            <div className="relative rounded-xl overflow-hidden aspect-square bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+            <div className="relative rounded-sm overflow-hidden aspect-square bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
               {file.type === "video" ? (
                 <video src={file.url} className="h-full w-full object-cover" controls muted playsInline />
               ) : (
@@ -414,7 +414,7 @@ export function ShortsScreen() {
               )}
               {file.aiGenerated && (
                 <div className="absolute top-2 left-2">
-                  <Badge tone="violet" className="shadow">AI 출연자</Badge>
+                  <Badge tone="default" className="shadow">AI 컷</Badge>
                 </div>
               )}
             </div>
@@ -422,20 +422,20 @@ export function ShortsScreen() {
               <div>
                 <div className="text-xs text-zinc-500 font-medium">AI 분석 결과</div>
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
-                  <Badge tone="violet">{brand.industryLabel}</Badge>
+                  <Badge tone="default">{brand.industryLabel}</Badge>
                   {file.aiGenerated && file.aiSceneTitle && (
-                    <Badge tone="amber">씬: {file.aiSceneTitle}</Badge>
+                    <Badge tone="default">컷: {file.aiSceneTitle}</Badge>
                   )}
                   {mood && (
                     <>
-                      <Badge tone="rose">{mood.mood}</Badge>
-                      <Badge tone="sky">{mood.vibe}</Badge>
+                      <Badge tone="default">{mood.mood}</Badge>
+                      <Badge tone="default">{mood.vibe}</Badge>
                     </>
                   )}
                 </div>
                 <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
                   {file.aiGenerated
-                    ? `${file.aiSceneTitle ?? "AI 생성 출연자"} · KFTC 의무 라벨 자동 부착 · 카피 끝에 #AI생성 해시태그 자동 추가`
+                    ? `${file.aiSceneTitle ?? "AI 생성 컷"} · KFTC 의무 라벨 자동 부착 · 카피 끝에 #AI생성 해시태그 자동 추가`
                     : `${file.name} · ${(file.size / 1024).toFixed(0)}KB · 업종과 분위기를 반영해 4개 플랫폼용 홍보글을 만듭니다.`}
                 </p>
               </div>
