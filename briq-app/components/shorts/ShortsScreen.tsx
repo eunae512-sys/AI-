@@ -29,7 +29,7 @@ import { AiModelGenerator } from "@/components/ai-gen/AiModelGenerator";
 import { PosterStudio } from "@/components/ai-gen/PosterStudio";
 import { appendAiHashtag } from "@/lib/ai-gen/watermark";
 import type { Industry } from "@/lib/ai-gen/model-scenes";
-import { SAGE } from "@/lib/landing/tokens";
+import { SAGE, INK, RULE, PAPER } from "@/lib/landing/tokens";
 import {
   TONES,
   PLATFORMS,
@@ -222,6 +222,13 @@ export function ShortsScreen() {
     } finally {
       setAnalyzing(false);
     }
+  };
+
+  // 결과 카피 인라인 편집 — 편집값이 state(=복사·미리보기 번인의 단일 출처)에 반영됨
+  const updateResult = (platform: PlatformOutput["platform"], patch: Partial<PlatformOutput>) => {
+    setResults((prev) =>
+      prev ? prev.map((r) => (r.platform === platform ? { ...r, ...patch } : r)) : prev,
+    );
   };
 
   const copyText = async (text: string, key: string) => {
@@ -569,6 +576,7 @@ export function ShortsScreen() {
                   copiedKey={copiedKey}
                   brandColor={brand.brandColors?.primary}
                   brandName={brand.name}
+                  onUpdate={(patch) => updateResult(r.platform, patch)}
                 />
               );
             })}
@@ -670,6 +678,7 @@ function PlatformCard({
   copiedKey,
   brandColor,
   brandName,
+  onUpdate,
 }: {
   result: PlatformOutput;
   meta: (typeof PLATFORMS)[number];
@@ -678,6 +687,7 @@ function PlatformCard({
   copiedKey: string | null;
   brandColor?: string;
   brandName?: string;
+  onUpdate?: (patch: Partial<PlatformOutput>) => void;
 }) {
   const fullText = `${result.title}\n\n${result.caption}\n\n${result.hashtags.join(" ")}`;
 
@@ -761,10 +771,21 @@ function PlatformCard({
 
       {/* Body */}
       <div className="p-4 space-y-3 flex-1">
+        {/* 자막 (영상 위 번인 문구) — 편집 시 위 미리보기에 라이브 반영. naver 는 자막 미사용이라 숨김 */}
+        {meta.id !== "naver" && (
+          <FieldBlock
+            label="자막 (영상 위 문구)"
+            value={result.subtitle}
+            onChange={onUpdate ? (v) => onUpdate({ subtitle: v }) : undefined}
+            onCopy={() => onCopy(result.subtitle, `${result.platform}-subtitle`)}
+            copied={copiedKey === `${result.platform}-subtitle`}
+          />
+        )}
         {/* Title */}
         <FieldBlock
           label={meta.id === "shorts" ? "SEO 제목" : meta.id === "tiktok" ? "훅 (첫 줄)" : "제목/표지 카피"}
           value={result.title}
+          onChange={onUpdate ? (v) => onUpdate({ title: v }) : undefined}
           onCopy={() => onCopy(result.title, `${result.platform}-title`)}
           copied={copiedKey === `${result.platform}-title`}
         />
@@ -775,6 +796,7 @@ function PlatformCard({
           multiline
           charCount={result.caption.length}
           maxLen={meta.captionMaxLen}
+          onChange={onUpdate ? (v) => onUpdate({ caption: v }) : undefined}
           onCopy={() => onCopy(result.caption, `${result.platform}-caption`)}
           copied={copiedKey === `${result.platform}-caption`}
         />
@@ -844,6 +866,7 @@ function FieldBlock({
   maxLen,
   onCopy,
   copied,
+  onChange,
 }: {
   label: string;
   value: string;
@@ -852,16 +875,28 @@ function FieldBlock({
   maxLen?: number;
   onCopy: () => void;
   copied: boolean;
+  /** 있으면 인라인 편집 가능(편집값이 onUpdate→state 로 흘러 미리보기·복사에 반영) */
+  onChange?: (v: string) => void;
 }) {
-  const over = charCount !== undefined && maxLen !== undefined && charCount > maxLen;
+  // charCount 가 명시 안 됐어도 편집 가능 필드면 live value.length 로 표시
+  const liveCount = charCount ?? (maxLen !== undefined ? value.length : undefined);
+  const over = liveCount !== undefined && maxLen !== undefined && liveCount > maxLen;
+  const editable = !!onChange;
+  // 토큰 정합 편집 인풋 — RULE 보더 · INK 텍스트 · 사각 · PAPER 계열 bg, 절제된 포커스
+  const editStyle: React.CSSProperties = {
+    border: `1px solid ${RULE}`,
+    color: INK,
+    backgroundColor: PAPER,
+    borderRadius: 2,
+  };
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5 gap-2">
         <div className="text-xs font-semibold text-zinc-500">{label}</div>
         <div className="flex items-center gap-2">
-          {charCount !== undefined && maxLen !== undefined && (
+          {liveCount !== undefined && maxLen !== undefined && (
             <span className={cn("text-xs tabular-nums", over ? "text-rose-600 font-semibold" : "text-zinc-400")}>
-              {charCount} / {maxLen}
+              {liveCount} / {maxLen}
             </span>
           )}
           <button
@@ -872,14 +907,36 @@ function FieldBlock({
           </button>
         </div>
       </div>
-      <div
-        className={cn(
-          "rounded-md border border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/40 px-3 py-2.5 text-sm leading-relaxed",
-          multiline ? "whitespace-pre-wrap" : "truncate",
-        )}
-      >
-        {value}
-      </div>
+      {editable ? (
+        multiline ? (
+          <textarea
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            rows={Math.min(8, Math.max(3, value.split("\n").length + 1))}
+            spellCheck={false}
+            className="w-full px-3 py-2.5 text-sm leading-relaxed resize-y outline-none focus:border-[var(--sage)]"
+            style={{ ...editStyle, ["--sage" as string]: SAGE, wordBreak: "keep-all" }}
+          />
+        ) : (
+          <input
+            type="text"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            spellCheck={false}
+            className="w-full px-3 py-2.5 text-sm leading-relaxed outline-none focus:border-[var(--sage)]"
+            style={{ ...editStyle, ["--sage" as string]: SAGE, wordBreak: "keep-all" }}
+          />
+        )
+      ) : (
+        <div
+          className={cn(
+            "rounded-md border border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/40 px-3 py-2.5 text-sm leading-relaxed",
+            multiline ? "whitespace-pre-wrap" : "truncate",
+          )}
+        >
+          {value}
+        </div>
+      )}
     </div>
   );
 }

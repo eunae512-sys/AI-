@@ -431,7 +431,9 @@ export function generateForPlatform(args: {
       // 감성·저장 유도. caption 길게 OK
       title = pickedHook;
       caption = `${pickedHook}\n\n${midLine}.\n\n${ctaLine}`;
-      subtitle = pickedHook.replace(/[—,].+$/, "").trim();
+      // 번인 자막은 후크 한 줄 그대로 — 라벨형 꼬리(— 뒤)만 떼고, 문장 내 쉼표는 보존
+      // (정돈된 구어체 후크는 "여기, 결이 조금 달라요"처럼 쉼표가 문장 일부라 자르면 "여기"로 깨짐)
+      subtitle = pickedHook.replace(/\s*—.+$/, "").trim();
       cta = ctaLine;
       hashtags = allHashtags.slice(0, meta.hashtagCount);
       break;
@@ -442,7 +444,8 @@ export function generateForPlatform(args: {
       caption = `${pickedHook}\n${midLine}.\n👇 ${ctaLine}`;
       subtitle = pickedHook;
       cta = ctaLine;
-      hashtags = [...allHashtags.slice(0, 3), "#fyp", "#포유"];
+      // 정직성·정돈 톤: #fyp #포유 같은 저렴한 바이럴 태그 제거, 담백한 동네·기록형 태그 유지
+      hashtags = allHashtags.slice(0, meta.hashtagCount);
       break;
     }
     case "shorts": {
