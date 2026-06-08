@@ -1,7 +1,8 @@
 "use client";
 
-// 소상공인 출연자 대체 — AI 모델 이미지 생성 컴포넌트
-// 씬 픽커 + 성별/연령 조정 + 프롬프트 미리보기 + 생성 + 워터마크 + 결과 출력
+// 소상공인 촬영비 대체 — 얼굴 없는 AI 제품·매장·손길 컷 생성 컴포넌트.
+// (구 "AI 출연자": 가짜 사람 얼굴 생성 → 신뢰 훼손이라 faceless 컷으로 전환)
+// faceless 씬 픽커 + 프롬프트 미리보기 + 생성 + 워터마크 + 결과 출력
 
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
@@ -22,24 +23,20 @@ import { cn } from "@/lib/utils";
 import {
   type Industry,
   type ModelScene,
-  type ModelGender,
-  type ModelAge,
-  type SceneRole,
   ROLE_LABELS,
   FRAME_LABELS,
-  GENDER_LABELS,
-  AGE_LABELS,
   getRecommendedScenes,
   getScenesForIndustry,
   hashSeed,
 } from "@/lib/ai-gen/model-scenes";
 import { translateTopicToEN } from "@/lib/cardnews/video-query";
 import { applyAiWatermark, buildAiMeta } from "@/lib/ai-gen/watermark";
+import { SAGE } from "@/lib/landing/tokens";
 
 type Props = {
   industry: Industry;
   signatureMenu?: string[];
-  /** 캠페인 주제/테마 (예: "여름 수박 케이크") — 출연자 씬을 주제에 맞게 연출 */
+  /** 캠페인 주제/테마 (예: "여름 수박 케이크") — 컷을 주제에 맞게 연출 */
   topic?: string;
   /** 추천 변주용 시드 — 보통 brand.id. 없으면 industry+signatureMenu+topic 로 합성 */
   seed?: string;
@@ -54,33 +51,59 @@ type Props = {
 const COST_USD_PER_IMAGE = 0.04; // gpt-image-1 medium
 const COST_KRW = Math.round(COST_USD_PER_IMAGE * 1400);
 
+// 얼굴 없는 컷만 노출 — 음식·제품·매장·손길(closeup/overhead) 및 product 역할.
+// portrait·lifestyle(정면 인물·일상 씬)은 제외해 가짜 사람 얼굴을 차단한다.
+const FACELESS = (s: ModelScene) => s.frame === "closeup" || s.frame === "overhead" || s.role === "product";
+
 export function AiModelGenerator({ industry, signatureMenu, topic, seed, onGenerated, onClose, compact = false }: Props) {
   const toast = useToast();
   // 추천 변주: seed(brand.id) 우선, 없으면 업종+메뉴+주제로 합성 → 결정론 해시.
   // 같은 브랜드/주제면 항상 같은 추천, 다르면 변형이 바뀜.
   const seedStr = (seed ?? `${industry}|${signatureMenu?.join(",") ?? ""}|${topic ?? ""}`).trim();
   const seedNum = React.useMemo(() => hashSeed(seedStr), [seedStr]);
-  const recommended = React.useMemo(() => getRecommendedScenes(industry, seedNum), [industry, seedNum]);
-  const allScenes = React.useMemo(() => getScenesForIndustry(industry), [industry]);
+
+  // faceless 전체 풀.
+  const allScenes = React.useMemo(
+    () => getScenesForIndustry(industry).filter(FACELESS),
+    [industry],
+  );
+
+  // 추천: getRecommendedScenes 결과(얼굴 포함 가능)를 faceless 로 필터한 뒤,
+  // 부족분을 faceless 전체 풀에서 중복 없이 backfill(최대 4컷). seed 변주 유지.
+  const recommended = React.useMemo(() => {
+    const picked: ModelScene[] = [];
+    const seen = new Set<string>();
+    for (const s of getRecommendedScenes(industry, seedNum)) {
+      if (FACELESS(s) && !seen.has(s.id)) {
+        seen.add(s.id);
+        picked.push(s);
+      }
+    }
+    if (picked.length < 4) {
+      // seed 기반 회전 오프셋으로 backfill 시작점을 변주.
+      const start = allScenes.length ? seedNum % allScenes.length : 0;
+      for (let i = 0; i < allScenes.length && picked.length < 4; i++) {
+        const s = allScenes[(start + i) % allScenes.length];
+        if (!seen.has(s.id)) {
+          seen.add(s.id);
+          picked.push(s);
+        }
+      }
+    }
+    return picked.slice(0, 4);
+  }, [industry, seedNum, allScenes]);
 
   const [scene, setScene] = React.useState<ModelScene>(recommended[0] ?? allScenes[0]);
-  const [gender, setGender] = React.useState<ModelGender>(scene?.defaultGender ?? "any");
-  const [age, setAge] = React.useState<ModelAge>(scene?.defaultAge ?? "any");
   const [showAll, setShowAll] = React.useState(false);
   const [generating, setGenerating] = React.useState(false);
   const [preview, setPreview] = React.useState<string | null>(null);
   const [previewScene, setPreviewScene] = React.useState<ModelScene | null>(null);
 
   React.useEffect(() => {
-    if (!scene && recommended[0]) setScene(recommended[0]);
-  }, [recommended, scene]);
+    if (!scene && (recommended[0] || allScenes[0])) setScene(recommended[0] ?? allScenes[0]);
+  }, [recommended, allScenes, scene]);
 
-  // 씬 변경 시 기본 성별·연령 동기화
-  const selectScene = (s: ModelScene) => {
-    setScene(s);
-    setGender(s.defaultGender ?? "any");
-    setAge(s.defaultAge ?? "any");
-  };
+  const selectScene = (s: ModelScene) => setScene(s);
 
   // 주제 반영: 한국어 주제를 영문 소재로 변환(이미지 모델·Pexels 폴백 매칭률↑).
   // 변환 실패 시 원문 한국어로 폴백. 실제 시그니처 메뉴가 있으면 그걸 우선.
@@ -88,8 +111,9 @@ export function AiModelGenerator({ industry, signatureMenu, topic, seed, onGener
   const themeSubject = signatureMenu?.[0] || topicEN || undefined;
   const promptEN = scene
     ? (() => {
-        const base = scene.promptEN({ gender, age, signatureMenu: themeSubject });
-        // 사장님/손님 씬처럼 소재를 직접 안 쓰는 경우에도 주제가 화면에 드러나도록 컨텍스트 추가
+        // faceless 컷이라 gender/age 는 전달하지 않음(옵셔널). 소재만 반영.
+        const base = scene.promptEN({ signatureMenu: themeSubject });
+        // 소재를 직접 안 쓰는 씬에도 주제가 화면에 드러나도록 컨텍스트 추가.
         return topicEN && !base.includes(topicEN) ? `${base} The scene is visually themed around ${topicEN}.` : base;
       })()
     : "";
@@ -107,10 +131,8 @@ export function AiModelGenerator({ industry, signatureMenu, topic, seed, onGener
           size: "1024x1536", // 9:16 vertical
           quality: "medium",
           slideId: scene.id,
-          // 폴백(Pexels 인물 검색) 정확도용 — 업종·성별·씬 컨텍스트 전달.
-          // 미전달 시 generic woman 으로 떨어져 씬과 무관한 인물이 나왔음.
+          // 폴백(Pexels 검색) 정확도용 — 업종·씬 컨텍스트 전달.
           industry,
-          gender: gender === "female" || gender === "male" ? gender : undefined,
           personaSeed: scene.id,
           // 씬 인식 폴백 — Imagen 실패 시 씬·주제 맞는 Pexels 사진을 찾도록.
           fallbackQuery: scene.fallbackQuery,
@@ -133,7 +155,7 @@ export function AiModelGenerator({ industry, signatureMenu, topic, seed, onGener
       setPreview(finalUrl);
       setPreviewScene(scene);
       const demoNote = data.meta?.demoMode ? " (데모 — API 키 미설정)" : "";
-      toast.success(`AI 출연자 생성 완료${demoNote} · 약 ${COST_KRW}원 사용`);
+      toast.success(`AI 컷 생성 완료${demoNote} · 약 ${COST_KRW}원 사용`);
     } catch (e) {
       toast.warn((e as Error).message);
     } finally {
@@ -154,7 +176,7 @@ export function AiModelGenerator({ industry, signatureMenu, topic, seed, onGener
       }),
       costKrw: COST_KRW,
     });
-    toast.success("AI 출연자 사진 적용됨 — 카피 생성 단계로");
+    toast.success("AI 컷 사진 적용됨 — 카피 생성 단계로");
   };
 
   const visibleScenes = showAll ? allScenes : recommended;
@@ -164,14 +186,14 @@ export function AiModelGenerator({ industry, signatureMenu, topic, seed, onGener
       {/* 헤더 */}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-violet-600 dark:text-violet-400">
-            <Sparkles className="h-3.5 w-3.5" /> AI 출연자 생성
+          <div className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: SAGE }}>
+            <Sparkles className="h-3.5 w-3.5" /> AI 제품·매장 컷
           </div>
           <h3 className={cn("mt-1 font-semibold", compact ? "text-base" : "text-lg")}>
-            직접 출연 대신 AI가 사람을 그려드려요
+            사람 없이 — 음식·공간·손길 컷을 그려드려요
           </h3>
           <p className="mt-1 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-            사장님·직원·손님 씬을 골라 한 장 생성 — 모델 섭외, 촬영 비용 없음 · 약 {COST_KRW}원/장
+            음식·제품·매장·손길 컷을 골라 한 장 생성 — 촬영·모델 비용 없음 · 약 {COST_KRW}원/장
           </p>
         </div>
         {onClose && (
@@ -185,13 +207,13 @@ export function AiModelGenerator({ industry, signatureMenu, topic, seed, onGener
         )}
       </div>
 
-      {/* 안내 - 무엇이 자동/수동인지 투명하게 */}
-      <div className="rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50/60 dark:bg-amber-500/5 px-3.5 py-2.5">
+      {/* 안내 - 무엇이 생성되는지 투명하게 (중립 PAPER+RULE, 다색 제거) */}
+      <div className="border border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-900/40 px-3.5 py-2.5">
         <div className="flex items-start gap-2">
-          <Info className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
-          <div className="text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
-            <b>모든 출연자는 AI 생성 인물</b>입니다. 실제 사람과 무관 · 모델료/초상권 이슈 없음 ·
-            법령(KFTC, 2025.12)에 따라 결과물 우하단에 <b>"AI 생성 콘텐츠"</b> 라벨이 자동 표시됩니다.
+          <Info className="h-4 w-4 mt-0.5 shrink-0" style={{ color: SAGE }} />
+          <div className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">
+            <b>사람 얼굴이 들어가지 않는 음식·공간·손길 컷</b>만 생성합니다. 결과물 우하단에
+            법령(KFTC, 2025.12) <b>"AI 생성 콘텐츠"</b> 라벨이 자동 부착됩니다.
           </div>
         </div>
       </div>
@@ -200,19 +222,20 @@ export function AiModelGenerator({ industry, signatureMenu, topic, seed, onGener
       <div>
         <div className="flex items-center justify-between mb-2">
           <div className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-            {showAll ? `모든 씬 (${allScenes.length})` : `추천 씬 (${recommended.length})`}
+            {showAll ? `모든 컷 (${allScenes.length})` : `추천 컷 (${recommended.length})`}
             {!showAll && (
               <span className="ml-1.5 font-normal text-[11px] text-zinc-400">
                 {topic?.trim()
-                  ? `· '${topic.trim()}' 맞춤 (업종·역할별 1컷)`
-                  : "· 업종·역할별 추천 1컷"}
+                  ? `· '${topic.trim()}' 맞춤`
+                  : "· 업종별 추천 컷"}
               </span>
             )}
           </div>
           {allScenes.length > recommended.length && (
             <button
               onClick={() => setShowAll((v) => !v)}
-              className="text-xs text-violet-600 dark:text-violet-400 inline-flex items-center gap-0.5"
+              className="text-xs inline-flex items-center gap-0.5"
+              style={{ color: SAGE }}
             >
               {showAll ? "추천만" : "전체 보기"}
               <ChevronDown className={cn("h-3 w-3 transition-transform", showAll && "rotate-180")} />
@@ -227,11 +250,16 @@ export function AiModelGenerator({ industry, signatureMenu, topic, seed, onGener
                 key={s.id}
                 onClick={() => selectScene(s)}
                 className={cn(
-                  "rounded-xl border p-3 text-left transition-all min-h-[88px]",
+                  "rounded-sm border p-3 text-left transition-all min-h-[88px]",
                   active
-                    ? "border-violet-500 bg-violet-50 dark:bg-violet-500/10 dark:border-violet-500/60 shadow-sm"
+                    ? "shadow-sm"
                     : "border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600",
                 )}
+                style={
+                  active
+                    ? { borderColor: SAGE, backgroundColor: "rgba(79,95,75,0.06)" }
+                    : undefined
+                }
               >
                 <div className="text-[10px] font-medium text-zinc-500 mb-1">
                   {ROLE_LABELS[s.role]} · {FRAME_LABELS[s.frame]}
@@ -243,50 +271,6 @@ export function AiModelGenerator({ industry, signatureMenu, topic, seed, onGener
           })}
         </div>
       </div>
-
-      {/* 인물 옵션 — 사람 없는 씬일 때는 비활성 */}
-      {scene && scene.role !== "product" && (
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <div className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">성별</div>
-            <div className="flex flex-wrap gap-1.5">
-              {(["any", "female", "male"] as ModelGender[]).map((g) => (
-                <button
-                  key={g}
-                  onClick={() => setGender(g)}
-                  className={cn(
-                    "px-2.5 py-1 rounded-md text-xs border transition-colors",
-                    gender === g
-                      ? "border-zinc-900 dark:border-zinc-100 bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                      : "border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-zinc-400",
-                  )}
-                >
-                  {GENDER_LABELS[g]}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <div className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">연령대</div>
-            <div className="flex flex-wrap gap-1.5">
-              {(["any", "20s", "30s", "40s", "50s"] as ModelAge[]).map((a) => (
-                <button
-                  key={a}
-                  onClick={() => setAge(a)}
-                  className={cn(
-                    "px-2.5 py-1 rounded-md text-xs border transition-colors",
-                    age === a
-                      ? "border-zinc-900 dark:border-zinc-100 bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                      : "border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-zinc-400",
-                  )}
-                >
-                  {AGE_LABELS[a]}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* 액션 */}
       <div className="flex items-center gap-2">
@@ -308,12 +292,12 @@ export function AiModelGenerator({ industry, signatureMenu, topic, seed, onGener
           ) : (
             <>
               <Sparkles className="h-4 w-4" />
-              AI 출연자 만들기
+              AI 컷 만들기
             </>
           )}
         </Button>
         {preview && (
-          <Button onClick={useThis} variant="default" className="h-11 px-5 bg-emerald-600 hover:bg-emerald-700">
+          <Button onClick={useThis} variant="default" className="h-11 px-5">
             이 사진 사용
           </Button>
         )}
@@ -329,23 +313,23 @@ export function AiModelGenerator({ industry, signatureMenu, topic, seed, onGener
           >
             <Card className="overflow-hidden">
               <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-3 p-3">
-                <div className="relative aspect-[9/16] rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+                <div className="relative aspect-[9/16] rounded-sm overflow-hidden bg-zinc-100 dark:bg-zinc-900">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={preview} alt={previewScene.title} className="h-full w-full object-cover" />
                 </div>
                 <div className="space-y-2 min-w-0">
                   <div className="flex flex-wrap gap-1.5">
-                    <Badge tone="violet">{ROLE_LABELS[previewScene.role]}</Badge>
-                    <Badge tone="sky">{FRAME_LABELS[previewScene.frame]}</Badge>
-                    <Badge tone="amber">AI 생성</Badge>
+                    <Badge tone="default">{ROLE_LABELS[previewScene.role]}</Badge>
+                    <Badge tone="default">{FRAME_LABELS[previewScene.frame]}</Badge>
+                    <Badge tone="default">AI 생성</Badge>
                   </div>
                   <div className="text-sm font-semibold">{previewScene.title}</div>
                   <div className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
                     {previewScene.desc} · 우하단 AI 라벨 자동 부착됨 (KFTC 의무)
                   </div>
                   <div className="text-[11px] text-zinc-500 inline-flex items-center gap-1">
-                    <ShieldCheck className="h-3 w-3 text-emerald-500" />
-                    초상권 안전 · 모델료 없음 · 약 {COST_KRW}원 소요
+                    <ShieldCheck className="h-3 w-3" style={{ color: SAGE }} />
+                    사람 없음 · 촬영비 없음 · 약 {COST_KRW}원
                   </div>
                 </div>
               </div>
