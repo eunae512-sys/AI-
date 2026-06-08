@@ -180,6 +180,85 @@ export async function fetchPortraitFromPexels(opts: {
 }
 
 /**
+ * 씬 인식 폴백 — 호출 측이 query 를 직접 지정(ModelScene.fallbackQuery).
+ * allowPeople=false 면 alt 텍스트에 인물 키워드가 있는 결과를 페널티/제외 →
+ * 손·사물·공간 씬에 generic 인물이 떨어지는 문제 방지.
+ * API 키 없으면 null → 호출 측이 다른 폴백으로 처리.
+ */
+export async function fetchSceneFromPexels(opts: {
+  query: string;
+  allowPeople: boolean;
+  seed?: string;
+}): Promise<DemoImage | null> {
+  const apiKey = process.env.PEXELS_API_KEY ?? "";
+  if (!apiKey || apiKey.trim() === "" || apiKey === "YOUR_PEXELS_KEY") return null;
+  const q = (opts.query ?? "").trim();
+  if (!q) return null;
+
+  const params = new URLSearchParams({
+    query: q,
+    orientation: "portrait",
+    size: "large",
+    per_page: "24",
+    locale: "en-US",
+  });
+  try {
+    const r = await fetch(`https://api.pexels.com/v1/search?${params.toString()}`, {
+      headers: { Authorization: apiKey },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!r.ok) return null;
+    const data = (await r.json()) as {
+      photos?: Array<{
+        id: number; url: string; alt: string | null;
+        photographer: string; photographer_url: string;
+        src: { large2x?: string; large?: string; original?: string };
+      }>;
+    };
+    const photos = data.photos ?? [];
+    if (photos.length === 0) return null;
+
+    // 인물 키워드 페널티 (allowPeople=false 일 때만). search-pexels 패턴 차용.
+    const PEOPLE_KW = [
+      "person standing","person sitting","people walking","young woman","young man",
+      "woman wearing","man wearing","businessman","businesswoman","portrait of",
+      "smiling woman","smiling man","selfie","model posing",
+    ];
+    const scored = photos.map((p, i) => {
+      let score = Math.max(0, 5 - i * 0.2); // 앞쪽 결과 가산(연관도)
+      if (!opts.allowPeople) {
+        const alt = (p.alt ?? "").toLowerCase();
+        let hits = 0;
+        for (const k of PEOPLE_KW) if (alt.includes(k)) hits++;
+        if (hits > 0) score -= 50 * hits;
+      }
+      return { p, i, score };
+    });
+    scored.sort((a, b) => b.score - a.score);
+    const filtered = opts.allowPeople ? scored : scored.filter((s) => s.score > -20);
+    const pool = filtered.length > 0 ? filtered : scored;
+
+    // seed 로 결정적 픽 — pool 상위권 안에서 선택(연관도 유지)
+    const seedStr = String(opts.seed ?? "");
+    let h = 0;
+    for (let i = 0; i < seedStr.length; i++) h = (h * 31 + seedStr.charCodeAt(i)) | 0;
+    const topN = Math.min(pool.length, 8); // 연관도 높은 상위에서만 변주
+    const pick = pool[Math.abs(h) % topN].p;
+
+    return {
+      url: pick.src.large2x || pick.src.large || pick.src.original || "",
+      keywords: ["scene-fallback"],
+      photographer: pick.photographer,
+      photographerUrl: pick.photographer_url,
+      pexelsUrl: pick.url,
+      alt: pick.alt || q,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
  * 최종 비상용 — Pexels 도 사용 불가 시 단색 placeholder.
  */
 function placeholderPortraitDemo(industry?: string): DemoImage {
