@@ -6,7 +6,17 @@
 // Phase 1+ 에서 채널별 실 어댑터로 교체.
 
 import { MockPublishAdapter } from "./adapters/mock";
+import { InstagramAdapter } from "./adapters/instagram";
 import type { PublishAdapter, PublishCapability, PublishChannel } from "./types";
+
+/** 인스타 실연동 활성 조건 — Meta 앱 자격증명 + 토큰 암호화 키 설정 시. */
+export function isInstagramConfigured(): boolean {
+  return (
+    (process.env.META_APP_ID ?? "").length > 0 &&
+    (process.env.META_APP_SECRET ?? "").length > 0 &&
+    (process.env.CHANNEL_TOKEN_KEY ?? "").length > 0
+  );
+}
 
 const CAPABILITY: Record<PublishChannel, PublishCapability> = {
   instagram: "auto",
@@ -27,6 +37,10 @@ export function getCapability(channel: PublishChannel): PublishCapability {
 }
 
 export function getAdapter(channel: PublishChannel): PublishAdapter {
-  // Phase 0: 전부 Mock. capability 만 채널별로 정확히 반영.
+  // Phase 1: 인스타는 자격증명 설정 시 실 어댑터, 아니면 mock(개발/스모크).
+  // 나머지 채널은 후속 Phase 까지 mock(capability 만 정확).
+  if (channel === "instagram" && isInstagramConfigured()) {
+    return new InstagramAdapter();
+  }
   return new MockPublishAdapter(channel, CAPABILITY[channel]);
 }
