@@ -238,11 +238,20 @@ export function ChannelsScreen() {
       {/* Channels grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {CHANNELS.map((ch, i) => {
-          const conn = conns.find((c) => c.channelId === ch.id) ?? {
+          let conn = conns.find((c) => c.channelId === ch.id) ?? {
             channelId: ch.id,
             connected: false,
             health: "not-connected" as const,
           };
+          // Instagram 은 실연동 — 자격증명 설정 시 배지/상태를 실제 연결 상태로 반영(데모 덮어씀).
+          if (ch.id === "instagram" && igReal.configured) {
+            conn = {
+              ...conn,
+              connected: igReal.connected,
+              health: igReal.connected ? ("healthy" as const) : ("not-connected" as const),
+              accountHandle: igReal.connected ? (conn.accountHandle ?? "Instagram 비즈니스") : undefined,
+            };
+          }
           const studio = CHANNEL_TO_STUDIO[ch.id];
           return (
             <motion.div
