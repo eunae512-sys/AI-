@@ -262,6 +262,72 @@ export type VideoJob = typeof videoJobs.$inferSelect;
 export type NewVideoJob = typeof videoJobs.$inferInsert;
 
 // ───────────────────────────────────────────────
+// 발행(Publishing) — 채널 연결 + 발행 잡 큐 (Phase 0)
+// ───────────────────────────────────────────────
+//
+// channel_connections: 채널별 OAuth 토큰(현재는 자리만 — 평문 저장·실사용 금지,
+//   실 OAuth/암호화는 Phase 1). publish_jobs: 생성물 발행 큐 — cron 처리기가
+//   capability=auto 잡을 어댑터로 발행, 상태머신(queued→processing→published/failed).
+export const publishJobStatusEnum = pgEnum("publish_job_status", [
+  "queued",
+  "processing",
+  "published",
+  "failed",
+  "canceled",
+]);
+
+export const channelConnections = pgTable(
+  "channel_connections",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull(),
+    channel: text("channel").notNull(), // "instagram"|"youtube"|"tiktok"|"naver_blog"|"kakao"
+    // ⚠️ 토큰은 현재 자리만 — 평문 저장·실사용 금지. Phase 1에서 암호화 + 실 OAuth.
+    accessToken: text("access_token"),
+    refreshToken: text("refresh_token"),
+    scope: text("scope"),
+    externalAccountId: text("external_account_id"),
+    connected: boolean("connected").notNull().default(false),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    userChannelUq: unique("channel_connections_user_channel_uq").on(t.userId, t.channel),
+    userIdx: index("channel_connections_user_idx").on(t.userId),
+  }),
+);
+
+export const publishJobs = pgTable(
+  "publish_jobs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull(),
+    channel: text("channel").notNull(),
+    capability: text("capability").notNull(), // "auto" | "assisted"
+    status: publishJobStatusEnum("status").notNull().default("queued"),
+    // {caption?, hashtags?, mediaUrls?, title?, body?, aiLabeled?, sourceId?}
+    payload: jsonb("payload").notNull(),
+    scheduledFor: timestamp("scheduled_for", { withTimezone: true }), // null = 즉시
+    attempts: integer("attempts").notNull().default(0),
+    maxAttempts: integer("max_attempts").notNull().default(3),
+    resultRef: text("result_ref"), // 발행된 외부 post id/url
+    errorMessage: text("error_message"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    userIdx: index("publish_jobs_user_idx").on(t.userId),
+    dueIdx: index("publish_jobs_due_idx").on(t.status, t.scheduledFor),
+  }),
+);
+
+export type ChannelConnection = typeof channelConnections.$inferSelect;
+export type NewChannelConnection = typeof channelConnections.$inferInsert;
+export type PublishJob = typeof publishJobs.$inferSelect;
+export type NewPublishJob = typeof publishJobs.$inferInsert;
+
+// ───────────────────────────────────────────────
 // webhook_events — Toss 웹훅 멱등 처리
 // ───────────────────────────────────────────────
 //
