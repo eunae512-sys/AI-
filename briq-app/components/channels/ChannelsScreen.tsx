@@ -68,6 +68,40 @@ export function ChannelsScreen() {
     setConns(DEFAULT_CONNECTIONS);
   }, [storageKey]);
 
+  // Instagram 실연동 상태(나머지 채널은 데모). configured=Meta 자격증명 설정 여부.
+  const [igReal, setIgReal] = React.useState<{ configured: boolean; connected: boolean }>({
+    configured: false,
+    connected: false,
+  });
+  const refreshStatus = React.useCallback(async () => {
+    try {
+      const r = await fetch("/api/channels/status");
+      if (!r.ok) return;
+      const d = await r.json();
+      setIgReal({
+        configured: !!d?.configured?.instagram,
+        connected: !!d?.connections?.instagram?.connected,
+      });
+    } catch {
+      // 무시 (비로그인/데모)
+    }
+  }, []);
+  React.useEffect(() => {
+    refreshStatus();
+  }, [refreshStatus]);
+
+  // OAuth 콜백 복귀(?instagram=...) 토스트 + 상태 새로고침
+  React.useEffect(() => {
+    const p = new URLSearchParams(window.location.search).get("instagram");
+    if (!p) return;
+    if (p === "connected") toast.success("Instagram 연결 완료 — 검수 통과 콘텐츠를 자동 발행할 수 있어요");
+    else if (p === "no_ig_account") toast.warn("FB 페이지에 연결된 IG 비즈니스 계정을 찾지 못했어요 (비즈니스 전환·페이지 연결 확인)");
+    else if (p === "not_configured") toast.info("Instagram 연동이 아직 설정되지 않았어요 (정식 출시 예정)");
+    else toast.warn("Instagram 연결에 실패했어요");
+    refreshStatus();
+    window.history.replaceState(null, "", "/channels");
+  }, [toast, refreshStatus]);
+
   const persist = (next: ConnectionState[]) => {
     setConns(next);
     try {
@@ -80,6 +114,12 @@ export function ChannelsScreen() {
   const connect = (id: ChannelId) => {
     const channel = CHANNELS.find((c) => c.id === id);
     if (!channel) return;
+    // Instagram: 실 OAuth(자격증명 설정 시) — 미설정이면 정직하게 안내.
+    if (id === "instagram") {
+      if (igReal.configured) window.location.href = "/api/channels/instagram/connect";
+      else toast.info("Instagram 자동 발행은 정식 출시 시 활성화됩니다 (Meta 심사 진행 중)");
+      return;
+    }
     const next = conns.map((c) =>
       c.channelId === id
         ? {
@@ -99,6 +139,16 @@ export function ChannelsScreen() {
   const disconnect = (id: ChannelId) => {
     const channel = CHANNELS.find((c) => c.id === id);
     if (!channel) return;
+    // Instagram 실연동: 서버에서 토큰 폐기.
+    if (id === "instagram" && igReal.configured) {
+      fetch("/api/channels/instagram/disconnect", { method: "POST" })
+        .then(() => {
+          refreshStatus();
+          toast.info("Instagram 연결을 해제하고 토큰을 폐기했어요");
+        })
+        .catch(() => toast.warn("연결 해제 실패 — 잠시 후 다시 시도해주세요"));
+      return;
+    }
     const next = conns.map((c) =>
       c.channelId === id
         ? { ...c, connected: false, health: "not-connected" as const, lastSyncedAt: undefined }

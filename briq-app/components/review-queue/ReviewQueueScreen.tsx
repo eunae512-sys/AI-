@@ -123,18 +123,37 @@ export function ReviewQueueScreen() {
     setEditingId(null);
   };
 
+  // 검수 통과 → 발행 큐(publish_jobs) enqueue. 연결된 자동 채널은 cron 이 처리,
+  // 미연결/미설정이면 큐에 남아 후속 처리(어댑터 미연결 시 실패로 기록).
+  const enqueuePublish = async (item: { title: string; id: string }) => {
+    try {
+      await fetch("/api/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channel: "instagram",
+          asset: { caption: item.title, aiLabeled: true, sourceId: item.id },
+        }),
+      });
+    } catch {
+      // 네트워크 실패는 무시(낙관적 UI) — 잡 미생성 시 다음 시도에서 재등록 가능
+    }
+  };
+
   const approve = (id: string) => {
     const item = queue.find((q) => q.id === id);
     if (!item) return;
     setQueue((q) => q.filter((it) => it.id !== id));
-    toast.success(`"${item.title}" 승인 후 발행됨`);
+    void enqueuePublish(item);
+    toast.success(`"${item.title}" 승인 — 발행 큐에 등록됐어요`);
   };
 
   const autoPublish = (id: string) => {
     const item = queue.find((q) => q.id === id);
     if (!item) return;
     setQueue((q) => q.filter((it) => it.id !== id));
-    toast.success(`"${item.title}" 자동 발행 큐로 이동됨`);
+    void enqueuePublish(item);
+    toast.success(`"${item.title}" 발행 큐로 이동됨`);
   };
 
   const okCount = queue.filter((q) => q.severity === "ok").length;
