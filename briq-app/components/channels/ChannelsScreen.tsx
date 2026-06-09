@@ -168,12 +168,16 @@ export function ChannelsScreen() {
     toast.success(`(데모) ${channel.name} 동기화 완료`);
   };
 
-  const connectedCount = conns.filter((c) => c.connected).length;
-  const totalScheduled = conns.reduce(
+  // 집계 정직화 — 인스타는 실연결 상태(자격증명 설정 시)로 덮어써 카드 배지와 일치.
+  const displayConns = conns.map((c) =>
+    c.channelId === "instagram" && igReal.configured ? { ...c, connected: igReal.connected } : c,
+  );
+  const connectedCount = displayConns.filter((c) => c.connected).length;
+  const totalScheduled = displayConns.reduce(
     (s, c) => s + (c.connected ? CHANNELS.find((ch) => ch.id === c.channelId)?.scheduledThisWeek ?? 0 : 0),
     0,
   );
-  const totalPublished = conns.reduce(
+  const totalPublished = displayConns.reduce(
     (s, c) => s + (c.connected ? CHANNELS.find((ch) => ch.id === c.channelId)?.publishedThisMonth ?? 0 : 0),
     0,
   );
